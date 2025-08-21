@@ -15,7 +15,7 @@ struct RecipeFormView: View {
 
     @State private var title = ""
     @State private var desc = ""
-    @State private var ingredientsText = ""
+    @State private var ingredients: [Ingredient] = []
     @State private var steps = ""
     
     var body: some View {
@@ -26,8 +26,22 @@ struct RecipeFormView: View {
                     TextField("Description", text: $desc, axis: .vertical)
                 }
 
-                Section("Ingredients (one per line)") {
-                    TextEditor(text: $ingredientsText)
+                Section("Ingredients") {
+                    ForEach($ingredients) { $ingredient in
+                        HStack {
+                            TextField("Name", text: $ingredient.name)
+                            TextField("Quantity", text: $ingredient.quantity)
+                                .frame(width: 100)
+                                .multilineTextAlignment(.trailing)
+                        }
+                    }
+                    .onDelete(perform: deleteIngredient)
+                    
+                    Button {
+                        ingredients.append(Ingredient(name: "", quantity: ""))
+                    } label: {
+                        Label("Add Ingredient", systemImage: "plus.circle")
+                    }
                 }
 
                 Section("Steps") {
@@ -49,12 +63,12 @@ struct RecipeFormView: View {
             }
         }
     }
-    
+
+    private func deleteIngredient(at offsets: IndexSet) {
+        ingredients.remove(atOffsets: offsets)
+    }
+
     private func saveRecipe() {
-        let ingredients = ingredientsText
-            .split(separator: "\n")
-            .map { String($0) }
-        
         let newRecipe = Recipe(
             title: title,
             desc: desc,

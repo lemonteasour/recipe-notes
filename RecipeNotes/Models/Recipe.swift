@@ -13,14 +13,14 @@ class Recipe {
     @Attribute(.unique) var id: UUID
     var title: String
     var desc: String
-    var ingredients: [String]
+    var ingredients: [Ingredient]
     var steps: String
     var createdAt: Date
 
     init(
         title: String,
         desc: String,
-        ingredients: [String] = [],
+        ingredients: [Ingredient] = [],
         steps: String
     ) {
         self.id = UUID()

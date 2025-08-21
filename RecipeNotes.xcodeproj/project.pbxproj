@@ -47,22 +47,16 @@
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		691C72492E55FEA70040208B /* RecipeNotes */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
 			path = RecipeNotes;
 			sourceTree = "<group>";
 		};
 		691C72592E55FEA90040208B /* RecipeNotesTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
 			path = RecipeNotesTests;
 			sourceTree = "<group>";
 		};
 		691C72632E55FEA90040208B /* RecipeNotesUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
 			path = RecipeNotesUITests;
 			sourceTree = "<group>";
 		};
