@@ -47,16 +47,22 @@
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		691C72492E55FEA70040208B /* RecipeNotes */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
 			path = RecipeNotes;
 			sourceTree = "<group>";
 		};
 		691C72592E55FEA90040208B /* RecipeNotesTests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
 			path = RecipeNotesTests;
 			sourceTree = "<group>";
 		};
 		691C72632E55FEA90040208B /* RecipeNotesUITests */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+			);
 			path = RecipeNotesUITests;
 			sourceTree = "<group>";
 		};
@@ -146,7 +152,6 @@
 				691C72432E55FEA70040208B /* Sources */,
 				691C72442E55FEA70040208B /* Frameworks */,
 				691C72452E55FEA70040208B /* Resources */,
-				ECEF38B51E3AC8D2D953E995 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -190,7 +195,6 @@
 				691C725C2E55FEA90040208B /* Sources */,
 				691C725D2E55FEA90040208B /* Frameworks */,
 				691C725E2E55FEA90040208B /* Resources */,
-				563DEC860BC2820E3042F562 /* [CP] Embed Pods Frameworks */,
 			);
 			buildRules = (
 			);
@@ -274,27 +278,6 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
-		563DEC860BC2820E3042F562 /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-RecipeNotes-RecipeNotesUITests/Pods-RecipeNotes-RecipeNotesUITests-frameworks-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			inputPaths = (
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-RecipeNotes-RecipeNotesUITests/Pods-RecipeNotes-RecipeNotesUITests-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-RecipeNotes-RecipeNotesUITests/Pods-RecipeNotes-RecipeNotesUITests-frameworks.sh\"\n";
-			showEnvVarsInLog = 0;
-		};
 		8A26FB5C8491B2F8463A7D4E /* [CP] Check Pods Manifest.lock */ = {
 			isa = PBXShellScriptBuildPhase;
 			buildActionMask = 2147483647;
@@ -359,27 +342,6 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/sh;
 			shellScript = "diff \"${PODS_PODFILE_DIR_PATH}/Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [ $? != 0 ] ; then\n    # print error to STDERR\n    echo \"error: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\" >&2\n    exit 1\nfi\n# This output is used by Xcode 'outputs' to avoid re-running this script phase.\necho \"SUCCESS\" > \"${SCRIPT_OUTPUT_FILE_0}\"\n";
-			showEnvVarsInLog = 0;
-		};
-		ECEF38B51E3AC8D2D953E995 /* [CP] Embed Pods Frameworks */ = {
-			isa = PBXShellScriptBuildPhase;
-			buildActionMask = 2147483647;
-			files = (
-			);
-			inputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-RecipeNotes/Pods-RecipeNotes-frameworks-${CONFIGURATION}-input-files.xcfilelist",
-			);
-			inputPaths = (
-			);
-			name = "[CP] Embed Pods Frameworks";
-			outputFileListPaths = (
-				"${PODS_ROOT}/Target Support Files/Pods-RecipeNotes/Pods-RecipeNotes-frameworks-${CONFIGURATION}-output-files.xcfilelist",
-			);
-			outputPaths = (
-			);
-			runOnlyForDeploymentPostprocessing = 0;
-			shellPath = /bin/sh;
-			shellScript = "\"${PODS_ROOT}/Target Support Files/Pods-RecipeNotes/Pods-RecipeNotes-frameworks.sh\"\n";
 			showEnvVarsInLog = 0;
 		};
 /* End PBXShellScriptBuildPhase section */
