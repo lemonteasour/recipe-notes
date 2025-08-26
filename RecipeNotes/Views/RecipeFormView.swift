@@ -18,6 +18,8 @@ struct RecipeFormView: View {
     @State private var ingredients: [Ingredient] = []
     @State private var steps = ""
 
+    var recipeToEdit: Recipe?
+
     var body: some View {
         NavigationStack {
             Form {
@@ -74,6 +76,7 @@ struct RecipeFormView: View {
                     .disabled(name.isEmpty)
                 }
             }
+            .onAppear(perform: loadRecipe)
         }
     }
 
@@ -81,14 +84,33 @@ struct RecipeFormView: View {
         ingredients.remove(atOffsets: offsets)
     }
 
+    private func loadRecipe() {
+        guard let recipe = recipeToEdit else {
+            // prefillFromClipboard()
+            return
+        }
+        name = recipe.name
+        desc = recipe.desc
+        ingredients = recipe.ingredients
+        steps = recipe.steps
+    }
+
+
     private func saveRecipe() {
-        let newRecipe = Recipe(
-            name: name,
-            desc: desc,
-            ingredients: ingredients,
-            steps: steps
-        )
-        context.insert(newRecipe)
+        if let recipe = recipeToEdit {
+            recipe.name = name
+            recipe.desc = desc
+            recipe.ingredients = ingredients
+            recipe.steps = steps
+        } else {
+            let newRecipe = Recipe(
+                name: name,
+                desc: desc,
+                ingredients: ingredients,
+                steps: steps
+            )
+            context.insert(newRecipe)
+        }
     }
 }
 

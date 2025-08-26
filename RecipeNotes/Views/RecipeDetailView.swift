@@ -10,6 +10,8 @@ import SwiftUI
 
 struct RecipeDetailView: View {
     @Bindable var recipe: Recipe
+
+    @State private var showEdit = false
     @State private var cookingMode = false
 
     var body: some View {
@@ -55,14 +57,20 @@ struct RecipeDetailView: View {
         }
         .navigationTitle(recipe.name)
         .toolbar {
-            ToolbarItem(placement: .primaryAction) {
+            ToolbarItemGroup(placement: .primaryAction) {
                 Button(cookingMode ?
                        String(localized: "Normal") :
                         String(localized: "Cook")
                 ) {
                     cookingMode.toggle()
                 }
+                Button(String(localized: "Edit")) {
+                    showEdit = true
+                }
             }
+        }
+        .sheet(isPresented: $showEdit) {
+            RecipeFormView(recipeToEdit: recipe)
         }
     }
 }

@@ -1,7 +1,7 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-    "Add Ingredient" : {
+    "Add ingredient" : {
 
     },
     "Cancel" : {
@@ -11,6 +11,9 @@
 
     },
     "Description" : {
+
+    },
+    "Edit" : {
 
     },
     "Ingredients" : {
@@ -26,6 +29,9 @@
 
     },
     "Quantity" : {
+
+    },
+    "Recipe name" : {
 
     },
     "Recipes" : {
