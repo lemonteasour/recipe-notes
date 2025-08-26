@@ -14,14 +14,14 @@ class Recipe {
     var name: String
     var desc: String
     var ingredients: [Ingredient]
-    var steps: String
+    var steps: [Step]
     var createdAt: Date
 
     init(
         name: String,
         desc: String,
         ingredients: [Ingredient] = [],
-        steps: String
+        steps: [Step]
     ) {
         self.id = UUID()
         self.name = name

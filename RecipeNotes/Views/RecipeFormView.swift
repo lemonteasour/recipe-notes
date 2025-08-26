@@ -12,18 +12,18 @@ import SwiftData
 struct RecipeFormView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
-
+    
     @State private var name = ""
     @State private var desc = ""
     @State private var ingredients: [Ingredient] = []
-    @State private var steps = ""
-
+    @State private var steps: [Step] = []
+    
     var recipeToEdit: Recipe?
-
+    
     var body: some View {
         NavigationStack {
             Form {
-                Section {
+                Section(String(localized: "Details")) {
                     TextField(
                         String(localized: "Recipe name"),
                         text: $name
@@ -34,7 +34,7 @@ struct RecipeFormView: View {
                         axis: .vertical
                     )
                 }
-
+                
                 Section(String(localized: "Ingredients")) {
                     ForEach($ingredients) { $ingredient in
                         HStack {
@@ -50,24 +50,57 @@ struct RecipeFormView: View {
                             .multilineTextAlignment(.trailing)
                         }
                     }
-                    .onDelete(perform: deleteIngredient)
-
+                    .onDelete { offsets in
+                        ingredients.remove(atOffsets: offsets)
+                    }
+                    .onMove { indices, newOffset in
+                        ingredients.move(fromOffsets: indices, toOffset: newOffset)
+                    }
+                    
                     Button(String(localized: "Add ingredient")) {
                         ingredients.append(
                             Ingredient(name: "", quantity: "")
                         )
                     }
                 }
-
+                
                 Section(String(localized: "Steps")) {
-                    TextEditor(text: $steps)
+                    ForEach(Array($steps.enumerated()), id: \.element.id) { index, $step in
+                        HStack(alignment: .top) {
+                            Text("\(index + 1).")
+                                .foregroundStyle(.secondary)
+                                .frame(width: 24, alignment: .trailing)
+                            
+                            TextField(
+                                String(localized: "Step"),
+                                text: $step.value,
+                                axis: .vertical
+                            )
+                        }
+                    }
+                    .onDelete { offsets in
+                        steps.remove(atOffsets: offsets)
+                    }
+                    .onMove { indices, newOffset in
+                        steps.move(fromOffsets: indices, toOffset: newOffset)
+                    }
+                    
+                    Button(String(localized: "Add step")) {
+                        steps.append(Step(value: ""))
+                    }
                 }
+                
             }
             .navigationTitle(String(localized: "New Recipe"))
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button(String(localized: "Cancel")) { dismiss() }
                 }
+                
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    EditButton()
+                }
+                
                 ToolbarItem(placement: .confirmationAction) {
                     Button(String(localized: "Save")) {
                         saveRecipe()
@@ -79,11 +112,11 @@ struct RecipeFormView: View {
             .onAppear(perform: loadRecipe)
         }
     }
-
+    
     private func deleteIngredient(at offsets: IndexSet) {
         ingredients.remove(atOffsets: offsets)
     }
-
+    
     private func loadRecipe() {
         guard let recipe = recipeToEdit else {
             // prefillFromClipboard()
@@ -94,8 +127,8 @@ struct RecipeFormView: View {
         ingredients = recipe.ingredients
         steps = recipe.steps
     }
-
-
+    
+    
     private func saveRecipe() {
         if let recipe = recipeToEdit {
             recipe.name = name

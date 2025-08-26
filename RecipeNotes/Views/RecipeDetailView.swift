@@ -20,6 +20,7 @@ struct RecipeDetailView: View {
                 ScrollView {
                     Text(String(localized: "Ingredients"))
                         .font(.title2).bold()
+
                     ForEach(recipe.ingredients) { ingredient in
                         HStack {
                             Text(ingredient.name)
@@ -32,25 +33,45 @@ struct RecipeDetailView: View {
 
                     Text(String(localized: "Steps"))
                         .font(.title2).bold()
-                        .padding(.top)
-                    Text(recipe.steps)
-                        .font(.body)
-                        .padding(.bottom)
+
+                    ForEach(recipe.steps.indices, id: \.self) { index in
+                        HStack(alignment: .top) {
+                            Text("\(index + 1).")
+                                .foregroundStyle(.secondary)
+                                .frame(width: 24, alignment: .trailing)
+
+                            Text(recipe.steps[index].value)
+                        }
+                    }
                 }
-                .padding()
+
             } else {
                 List {
-                    Section {
+                    Section(String(localized: "Details")) {
                         Text(recipe.desc)
                     }
+
                     Section(String(localized: "Ingredients")) {
-                        ForEach(recipe.ingredients, id: \.self) { ingredient in
-                            Text(ingredient.name)
+                        ForEach(recipe.ingredients) { ingredient in
+                            HStack {
+                                Text(ingredient.name)
+                                Spacer()
+                                Text(ingredient.quantity)
+                                    .foregroundColor(.secondary)
+                            }
                         }
                     }
 
                     Section(String(localized: "Steps")) {
-                        Text(recipe.steps)
+                        ForEach(recipe.steps.indices, id: \.self) { index in
+                            HStack(alignment: .top) {
+                                Text("\(index + 1).")
+                                    .foregroundStyle(.secondary)
+                                    .frame(width: 24, alignment: .trailing)
+
+                                Text(recipe.steps[index].value)
+                            }
+                        }
                     }
                 }
             }
@@ -83,6 +104,6 @@ struct RecipeDetailView: View {
             Ingredient(name: "Onion", quantity: "1"),
             Ingredient(name: "Chicken", quantity: "2")
         ],
-        steps: "Steps")
+        steps: [Step(value: "Step")])
     RecipeDetailView(recipe: recipe)
 }

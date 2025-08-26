@@ -1,7 +1,23 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "%lld." : {
+
+    },
+    "%lld. %@" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "new",
+            "value" : "%1$lld. %2$@"
+          }
+        }
+      }
+    },
     "Add ingredient" : {
+
+    },
+    "Add step" : {
 
     },
     "Cancel" : {
@@ -11,6 +27,9 @@
 
     },
     "Description" : {
+
+    },
+    "Details" : {
 
     },
     "Edit" : {
@@ -38,6 +57,9 @@
 
     },
     "Save" : {
+
+    },
+    "Step" : {
 
     },
     "Steps" : {
