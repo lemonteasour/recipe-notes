@@ -38,7 +38,7 @@ struct RecipeDetailView: View {
                         HStack(alignment: .top) {
                             Text("\(index + 1).")
                                 .foregroundStyle(.secondary)
-                                .frame(width: 24, alignment: .trailing)
+                                .frame(width: 24)
 
                             Text(recipe.steps[index].value)
                         }
@@ -47,8 +47,10 @@ struct RecipeDetailView: View {
 
             } else {
                 List {
-                    Section(String(localized: "Details")) {
-                        Text(recipe.desc)
+                    if !recipe.desc.isEmpty {
+                        Section(String(localized: "Details")) {
+                            Text(recipe.desc)
+                        }
                     }
 
                     Section(String(localized: "Ingredients")) {
@@ -67,7 +69,7 @@ struct RecipeDetailView: View {
                             HStack(alignment: .top) {
                                 Text("\(index + 1).")
                                     .foregroundStyle(.secondary)
-                                    .frame(width: 24, alignment: .trailing)
+                                    .frame(width: 24)
 
                                 Text(recipe.steps[index].value)
                             }
@@ -79,9 +81,10 @@ struct RecipeDetailView: View {
         .navigationTitle(recipe.name)
         .toolbar {
             ToolbarItemGroup(placement: .primaryAction) {
-                Button(cookingMode ?
-                       String(localized: "Normal") :
-                        String(localized: "Cook")
+                Button(
+                    cookingMode
+                    ? String(localized: "Normal")
+                    : String(localized: "Cook")
                 ) {
                     cookingMode.toggle()
                 }
