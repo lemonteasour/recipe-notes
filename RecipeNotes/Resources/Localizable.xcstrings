@@ -1,0 +1,42 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "Add Ingredient" : {
+
+    },
+    "Cancel" : {
+
+    },
+    "Cook" : {
+
+    },
+    "Description" : {
+
+    },
+    "Ingredients" : {
+
+    },
+    "Name" : {
+
+    },
+    "New Recipe" : {
+
+    },
+    "Normal" : {
+
+    },
+    "Quantity" : {
+
+    },
+    "Recipes" : {
+
+    },
+    "Save" : {
+
+    },
+    "Steps" : {
+
+    }
+  },
+  "version" : "1.0"
+}

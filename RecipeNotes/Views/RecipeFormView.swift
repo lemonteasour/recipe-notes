@@ -13,52 +13,65 @@ struct RecipeFormView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
 
-    @State private var title = ""
+    @State private var name = ""
     @State private var desc = ""
     @State private var ingredients: [Ingredient] = []
     @State private var steps = ""
-    
+
     var body: some View {
         NavigationStack {
             Form {
-                Section{
-                    TextField("Title", text: $title)
-                    TextField("Description", text: $desc, axis: .vertical)
+                Section {
+                    TextField(
+                        String(localized: "Recipe name"),
+                        text: $name
+                    )
+                    TextField(
+                        String(localized: "Description"),
+                        text: $desc,
+                        axis: .vertical
+                    )
                 }
 
-                Section("Ingredients") {
+                Section(String(localized: "Ingredients")) {
                     ForEach($ingredients) { $ingredient in
                         HStack {
-                            TextField("Name", text: $ingredient.name)
-                            TextField("Quantity", text: $ingredient.quantity)
-                                .frame(width: 100)
-                                .multilineTextAlignment(.trailing)
+                            TextField(
+                                String(localized: "Name"),
+                                text: $ingredient.name
+                            )
+                            TextField(
+                                String(localized: "Quantity"),
+                                text: $ingredient.quantity
+                            )
+                            .frame(width: 100)
+                            .multilineTextAlignment(.trailing)
                         }
                     }
                     .onDelete(perform: deleteIngredient)
-                    
-                    Button {
-                        ingredients.append(Ingredient(name: "", quantity: ""))
-                    } label: {
-                        Label("Add Ingredient", systemImage: "plus.circle")
+
+                    Button(String(localized: "Add ingredient")) {
+                        ingredients.append(
+                            Ingredient(name: "", quantity: "")
+                        )
                     }
                 }
 
-                Section("Steps") {
+                Section(String(localized: "Steps")) {
                     TextEditor(text: $steps)
                 }
             }
-            .navigationTitle("Add Recipe")
+            .navigationTitle(String(localized: "New Recipe"))
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("Cancel") { dismiss() }
+                    Button(String(localized: "Cancel")) { dismiss() }
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Save") {
+                    Button(String(localized: "Save")) {
                         saveRecipe()
                         dismiss()
                     }
-                    .disabled(title.isEmpty)
+                    .disabled(name.isEmpty)
                 }
             }
         }
@@ -70,7 +83,7 @@ struct RecipeFormView: View {
 
     private func saveRecipe() {
         let newRecipe = Recipe(
-            title: title,
+            name: name,
             desc: desc,
             ingredients: ingredients,
             steps: steps

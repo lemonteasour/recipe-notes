@@ -19,7 +19,7 @@ struct RecipeListView: View {
             List {
                 ForEach(recipes) { recipe in
                     NavigationLink(value: recipe) {
-                        Text(recipe.title)
+                        Text(recipe.name)
                     }
                 }
                 .onDelete(perform: deleteRecipe)
@@ -27,7 +27,7 @@ struct RecipeListView: View {
             .navigationDestination(for: Recipe.self) { recipe in
                 RecipeDetailView(recipe: recipe)
             }
-            .navigationTitle("Recipes")
+            .navigationTitle(String(localized: "Recipes"))
             .toolbar {
                 ToolbarItem(placement: .primaryAction) {
                     Button {

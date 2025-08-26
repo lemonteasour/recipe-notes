@@ -16,25 +16,19 @@ struct RecipeDetailView: View {
         VStack(alignment: .leading, spacing: 16) {
             if cookingMode {
                 ScrollView {
-                    Text("Ingredients")
-                        .font(.title2).bold()
-                    ForEach(recipe.ingredients) { ingredient in
-                        Text(ingredient.name)
-                    }
-
                     Text(String(localized: "Ingredients"))
                         .font(.title2).bold()
-                    ForEach(recipe.ingredients) { ing in
+                    ForEach(recipe.ingredients) { ingredient in
                         HStack {
-                            Text(ing.name)
+                            Text(ingredient.name)
                             Spacer()
-                            Text(ing.quantity)
+                            Text(ingredient.quantity)
                                 .foregroundColor(.secondary)
                         }
                         .font(.body)
                     }
 
-                    Text("Steps")
+                    Text(String(localized: "Steps"))
                         .font(.title2).bold()
                         .padding(.top)
                     Text(recipe.steps)
@@ -47,22 +41,25 @@ struct RecipeDetailView: View {
                     Section {
                         Text(recipe.desc)
                     }
-                    Section("Ingredients") {
+                    Section(String(localized: "Ingredients")) {
                         ForEach(recipe.ingredients, id: \.self) { ingredient in
                             Text(ingredient.name)
                         }
                     }
-                    
-                    Section("Steps") {
+
+                    Section(String(localized: "Steps")) {
                         Text(recipe.steps)
                     }
                 }
             }
         }
-        .navigationTitle(recipe.title)
+        .navigationTitle(recipe.name)
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
-                Button(cookingMode ? "Normal" : "Cook") {
+                Button(cookingMode ?
+                       String(localized: "Normal") :
+                        String(localized: "Cook")
+                ) {
                     cookingMode.toggle()
                 }
             }
@@ -72,7 +69,7 @@ struct RecipeDetailView: View {
 
 #Preview {
     let recipe = Recipe(
-        title: "Title",
+        name: "Oyakodon",
         desc: "Desc",
         ingredients: [
             Ingredient(name: "Onion", quantity: "1"),
