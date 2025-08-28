@@ -89,7 +89,6 @@ struct RecipeFormView: View {
                         steps.append(Step(value: ""))
                     }
                 }
-
             }
             .navigationTitle(recipeToEdit == nil
                              ? String(localized: "New Recipe")
@@ -101,8 +100,7 @@ struct RecipeFormView: View {
 
                 ToolbarItem(placement: .confirmationAction) {
                     Button(String(localized: "Save")) {
-                        saveRecipe()
-                        dismiss()
+                        if saveRecipe() { dismiss() }
                     }
                     .disabled(name.isEmpty)
                 }
@@ -113,7 +111,7 @@ struct RecipeFormView: View {
 
     private func loadRecipe() {
         guard let recipe = recipeToEdit else {
-            // prefillFromClipboard()
+            // TODO: Clipboard autofill
             return
         }
         name = recipe.name
@@ -123,7 +121,11 @@ struct RecipeFormView: View {
     }
 
 
-    private func saveRecipe() {
+    private func saveRecipe() -> Bool {
+
+        // Form validation logic
+        guard !name.isEmpty else { return false }
+
         if let recipe = recipeToEdit {
             recipe.name = name
             recipe.desc = desc
@@ -138,6 +140,8 @@ struct RecipeFormView: View {
             )
             context.insert(newRecipe)
         }
+
+        return true
     }
 }
 
