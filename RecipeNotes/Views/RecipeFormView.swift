@@ -23,29 +23,18 @@ struct RecipeFormView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section(String(localized: "Details")) {
-                    TextField(
-                        String(localized: "Recipe name"),
-                        text: $name
-                    )
-                    TextField(
-                        String(localized: "Description"),
-                        text: $desc,
-                        axis: .vertical
-                    )
+                Section("Details") {
+                    TextField("Recipe name", text: $name)
+
+                    TextField("Description", text: $desc, axis: .vertical)
                 }
 
-                Section(String(localized: "Ingredients")) {
+                Section("Ingredients") {
                     ForEach($ingredients) { $ingredient in
                         HStack {
-                            TextField(
-                                String(localized: "Name"),
-                                text: $ingredient.name
-                            )
-                            TextField(
-                                String(localized: "Quantity"),
-                                text: $ingredient.quantity
-                            )
+                            TextField("Name", text: $ingredient.name)
+
+                            TextField("Quantity", text: $ingredient.quantity)
                             .frame(width: 100)
                             .multilineTextAlignment(.trailing)
                         }
@@ -57,25 +46,21 @@ struct RecipeFormView: View {
                         ingredients.move(fromOffsets: indices, toOffset: newOffset)
                     }
 
-                    Button(String(localized: "Add ingredient")) {
+                    Button("Add ingredient") {
                         ingredients.append(
                             Ingredient(name: "", quantity: "")
                         )
                     }
                 }
 
-                Section(String(localized: "Steps")) {
+                Section("Steps") {
                     ForEach(Array($steps.enumerated()), id: \.element.id) { index, $step in
                         HStack(alignment: .top) {
                             Text("\(index + 1).")
                                 .foregroundStyle(.secondary)
                                 .frame(width: 24)
 
-                            TextField(
-                                String(localized: "Step"),
-                                text: $step.value,
-                                axis: .vertical
-                            )
+                            TextField("Step", text: $step.value, axis: .vertical)
                         }
                     }
                     .onDelete { offsets in
@@ -85,21 +70,19 @@ struct RecipeFormView: View {
                         steps.move(fromOffsets: indices, toOffset: newOffset)
                     }
 
-                    Button(String(localized: "Add step")) {
+                    Button("Add step") {
                         steps.append(Step(value: ""))
                     }
                 }
             }
-            .navigationTitle(recipeToEdit == nil
-                             ? String(localized: "New Recipe")
-                             : String(localized: "Edit Recipe"))
+            .navigationTitle(recipeToEdit == nil ? "New Recipe" : "Edit Recipe")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button(String(localized: "Cancel")) { dismiss() }
+                    Button("Cancel") { dismiss() }
                 }
 
                 ToolbarItem(placement: .confirmationAction) {
-                    Button(String(localized: "Save")) {
+                    Button("Save") {
                         if saveRecipe() { dismiss() }
                     }
                     .disabled(name.isEmpty)

@@ -18,7 +18,7 @@ struct RecipeDetailView: View {
         VStack(alignment: .leading, spacing: 16) {
             if cookingMode {
                 ScrollView {
-                    Text(String(localized: "Ingredients"))
+                    Text("Ingredients")
                         .font(.title2).bold()
 
                     ForEach(recipe.ingredients) { ingredient in
@@ -31,7 +31,7 @@ struct RecipeDetailView: View {
                         .font(.body)
                     }
 
-                    Text(String(localized: "Steps"))
+                    Text("Steps")
                         .font(.title2).bold()
 
                     ForEach(recipe.steps.indices, id: \.self) { index in
@@ -48,12 +48,12 @@ struct RecipeDetailView: View {
             } else {
                 List {
                     if !recipe.desc.isEmpty {
-                        Section(String(localized: "Details")) {
+                        Section("Details") {
                             Text(recipe.desc)
                         }
                     }
 
-                    Section(String(localized: "Ingredients")) {
+                    Section("Ingredients") {
                         ForEach(recipe.ingredients) { ingredient in
                             HStack {
                                 Text(ingredient.name)
@@ -64,7 +64,7 @@ struct RecipeDetailView: View {
                         }
                     }
 
-                    Section(String(localized: "Steps")) {
+                    Section("Steps") {
                         ForEach(recipe.steps.indices, id: \.self) { index in
                             HStack(alignment: .top) {
                                 Text("\(index + 1).")
@@ -82,13 +82,11 @@ struct RecipeDetailView: View {
         .toolbar {
             ToolbarItemGroup(placement: .primaryAction) {
                 Button(
-                    cookingMode
-                    ? String(localized: "Normal")
-                    : String(localized: "Cook")
+                    cookingMode ? "Normal" : "Cook"
                 ) {
                     cookingMode.toggle()
                 }
-                Button(String(localized: "Edit")) {
+                Button("Edit") {
                     showEdit = true
                 }
             }
