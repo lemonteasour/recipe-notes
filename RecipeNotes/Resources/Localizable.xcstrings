@@ -41,6 +41,26 @@
         }
       }
     },
+    "Clear filters" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "フィルターをクリア"
+          }
+        }
+      }
+    },
+    "Close" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "閉じる"
+          }
+        }
+      }
+    },
     "Cook" : {
       "localizations" : {
         "ja" : {
@@ -91,6 +111,16 @@
         }
       }
     },
+    "Filter" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "フィルター"
+          }
+        }
+      }
+    },
     "Ingredients" : {
       "localizations" : {
         "ja" : {
@@ -121,32 +151,12 @@
         }
       }
     },
-    "Newest first" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "新しい順"
-          }
-        }
-      }
-    },
     "Normal" : {
       "localizations" : {
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "普通モード"
-          }
-        }
-      }
-    },
-    "Oldest first" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "古い順"
           }
         }
       }
@@ -191,22 +201,22 @@
         }
       }
     },
+    "Search ingredients" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "材料を検索"
+          }
+        }
+      }
+    },
     "Search recipes" : {
       "localizations" : {
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
             "value" : "料理を検索"
-          }
-        }
-      }
-    },
-    "Sort" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "並び替え"
           }
         }
       }

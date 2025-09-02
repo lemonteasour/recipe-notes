@@ -13,82 +13,144 @@ struct RecipeListView: View {
 
     @State private var showingAddForm = false
     @State private var searchText = ""
-    @State private var sortOrder: SortOrder = .reverse
+    @State private var selectedIngredients: Set<String> = []
+    @State private var ingredientSearch = ""
+    @State private var showingFilterSheet = false
+
+    @Query(sort: \Recipe.createdAt, order: .reverse)
+    private var allRecipes: [Recipe]
+
+    private var allIngredients: [String] {
+        let names = allRecipes.flatMap { recipe in
+            recipe.ingredients.map { $0.name }
+        }
+        return Array(Set(names)).sorted()
+    }
+
+    private var filteredIngredients: [String] {
+        if ingredientSearch.isEmpty { return allIngredients }
+        return allIngredients.filter { $0.localizedStandardContains(ingredientSearch) }
+    }
+
+    private var filteredRecipes: [Recipe] {
+        allRecipes.filter { recipe in
+            let matchesNameOrDesc =
+                searchText.isEmpty ||
+                recipe.name.localizedStandardContains(searchText) ||
+                recipe.desc.localizedStandardContains(searchText)
+
+            let matchesIngredients =
+                selectedIngredients.isEmpty ||
+                recipe.ingredients.contains { selectedIngredients.contains($0.name) }
+
+            return matchesNameOrDesc && matchesIngredients
+        }
+    }
 
     var body: some View {
         NavigationStack {
-            RecipeListContent(
-                searchText: searchText,
-                sortOrder: sortOrder,
-                showingAddForm: $showingAddForm
-            )
-            .searchable(text: $searchText, prompt: "Search recipes")
-            .navigationTitle("Recipes")
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Menu {
-                        Picker("Sort", selection: $sortOrder) {
-                            Text("Newest first").tag(SortOrder.reverse)
-                            Text("Oldest first").tag(SortOrder.forward)
-                        }
-                    } label: {
-                        Image(systemName: "arrow.up.arrow.down")
+            List {
+                ForEach(filteredRecipes) { recipe in
+                    NavigationLink(value: recipe) {
+                        Text(recipe.name)
                     }
                 }
-
-                ToolbarItem(placement: .navigationBarTrailing) {
+                .onDelete(perform: deleteRecipe)
+            }
+            .navigationDestination(for: Recipe.self) { recipe in
+                RecipeDetailView(recipe: recipe)
+            }
+            .navigationTitle("Recipes")
+            .toolbar {
+                ToolbarItem(placement: .primaryAction) {
                     Button {
                         showingAddForm = true
                     } label: {
                         Image(systemName: "plus")
                     }
                 }
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button {
+                        showingFilterSheet = true
+                    } label: {
+                        Label("Filter", systemImage: "line.3.horizontal.decrease.circle")
+                    }
+                }
             }
             .sheet(isPresented: $showingAddForm) {
                 RecipeFormView()
             }
-        }
-    }
-}
+            .sheet(isPresented: $showingFilterSheet) {
+                NavigationStack {
+                    List {
+                        Section {
+                            TextField("Search ingredients", text: $ingredientSearch)
+                        }
 
-private struct RecipeListContent: View {
-    @Environment(\.modelContext) private var context
+                        Section("Ingredients") {
+                            ForEach(filteredIngredients, id: \.self) { ingredient in
+                                IngredientRow(
+                                    ingredient: ingredient,
+                                    isSelected: selectedIngredients.contains(ingredient)
+                                ) {
+                                    toggleIngredient(ingredient)
+                                }
+                            }
+                        }
 
-    @Binding var showingAddForm: Bool
-    @Query private var recipes: [Recipe]
-
-    init(
-        searchText: String,
-        sortOrder: SortOrder,
-        showingAddForm: Binding<Bool>
-    ) {
-        _recipes = Query(filter: #Predicate<Recipe> { recipe in
-            // Search by name or description
-            searchText.isEmpty ||
-            recipe.name.localizedStandardContains(searchText) ||
-            recipe.desc.localizedStandardContains(searchText)
-        }, sort: \.createdAt, order: sortOrder)
-
-        self._showingAddForm = showingAddForm
-    }
-
-    var body: some View {
-        List {
-            ForEach(recipes) { recipe in
-                NavigationLink(value: recipe) {
-                    Text(recipe.name)
+                        if !selectedIngredients.isEmpty {
+                            Section {
+                                Button("Clear filters") {
+                                    selectedIngredients.removeAll()
+                                }
+                                .foregroundStyle(.red)
+                            }
+                        }
+                    }
+                    .navigationTitle("Filter")
+                    .toolbar {
+                        ToolbarItem(placement: .cancellationAction) {
+                            Button("Close") {
+                                showingFilterSheet = false
+                            }
+                        }
+                    }
                 }
             }
-            .onDelete(perform: deleteRecipe)
-        }
-        .navigationDestination(for: Recipe.self) { recipe in
-            RecipeDetailView(recipe: recipe)
+            .searchable(text: $searchText, prompt: "Search recipes")
         }
     }
 
     private func deleteRecipe(at offsets: IndexSet) {
         for index in offsets {
-            context.delete(recipes[index])
+            context.delete(allRecipes[index])
+        }
+    }
+
+    private func toggleIngredient(_ ingredient: String) {
+        if selectedIngredients.contains(ingredient) {
+            selectedIngredients.remove(ingredient)
+        } else {
+            selectedIngredients.insert(ingredient)
+        }
+    }
+}
+
+private struct IngredientRow: View {
+    let ingredient: String
+    let isSelected: Bool
+    let toggle: () -> Void
+
+    var body: some View {
+        Button(action: toggle) {
+            HStack {
+                Text(ingredient)
+                Spacer()
+                if isSelected {
+                    Image(systemName: "checkmark")
+                        .foregroundStyle(.secondary)
+                }
+            }
         }
     }
 }
