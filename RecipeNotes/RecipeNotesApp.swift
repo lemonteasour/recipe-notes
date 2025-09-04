@@ -10,23 +10,20 @@ import SwiftData
 
 @main
 struct RecipeNotesApp: App {
-//    var sharedModelContainer: ModelContainer = {
-//        let schema = Schema([
-//            Item.self,
-//        ])
-//        let modelConfiguration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
-//
-//        do {
-//            return try ModelContainer(for: schema, configurations: [modelConfiguration])
-//        } catch {
-//            fatalError("Could not create ModelContainer: \(error)")
-//        }
-//    }()
+    @StateObject private var viewModel: RecipeListViewModel
+    private let container: ModelContainer
+
+    init() {
+        container = try! ModelContainer(for: Recipe.self)
+        let context = container.mainContext
+        _viewModel = StateObject(wrappedValue: RecipeListViewModel())
+    }
 
     var body: some Scene {
         WindowGroup {
             RecipeListView()
+                .environmentObject(viewModel)
+                .modelContainer(container)
         }
-        .modelContainer(for: Recipe.self) // SwiftData container
     }
 }

@@ -102,8 +102,8 @@ struct RecipeDetailView: View {
         name: "Oyakodon",
         desc: "Desc",
         ingredients: [
-            Ingredient(name: "Onion", quantity: "1"),
-            Ingredient(name: "Chicken", quantity: "2")
+            Ingredient(name: "Egg", quantity: "4"),
+            Ingredient(name: "Chicken", quantity: "300g")
         ],
         steps: [Step(value: "Step")])
     RecipeDetailView(recipe: recipe)
