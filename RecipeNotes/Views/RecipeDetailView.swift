@@ -5,11 +5,10 @@
 //  Created by Jay Hui on 21/08/2025.
 //
 
-
 import SwiftUI
 
 struct RecipeDetailView: View {
-    @Bindable var recipe: Recipe
+    var recipe: Recipe
 
     @State private var showEdit = false
     @State private var cookingMode = false
@@ -17,34 +16,7 @@ struct RecipeDetailView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             if cookingMode {
-                ScrollView {
-                    Text("Ingredients")
-                        .font(.title2).bold()
-
-                    ForEach(recipe.ingredients) { ingredient in
-                        HStack {
-                            Text(ingredient.name)
-                            Spacer()
-                            Text(ingredient.quantity)
-                                .foregroundColor(.secondary)
-                        }
-                        .font(.body)
-                    }
-
-                    Text("Steps")
-                        .font(.title2).bold()
-
-                    ForEach(recipe.steps.indices, id: \.self) { index in
-                        HStack(alignment: .top) {
-                            Text("\(index + 1).")
-                                .foregroundStyle(.secondary)
-                                .frame(width: 24)
-
-                            Text(recipe.steps[index].value)
-                        }
-                    }
-                }
-
+                RecipeDetailCookingView(recipe: recipe)
             } else {
                 List {
                     if !recipe.desc.isEmpty {
