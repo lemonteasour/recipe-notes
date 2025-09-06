@@ -15,7 +15,6 @@ struct RecipeNotesApp: App {
 
     init() {
         container = try! ModelContainer(for: Recipe.self)
-        let context = container.mainContext
         _viewModel = StateObject(wrappedValue: RecipeListViewModel())
     }
 
