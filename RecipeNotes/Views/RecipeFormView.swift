@@ -29,48 +29,54 @@ struct RecipeFormView: View {
                 }
 
                 Section("Ingredients") {
-                    ForEach($ingredients) { $ingredient in
-                        HStack {
-                            TextField("Name", text: $ingredient.name)
-
-                            TextField("Quantity", text: $ingredient.quantity)
-                            .frame(width: 100)
-                            .multilineTextAlignment(.trailing)
+                    ForEach(ingredients.sorted(by: { $0.index < $1.index }), id: \.id) { ingredient in
+                        if let binding = $ingredients.first(where: { $0.id == ingredient.id }) {
+                            HStack {
+                                TextField("Name", text: binding.name)
+                                TextField("Quantity", text: binding.quantity)
+                                    .frame(width: 100)
+                                    .multilineTextAlignment(.trailing)
+                            }
                         }
                     }
                     .onDelete { offsets in
                         ingredients.remove(atOffsets: offsets)
+                        reindexIngredients()
                     }
                     .onMove { indices, newOffset in
                         ingredients.move(fromOffsets: indices, toOffset: newOffset)
+                        reindexIngredients()
                     }
 
                     Button("Add ingredient") {
-                        ingredients.append(
-                            Ingredient(name: "", quantity: "")
-                        )
+                        ingredients.append(Ingredient(name: "", quantity: "", index: ingredients.count))
                     }
                 }
 
-                Section("Steps") {
-                    ForEach(Array($steps.enumerated()), id: \.element.id) { index, $step in
-                        HStack(alignment: .top) {
-                            Text("\(index + 1).")
-                                .foregroundStyle(.secondary)
-                                .frame(width: 24)
 
-                            TextField("Step", text: $step.value, axis: .vertical)
+                Section("Steps") {
+                    ForEach(steps.sorted(by: { $0.index < $1.index }), id: \.id) { step in
+                        if let binding = $steps.first(where: { $0.id == step.id }) {
+                            HStack(alignment: .top) {
+                                Text("\(step.index + 1).")
+                                    .foregroundStyle(.secondary)
+                                    .frame(width: 24)
+
+                                TextField("Step", text: binding.value, axis: .vertical)
+                            }
                         }
                     }
                     .onDelete { offsets in
                         steps.remove(atOffsets: offsets)
+                        reindexSteps()
                     }
                     .onMove { indices, newOffset in
                         steps.move(fromOffsets: indices, toOffset: newOffset)
+                        reindexSteps()
                     }
 
                     Button("Add step") {
-                        steps.append(Step(value: ""))
+                        steps.append(Step(value: "", index: steps.count))
                     }
                 }
             }
@@ -91,6 +97,18 @@ struct RecipeFormView: View {
         }
     }
 
+    private func reindexIngredients() {
+        for (index, ingredient) in ingredients.enumerated() {
+            ingredient.index = index
+        }
+    }
+
+    private func reindexSteps() {
+        for (index, step) in steps.enumerated() {
+            step.index = index
+        }
+    }
+
     private func loadRecipe() {
         guard let recipe = recipeToEdit else {
             // TODO: Clipboard autofill
@@ -104,7 +122,6 @@ struct RecipeFormView: View {
 
 
     private func saveRecipe() -> Bool {
-
         // Form validation logic
         guard !name.isEmpty else { return false }
 
