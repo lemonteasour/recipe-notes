@@ -9,12 +9,16 @@ import Foundation
 import SwiftData
 
 @Model
-class Ingredient {
+class Ingredient: Identifiable {
+    @Attribute(.unique) var id: UUID
     var name: String
     var quantity: String
-    
-    init(name: String, quantity: String) {
+    var index: Int
+
+    init(name: String, quantity: String, index: Int) {
+        self.id = UUID()
         self.name = name
         self.quantity = quantity
+        self.index = index
     }
 }

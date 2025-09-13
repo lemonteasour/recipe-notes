@@ -12,9 +12,11 @@ import SwiftData
 class Step: Identifiable {
     @Attribute(.unique) var id: UUID
     var value: String
+    var index: Int
 
-    init(value: String) {
+    init(value: String, index: Int) {
         self.id = UUID()
         self.value = value
+        self.index = index
     }
 }
