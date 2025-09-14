@@ -11,6 +11,16 @@
         }
       }
     },
+    "Add heading" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "見出しを追加"
+          }
+        }
+      }
+    },
     "Add ingredient" : {
       "localizations" : {
         "ja" : {
@@ -117,6 +127,16 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "フィルター"
+          }
+        }
+      }
+    },
+    "Heading" : {
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "見出し"
           }
         }
       }

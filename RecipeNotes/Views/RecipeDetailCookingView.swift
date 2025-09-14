@@ -16,14 +16,22 @@ struct RecipeDetailCookingView: View {
                 Text("Ingredients")
                     .font(.title2).bold()
 
-                ForEach(recipe.ingredients) { ingredient in
-                    HStack {
-                        Text(ingredient.name)
-                        Spacer()
-                        Text(ingredient.quantity)
-                            .foregroundColor(.secondary)
+                ForEach(recipe.sortedIngredients, id: \.id) { ingredientItem in
+                    if let ingredient = ingredientItem as? Ingredient {
+                        HStack {
+                            Text(ingredient.name)
+                            Spacer()
+                            Text(ingredient.quantity)
+                                .foregroundColor(.secondary)
+                        }
+                        .font(.body)
+                    } else if let heading = ingredientItem as? IngredientHeading {
+                        HStack {
+                            Text(heading.name)
+                                .font(.headline)
+                            Spacer()
+                        }
                     }
-                    .font(.body)
                 }
             }
 

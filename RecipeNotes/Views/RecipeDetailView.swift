@@ -26,15 +26,21 @@ struct RecipeDetailView: View {
                     }
 
                     Section("Ingredients") {
-                        ForEach(recipe.sortedIngredients, id: \.id) { ingredient in
-                            HStack {
-                                Text(ingredient.name)
-                                Spacer()
-                                Text(ingredient.quantity)
-                                    .foregroundColor(.secondary)
+                        ForEach(recipe.sortedIngredients, id: \.id) { ingredientItem in
+                            if let ingredient = ingredientItem as? Ingredient {
+                                HStack {
+                                    Text(ingredient.name)
+                                    Spacer()
+                                    Text(ingredient.quantity)
+                                        .foregroundColor(.secondary)
+                                }
+                            } else if let heading = ingredientItem as? IngredientHeading {
+                                Text(heading.name)
+                                    .font(.headline)
                             }
                         }
                     }
+
 
                     Section("Steps") {
                         ForEach(recipe.sortedSteps, id: \.id) { step in
