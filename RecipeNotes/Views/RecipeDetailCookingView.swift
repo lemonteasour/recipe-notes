@@ -39,13 +39,13 @@ struct RecipeDetailCookingView: View {
                 Text("Steps")
                     .font(.title2).bold()
 
-                ForEach(recipe.steps.indices, id: \.self) { index in
+                ForEach(recipe.sortedSteps, id: \.id) { step in
                     HStack {
-                        Text("\(index + 1).")
+                        Text("\(step.index + 1).")
                             .foregroundStyle(.secondary)
                             .frame(width: 24)
 
-                        Text(recipe.steps[index].value)
+                        Text(step.value)
                         Spacer()
                     }
                 }
