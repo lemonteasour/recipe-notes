@@ -71,3 +71,12 @@ private struct IngredientRow: View {
         }
     }
 }
+
+#Preview {
+    let container = PreviewData.containerWithSamples()
+    let viewModel = RecipeListViewModel(context: container.mainContext)
+
+    return IngredientFilterView()
+        .environmentObject(viewModel)
+        .modelContainer(container)
+}

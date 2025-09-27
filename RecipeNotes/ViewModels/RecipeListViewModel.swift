@@ -11,11 +11,17 @@ import SwiftData
 
 @MainActor
 final class RecipeListViewModel: ObservableObject {
+    private let context: ModelContext
+    
     @Published var searchText = ""
     @Published var selectedIngredients: Set<String> = []
     @Published var ingredientSearch = ""
     @Published var showingAddForm = false
     @Published var showingFilterSheet = false
+
+    init(context: ModelContext) {
+        self.context = context
+    }
 
     /// Return recipes filtered by search text and selected ingredients
     func filteredRecipes(from allRecipes: [Recipe]) -> [Recipe] {
@@ -49,7 +55,7 @@ final class RecipeListViewModel: ObservableObject {
     }
 
     /// Delete recipes
-    func deleteRecipe(at offsets: IndexSet, from allRecipes: [Recipe], context: ModelContext) {
+    func deleteRecipe(at offsets: IndexSet, from allRecipes: [Recipe]) {
         for index in offsets {
             context.delete(allRecipes[index])
         }

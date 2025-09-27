@@ -9,7 +9,6 @@ import SwiftUI
 import SwiftData
 
 struct RecipeListView: View {
-    @Environment(\.modelContext) private var context
     @EnvironmentObject private var viewModel: RecipeListViewModel
     
     @Query(sort: \Recipe.createdAt, order: .reverse)
@@ -24,7 +23,7 @@ struct RecipeListView: View {
                     }
                 }
                 .onDelete { offsets in
-                    viewModel.deleteRecipe(at: offsets, from: allRecipes, context: context)
+                    viewModel.deleteRecipe(at: offsets, from: allRecipes)
                 }
             }
             .navigationDestination(for: Recipe.self) { recipe in
@@ -53,7 +52,6 @@ struct RecipeListView: View {
             .sheet(isPresented: $viewModel.showingFilterSheet) {
                 IngredientFilterView()
                     .environmentObject(viewModel)
-                    .environment(\.modelContext, context)
             }
             .searchable(text: $viewModel.searchText, prompt: "Search recipes")
         }
@@ -61,27 +59,10 @@ struct RecipeListView: View {
 }
 
 #Preview {
-    let container = try! ModelContainer(
-        for: Recipe.self,
-        configurations: ModelConfiguration(isStoredInMemoryOnly: true)
-    )
-    let context = container.mainContext
-    
-    let recipe = Recipe(
-        name: "Oyakodon",
-        desc: "Desc",
-        ingredients: [
-            Ingredient(name: "Egg", quantity: "4", index: 0),
-            Ingredient(name: "Chicken", quantity: "300g", index: 1)
-        ],
-        steps: [
-            Step(value: "Step1", index: 0),
-            Step(value: "Step1", index: 1),
-            Step(value: "Step1", index: 2)
-        ])
-    context.insert(recipe)
+    let container = PreviewData.containerWithSamples()
+    let viewModel = RecipeListViewModel(context: container.mainContext)
 
     return RecipeListView()
-        .environmentObject(RecipeListViewModel())
+        .environmentObject(viewModel)
         .modelContainer(container)
 }
