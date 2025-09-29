@@ -10,12 +10,12 @@ import SwiftUI
 struct RecipeDetailView: View {
     var recipe: Recipe
 
-    @State private var showEdit = false
-    @State private var cookingMode = false
+    @State private var isShowingEdit = false
+    @State private var isCookingMode = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            if cookingMode {
+            if isCookingMode {
                 RecipeDetailCookingView(recipe: recipe)
             } else {
                 List {
@@ -59,16 +59,22 @@ struct RecipeDetailView: View {
         .navigationTitle(recipe.name)
         .toolbar {
             ToolbarItemGroup(placement: .primaryAction) {
-                Button(cookingMode ? "Normal" : "Cook") {
-                    cookingMode.toggle()
+                Button(isCookingMode ? "Normal" : "Cook") {
+                    isCookingMode.toggle()
                 }
                 Button("Edit") {
-                    showEdit = true
+                    isShowingEdit = true
                 }
             }
         }
-        .sheet(isPresented: $showEdit) {
+        .sheet(isPresented: $isShowingEdit) {
             RecipeFormView(recipeToEdit: recipe)
+        }
+        .onChange(of: isCookingMode) { _, newMode in
+            UIApplication.shared.isIdleTimerDisabled = newMode
+        }
+        .onDisappear {
+            UIApplication.shared.isIdleTimerDisabled = false
         }
     }
 }
