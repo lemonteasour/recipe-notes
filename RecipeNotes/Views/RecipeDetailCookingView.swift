@@ -15,6 +15,7 @@ struct RecipeDetailCookingView: View {
             VStack {
                 Text("Ingredients")
                     .font(.title2).bold()
+                    .padding(.vertical, 4)
 
                 ForEach(recipe.sortedIngredients, id: \.id) { ingredientItem in
                     if let ingredient = ingredientItem as? Ingredient {
@@ -31,6 +32,7 @@ struct RecipeDetailCookingView: View {
                                 .font(.headline)
                             Spacer()
                         }
+                        .padding(.top, 2)
                     }
                 }
             }
@@ -38,9 +40,10 @@ struct RecipeDetailCookingView: View {
             VStack {
                 Text("Steps")
                     .font(.title2).bold()
+                    .padding(.vertical, 4)
 
                 ForEach(recipe.sortedSteps, id: \.id) { step in
-                    HStack {
+                    HStack(alignment: .top) {
                         Text("\(step.index + 1).")
                             .foregroundStyle(.secondary)
                             .frame(width: 24)
@@ -48,10 +51,11 @@ struct RecipeDetailCookingView: View {
                         Text(step.value)
                         Spacer()
                     }
+                    .padding(.vertical, 2)
                 }
             }
         }
-        .frame(width: 300)
+        .padding(.horizontal, 20)
         .padding(.vertical, 16)
     }
 }
