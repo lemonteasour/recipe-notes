@@ -80,5 +80,5 @@ struct RecipeDetailView: View {
 }
 
 #Preview {
-    RecipeDetailView(recipe: PreviewData.sampleRecipe)
+    RecipeDetailView(recipe: PreviewData.sampleRecipeEnglish)
 }

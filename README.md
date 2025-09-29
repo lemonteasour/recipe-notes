@@ -18,7 +18,7 @@ A simple and modern iOS app for organizing cooking recipes.
   - Search within ingredients for faster filtering.
 - **Data Persistence**
   - Recipes are stored locally using **SwiftData**, with instant updates.
- 
+
 ## 🛠️ Technologies Used
 
 - **SwiftUI:** For building a modern, declarative, and responsive user interface across Apple platforms.
@@ -48,9 +48,10 @@ Run on Simulator or a physical device.
 ## 🏗️ Project Structure
 
 - `Models/` – SwiftData Models
+- `Previews/` - Mock data for Swift Previews
+- `Resources/` – L10n (English and Japanese labels)
 - `Views/` – SwiftUI Views
 - `ViewModels/` – SwiftUI ViewModels
-- `Resources/` – L10n (English and Japanese labels)
 
 ## 🔮 Roadmap
 
