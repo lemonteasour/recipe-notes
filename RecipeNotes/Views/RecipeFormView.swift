@@ -31,7 +31,10 @@ struct RecipeFormView: View {
                         if let ingredient = item as? Ingredient,
                            let binding = viewModel.binding(for: ingredient) {
                             HStack {
-                                TextField("Name", text: binding.name)
+                                IngredientNameFieldView(
+                                    text: binding.name,
+                                    suggestions: viewModel.allIngredientNames
+                                )
                                 TextField("Quantity", text: binding.quantity)
                                     .frame(width: 100)
                                     .multilineTextAlignment(.trailing)
@@ -81,6 +84,7 @@ struct RecipeFormView: View {
             }
             .onAppear {
                 viewModel.setContext(context)
+                viewModel.allIngredientNames = viewModel.fetchAllIngredientNames(context: context)
             }
         }
     }

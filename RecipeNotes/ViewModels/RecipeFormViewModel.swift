@@ -17,6 +17,7 @@ class RecipeFormViewModel: ObservableObject {
     @Published var name = ""
     @Published var desc = ""
     @Published var ingredients: [Ingredient] = []
+    @Published var allIngredientNames: [String] = []
     @Published var ingredientHeadings: [IngredientHeading] = []
     @Published var steps: [Step] = []
 
@@ -91,6 +92,18 @@ class RecipeFormViewModel: ObservableObject {
         ingredients = all.compactMap { $0 as? Ingredient }
         ingredientHeadings = all.compactMap { $0 as? IngredientHeading }
         reindexIngredientItems(using: all)
+    }
+
+    func fetchAllIngredientNames(context: ModelContext) -> [String] {
+        let descriptor = FetchDescriptor<Ingredient>()
+        do {
+            let ingredients = try context.fetch(descriptor)
+            return Array(Set(ingredients.map { $0.name.trimmingCharacters(in: .whitespacesAndNewlines) }))
+                .sorted()
+        } catch {
+            print("Error fetching ingredient names: \(error)")
+            return []
+        }
     }
 
     // MARK: - Steps
