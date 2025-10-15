@@ -9,11 +9,13 @@ import SwiftUI
 
 struct RecipeDetailView: View {
     var recipe: Recipe
-
+    
     @State private var isShowingEdit = false
     @State private var isCookingMode = false
-
+    
     var body: some View {
+        @Environment(\.modelContext) var context
+        
         VStack(alignment: .leading, spacing: 16) {
             if isCookingMode {
                 RecipeDetailCookingView(recipe: recipe)
@@ -24,7 +26,7 @@ struct RecipeDetailView: View {
                             Text(recipe.desc)
                         }
                     }
-
+                    
                     Section("Ingredients") {
                         ForEach(recipe.sortedIngredients, id: \.id) { ingredientItem in
                             if let ingredient = ingredientItem as? Ingredient {
@@ -40,15 +42,15 @@ struct RecipeDetailView: View {
                             }
                         }
                     }
-
-
+                    
+                    
                     Section("Steps") {
                         ForEach(recipe.sortedSteps, id: \.id) { step in
                             HStack(alignment: .top) {
                                 Text("\(step.index + 1).")
                                     .foregroundStyle(.secondary)
                                     .frame(width: 24)
-
+                                
                                 Text(step.value)
                             }
                         }
@@ -68,10 +70,10 @@ struct RecipeDetailView: View {
             }
         }
         .sheet(isPresented: $isShowingEdit) {
-            RecipeFormView(recipeToEdit: recipe)
+            RecipeFormView(context: context, recipeToEdit: recipe)
         }
-        .onChange(of: isCookingMode) { _, newMode in
-            UIApplication.shared.isIdleTimerDisabled = newMode
+        .onChange(of: isCookingMode) {
+            UIApplication.shared.isIdleTimerDisabled = isCookingMode
         }
         .onDisappear {
             UIApplication.shared.isIdleTimerDisabled = false

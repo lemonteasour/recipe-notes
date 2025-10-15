@@ -11,13 +11,16 @@ import SwiftData
 struct RecipeFormView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
-
+    
+    @State private var showingError = false
+    @State private var errorMessage = ""
+    
     @StateObject private var viewModel: RecipeFormViewModel
-
-    init(recipeToEdit: Recipe? = nil) {
-        _viewModel = StateObject(wrappedValue: RecipeFormViewModel(recipeToEdit: recipeToEdit))
+    
+    init(context: ModelContext, recipeToEdit: Recipe? = nil) {
+        _viewModel = StateObject(wrappedValue: RecipeFormViewModel(context: context, recipeToEdit: recipeToEdit))
     }
-
+    
     var body: some View {
         NavigationStack {
             Form {
@@ -25,7 +28,7 @@ struct RecipeFormView: View {
                     TextField("Recipe name", text: $viewModel.name)
                     TextField("Description", text: $viewModel.desc, axis: .vertical)
                 }
-
+                
                 Section("Ingredients") {
                     ForEach(viewModel.combinedIngredientItems, id: \.id) { item in
                         if let ingredient = item as? Ingredient,
@@ -47,26 +50,26 @@ struct RecipeFormView: View {
                     }
                     .onDelete(perform: viewModel.deleteIngredientItems)
                     .onMove(perform: viewModel.moveIngredientItems)
-
+                    
                     Button("Add ingredient", action: viewModel.addIngredient)
                     Button("Add heading", action: viewModel.addHeading)
                 }
-
+                
                 Section("Steps") {
-                    ForEach(viewModel.steps.sorted(by: { $0.index < $1.index }), id: \.id) { step in
-                        if let binding = $viewModel.steps.first(where: { $0.id == step.id }) {
+                    ForEach(viewModel.sortedSteps, id: \.id) { step in
+                        if let binding = viewModel.binding(for: step) {
                             HStack(alignment: .top) {
                                 Text("\(step.index + 1).")
                                     .foregroundStyle(.secondary)
                                     .frame(width: 24)
-
+                                
                                 TextField("Step", text: binding.value, axis: .vertical)
                             }
                         }
                     }
                     .onDelete(perform: viewModel.deleteSteps)
                     .onMove(perform: viewModel.moveSteps)
-
+                    
                     Button("Add step", action: viewModel.addStep)
                 }
             }
@@ -77,14 +80,21 @@ struct RecipeFormView: View {
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") {
-                        if viewModel.saveRecipe() { dismiss() }
+                        do {
+                            try viewModel.saveRecipe()
+                            dismiss()
+                        } catch {
+                            errorMessage = error.localizedDescription
+                            showingError = true
+                        }
                     }
                     .disabled(viewModel.name.isEmpty)
                 }
             }
-            .onAppear {
-                viewModel.setContext(context)
-                viewModel.allIngredientNames = viewModel.fetchAllIngredientNames(context: context)
+            .alert("Failed to save recipe.", isPresented: $showingError) {
+                Button("Cancel", role: .cancel) { }
+            } message: {
+                Text(errorMessage)
             }
         }
     }
@@ -92,10 +102,8 @@ struct RecipeFormView: View {
 
 #Preview {
     let container = PreviewData.containerWithSamples()
-    let viewModel = RecipeFormViewModel(context: container.mainContext)
-
-    return RecipeFormView()
-        .environmentObject(viewModel)
+    
+    return RecipeFormView(context: container.mainContext)
         .modelContainer(container)
 }
 

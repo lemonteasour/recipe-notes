@@ -10,7 +10,7 @@ import SwiftData
 
 @MainActor
 class RecipeFormViewModel: ObservableObject {
-    private var context: ModelContext?
+    private let context: ModelContext
     let recipeToEdit: Recipe?
 
     // MARK: - Published form state
@@ -27,15 +27,16 @@ class RecipeFormViewModel: ObservableObject {
         return all.sorted { $0.index < $1.index }
     }
 
-    // MARK: - Init
-    init(context: ModelContext? = nil, recipeToEdit: Recipe? = nil) {
-        self.context = context
-        self.recipeToEdit = recipeToEdit
-        loadRecipe()
+    var sortedSteps: [Step] {
+        steps.sorted { $0.index < $1.index }
     }
 
-    func setContext(_ context: ModelContext) {
+    // MARK: - Init
+    init(context: ModelContext, recipeToEdit: Recipe? = nil) {
         self.context = context
+        self.recipeToEdit = recipeToEdit
+        self.allIngredientNames = fetchAllIngredientNames()
+        loadRecipe()
     }
 
     // MARK: - Bindings
@@ -52,6 +53,14 @@ class RecipeFormViewModel: ObservableObject {
         return Binding(
             get: { self.ingredientHeadings[idx] },
             set: { self.ingredientHeadings[idx] = $0 }
+        )
+    }
+
+    func binding(for step: Step) -> Binding<Step>? {
+        guard let idx = steps.firstIndex(where: { $0.id == step.id }) else { return nil }
+        return Binding(
+            get: { self.steps[idx] },
+            set: { self.steps[idx] = $0 }
         )
     }
 
@@ -94,12 +103,14 @@ class RecipeFormViewModel: ObservableObject {
         reindexIngredientItems(using: all)
     }
 
-    func fetchAllIngredientNames(context: ModelContext) -> [String] {
+    private func fetchAllIngredientNames() -> [String] {
         let descriptor = FetchDescriptor<Ingredient>()
         do {
             let ingredients = try context.fetch(descriptor)
-            return Array(Set(ingredients.map { $0.name.trimmingCharacters(in: .whitespacesAndNewlines) }))
-                .sorted()
+            let names = ingredients
+                .map { $0.name.trimmingCharacters(in: .whitespacesAndNewlines) }
+                .filter { !$0.isEmpty }
+            return Array(Set(names)).sorted()
         } catch {
             print("Error fetching ingredient names: \(error)")
             return []
@@ -137,14 +148,15 @@ class RecipeFormViewModel: ObservableObject {
         steps = recipe.steps.sorted { $0.index < $1.index }
     }
 
-    func saveRecipe() -> Bool {
-        guard !name.isEmpty else { return false }
-        guard let context = context else { return false }
+    func saveRecipe() throws {
+        guard !name.isEmpty else {
+            throw RecipeSaveError.emptyName
+        }
 
         // Normalize indices
         let all = combinedIngredientItems
         reindexIngredientItems(using: all)
-
+        
         if let recipe = recipeToEdit {
             recipe.name = name
             recipe.desc = desc
@@ -161,6 +173,7 @@ class RecipeFormViewModel: ObservableObject {
             )
             context.insert(newRecipe)
         }
-        return true
+
+        try context.save()
     }
 }

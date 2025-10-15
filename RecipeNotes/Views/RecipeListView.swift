@@ -9,11 +9,12 @@ import SwiftUI
 import SwiftData
 
 struct RecipeListView: View {
+    @Environment(\.modelContext) private var context
     @EnvironmentObject private var viewModel: RecipeListViewModel
-    
+
     @Query(sort: \Recipe.createdAt, order: .reverse)
     private var allRecipes: [Recipe]
-    
+
     var body: some View {
         NavigationStack {
             List {
@@ -47,7 +48,7 @@ struct RecipeListView: View {
                 }
             }
             .sheet(isPresented: $viewModel.showingAddForm) {
-                RecipeFormView()
+                RecipeFormView(context: context)
             }
             .sheet(isPresented: $viewModel.showingFilterSheet) {
                 IngredientFilterView()
