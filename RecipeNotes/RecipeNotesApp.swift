@@ -10,20 +10,20 @@ import SwiftData
 
 @main
 struct RecipeNotesApp: App {
-    @StateObject private var viewModel: RecipeListViewModel
+    @StateObject private var recipeListViewModel: RecipeListViewModel
     private let container: ModelContainer
 
     init() {
         container = try! ModelContainer(for: Recipe.self)
         let context = container.mainContext
-        _viewModel = StateObject(wrappedValue: RecipeListViewModel(context: context))
+        _recipeListViewModel = StateObject(wrappedValue: RecipeListViewModel(context: context))
     }
 
     var body: some Scene {
         WindowGroup {
-            RecipeListView()
+            ContentView()
                 .tint(.accentColor)
-                .environmentObject(viewModel)
+                .environmentObject(recipeListViewModel)
                 .modelContainer(container)
         }
     }
