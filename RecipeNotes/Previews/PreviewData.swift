@@ -71,12 +71,14 @@ enum PreviewData {
         ]
     )
 
+    static let samplePantryItemEnglish: PantryItem = PantryItem(name: "Onion", quantity: "2")
+
 
     /// Returns a ModelContainer with seeded sample data
     static func containerWithSamples() -> ModelContainer {
         do {
             let container = try ModelContainer(
-                for: Recipe.self,
+                for: Recipe.self, PantryItem.self,
                 configurations: ModelConfiguration(isStoredInMemoryOnly: true)
             )
             let context = container.mainContext
@@ -84,6 +86,9 @@ enum PreviewData {
             // Seed if empty
             if try context.fetch(FetchDescriptor<Recipe>()).isEmpty {
                 context.insert(sampleRecipeEnglish)
+            }
+            if try context.fetch(FetchDescriptor<PantryItem>()).isEmpty {
+                context.insert(samplePantryItemEnglish)
             }
 
             return container

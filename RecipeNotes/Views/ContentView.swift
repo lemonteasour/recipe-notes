@@ -8,6 +8,8 @@
 import SwiftUI
 
 struct ContentView: View {
+    @Environment(\.modelContext) private var context
+
     @State private var selection: Tab = .recipes
 
     enum Tab {
@@ -21,11 +23,13 @@ struct ContentView: View {
                 .tabItem {
                     Label("Recipes", systemImage: "book.pages.fill")
                 }
+                .tag(Tab.recipes)
 
-            PantryView()
+            PantryView(context: context)
                 .tabItem {
                     Label("Pantry", systemImage: "carrot.fill")
                 }
+                .tag(Tab.pantry)
         }
     }
 }
