@@ -10,7 +10,7 @@ import SwiftData
 
 struct PantryView: View {
     @Environment(\.modelContext) private var context
-    @StateObject private var viewModel: PantryViewModel
+    @State private var viewModel: PantryViewModel
 
     @Query(sort: \PantryItem.name, order: .forward)
     private var pantryItems: [PantryItem]
@@ -26,7 +26,7 @@ struct PantryView: View {
     @State private var errorMessage = ""
 
     init(context: ModelContext) {
-        _viewModel = StateObject(wrappedValue: PantryViewModel(context: context))
+        _viewModel = State(initialValue: PantryViewModel(context: context))
     }
 
     var body: some View {
@@ -36,7 +36,7 @@ struct PantryView: View {
                 Section {
                     HStack {
                         VStack(alignment: .leading, spacing: 4) {
-                            TextField("New ingredient", text: $newItemName)
+                            TextField("Ingredient name", text: $newItemName)
                                 .textFieldStyle(.plain)
                                 .focused($isInputFocused)
                                 .onSubmit {
@@ -67,12 +67,17 @@ struct PantryView: View {
 
                 // Pantry Items
                 Section {
+                    if pantryItems.isEmpty {
+                        Text("No items in pantry yet.")
+                            .foregroundStyle(.secondary)
+                            .font(.subheadline)
+                    }
                     ForEach(pantryItems) { item in
                         if editingItem?.id == item.id {
                             // Edit mode
                             HStack {
                                 VStack(alignment: .leading, spacing: 4) {
-                                    TextField("New ingredient", text: $editName)
+                                    TextField("Ingredient name", text: $editName)
                                     TextField("Quantity", text: $editQuantity)
                                         .font(.caption)
                                         .foregroundStyle(.secondary)
@@ -124,8 +129,16 @@ struct PantryView: View {
                     Text("Pantry Items")
                 }
             }
-            .alert("Failed to save recipe.", isPresented: $showingError) {
-                Button("Cancel", role: .cancel) { }
+            .toolbar {
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button("Done") {
+                        isInputFocused = false
+                    }
+                }
+            }
+            .alert("Error", isPresented: $showingError) {
+                Button("OK", role: .cancel) { }
             } message: {
                 Text(errorMessage)
             }
@@ -138,6 +151,7 @@ struct PantryView: View {
             try viewModel.addItem(name: newItemName, quantity: newItemQuantity)
             newItemName = ""
             newItemQuantity = ""
+            isInputFocused = false
         } catch {
             errorMessage = error.localizedDescription
             showingError = true

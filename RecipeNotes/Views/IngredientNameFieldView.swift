@@ -19,7 +19,7 @@ struct IngredientNameFieldView: View {
     var body: some View {
         ZStack(alignment: .topLeading) {
             VStack(alignment: .leading, spacing: 0) {
-                TextField("New ingredient", text: $text)
+                TextField("Ingredient name", text: $text)
                     .focused($isFocused)
                     .onChange(of: text) {
                         let query = text.trimmingCharacters(in: .whitespaces)

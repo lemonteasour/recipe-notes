@@ -91,8 +91,8 @@ struct RecipeFormView: View {
                     .disabled(viewModel.name.isEmpty)
                 }
             }
-            .alert("Failed to save recipe.", isPresented: $showingError) {
-                Button("Cancel", role: .cancel) { }
+            .alert("Error", isPresented: $showingError) {
+                Button("OK", role: .cancel) { }
             } message: {
                 Text(errorMessage)
             }

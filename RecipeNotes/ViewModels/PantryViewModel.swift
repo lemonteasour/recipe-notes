@@ -20,6 +20,7 @@ class PantryViewModel: ObservableObject {
         for index in offsets {
             context.delete(items[index])
         }
+        try? context.save()
     }
 
     func addItem(name: String, quantity: String) throws {
