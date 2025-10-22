@@ -150,7 +150,7 @@ class RecipeFormViewModel: ObservableObject {
 
     func saveRecipe() throws {
         guard !name.isEmpty else {
-            throw RecipeSaveError.emptyName
+            throw RecipeError.emptyName
         }
 
         // Normalize indices
