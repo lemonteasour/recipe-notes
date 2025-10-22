@@ -46,6 +46,7 @@ struct PantryView: View {
                                 .textFieldStyle(.plain)
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
+                                .focused($isInputFocused)
                                 .onSubmit {
                                     addNewItem()
                                 }
@@ -78,9 +79,11 @@ struct PantryView: View {
                             HStack {
                                 VStack(alignment: .leading, spacing: 4) {
                                     TextField("Ingredient name", text: $editName)
+                                        .focused($isInputFocused)
                                     TextField("Quantity", text: $editQuantity)
                                         .font(.caption)
                                         .foregroundStyle(.secondary)
+                                        .focused($isInputFocused)
                                 }
 
                                 Button {
@@ -129,13 +132,8 @@ struct PantryView: View {
                     Text("Pantry Items")
                 }
             }
-            .toolbar {
-                ToolbarItemGroup(placement: .keyboard) {
-                    Spacer()
-                    Button("Done") {
-                        isInputFocused = false
-                    }
-                }
+            .onTapGesture {
+                isInputFocused = false
             }
             .alert("Error", isPresented: $showingError) {
                 Button("OK", role: .cancel) { }
@@ -147,6 +145,11 @@ struct PantryView: View {
     }
 
     private func addNewItem() {
+        guard !newItemName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            isInputFocused = false
+            return
+        }
+
         do {
             try viewModel.addItem(name: newItemName, quantity: newItemQuantity)
             newItemName = ""
