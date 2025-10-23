@@ -12,11 +12,11 @@ import SwiftData
 class IngredientHeading: IngredientItem, Identifiable {
     @Attribute(.unique) var id: UUID
     var name: String
-    var index: Int
+    @Attribute(originalName: "index") var sortOrder: Int
 
-    init(name: String, index: Int) {
+    init(name: String, sortOrder: Int) {
         self.id = UUID()
         self.name = name
-        self.index = index
+        self.sortOrder = sortOrder
     }
 }

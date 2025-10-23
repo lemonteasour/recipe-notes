@@ -47,7 +47,7 @@ struct RecipeDetailView: View {
                     Section("Steps") {
                         ForEach(recipe.sortedSteps, id: \.id) { step in
                             HStack(alignment: .top) {
-                                Text("\(step.index + 1).")
+                                Text("\(step.sortOrder + 1).")
                                     .foregroundStyle(.secondary)
                                     .frame(width: 24)
                                 

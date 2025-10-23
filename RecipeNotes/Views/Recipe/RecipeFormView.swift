@@ -59,7 +59,7 @@ struct RecipeFormView: View {
                     ForEach(viewModel.sortedSteps, id: \.id) { step in
                         if let binding = viewModel.binding(for: step) {
                             HStack(alignment: .top) {
-                                Text("\(step.index + 1).")
+                                Text("\(step.sortOrder + 1).")
                                     .foregroundStyle(.secondary)
                                     .frame(width: 24)
                                 

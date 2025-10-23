@@ -36,10 +36,10 @@ class Recipe {
 
     // MARK: - Computed properties
     var sortedIngredients: [any IngredientItem] {
-        (ingredients as [any IngredientItem] + ingredientHeadings as [any IngredientItem]).sorted { $0.index < $1.index }
+        (ingredients as [any IngredientItem] + ingredientHeadings as [any IngredientItem]).sorted { $0.sortOrder < $1.sortOrder }
     }
 
     var sortedSteps: [Step] {
-        steps.sorted { $0.index < $1.index }
+        steps.sorted { $0.sortOrder < $1.sortOrder }
     }
 }

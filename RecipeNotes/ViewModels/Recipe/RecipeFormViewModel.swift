@@ -24,11 +24,11 @@ class RecipeFormViewModel: ObservableObject {
     // MARK: - Computed
     var combinedIngredientItems: [any IngredientItem] {
         let all: [any IngredientItem] = ingredients + ingredientHeadings
-        return all.sorted { $0.index < $1.index }
+        return all.sorted { $0.sortOrder < $1.sortOrder }
     }
 
     var sortedSteps: [Step] {
-        steps.sorted { $0.index < $1.index }
+        steps.sorted { $0.sortOrder < $1.sortOrder }
     }
 
     // MARK: - Init
@@ -67,22 +67,22 @@ class RecipeFormViewModel: ObservableObject {
     // MARK: - Ingredient Items
     func addIngredient() {
         let newIndex = combinedIngredientItems.count
-        ingredients.append(Ingredient(name: "", quantity: "", index: newIndex))
+        ingredients.append(Ingredient(name: "", quantity: "", sortOrder: newIndex))
     }
 
     func addHeading() {
         let newIndex = combinedIngredientItems.count
-        ingredientHeadings.append(IngredientHeading(name: "", index: newIndex))
+        ingredientHeadings.append(IngredientHeading(name: "", sortOrder: newIndex))
     }
 
     func reindexIngredientItems(using ordered: [any IngredientItem]) {
         for (i, item) in ordered.enumerated() {
             if let ing = item as? Ingredient,
                let idx = ingredients.firstIndex(where: { $0.id == ing.id }) {
-                ingredients[idx].index = i
+                ingredients[idx].sortOrder = i
             } else if let heading = item as? IngredientHeading,
                       let idx = ingredientHeadings.firstIndex(where: { $0.id == heading.id }) {
-                ingredientHeadings[idx].index = i
+                ingredientHeadings[idx].sortOrder = i
             }
         }
     }
@@ -119,12 +119,12 @@ class RecipeFormViewModel: ObservableObject {
 
     // MARK: - Steps
     func addStep() {
-        steps.append(Step(value: "", index: steps.count))
+        steps.append(Step(value: "", sortOrder: steps.count))
     }
 
     private func reindexSteps() {
         for (i, step) in steps.enumerated() {
-            step.index = i
+            step.sortOrder = i
         }
     }
 
@@ -143,9 +143,9 @@ class RecipeFormViewModel: ObservableObject {
         guard let recipe = recipeToEdit else { return }
         name = recipe.name
         desc = recipe.desc
-        ingredients = recipe.ingredients.sorted { $0.index < $1.index }
-        ingredientHeadings = recipe.ingredientHeadings.sorted { $0.index < $1.index }
-        steps = recipe.steps.sorted { $0.index < $1.index }
+        ingredients = recipe.ingredients.sorted { $0.sortOrder < $1.sortOrder }
+        ingredientHeadings = recipe.ingredientHeadings.sorted { $0.sortOrder < $1.sortOrder }
+        steps = recipe.steps.sorted { $0.sortOrder < $1.sortOrder }
     }
 
     func saveRecipe() throws {
