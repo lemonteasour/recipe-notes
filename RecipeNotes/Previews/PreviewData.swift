@@ -71,7 +71,7 @@ enum PreviewData {
         ]
     )
 
-    static let samplePantryItemEnglish: PantryItem = PantryItem(name: "Onion", quantity: "2")
+    static let samplePantryItemEnglish: PantryItem = PantryItem(name: "Onion", quantity: "2", sortOrder: -1)
 
 
     /// Returns a ModelContainer with seeded sample data

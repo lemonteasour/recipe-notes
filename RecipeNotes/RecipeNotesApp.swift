@@ -14,7 +14,7 @@ struct RecipeNotesApp: App {
     private let container: ModelContainer
 
     init() {
-        container = try! ModelContainer(for: Recipe.self, PantryItem.self)
+        container = try! ModelContainer(for: Recipe.self, PantryItem.self, PantryCategory.self)
         let context = container.mainContext
         _recipeListViewModel = StateObject(wrappedValue: RecipeListViewModel(context: context))
     }

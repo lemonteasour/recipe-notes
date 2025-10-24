@@ -12,11 +12,15 @@ struct PantryView: View {
     @Environment(\.modelContext) private var context
     @State private var viewModel: PantryViewModel
 
-    @Query(sort: \PantryItem.name, order: .forward)
-    private var pantryItems: [PantryItem]
+    @Query(sort: [SortDescriptor(\PantryCategory.sortOrder)])
+    private var categories: [PantryCategory]
+
+    @Query(sort: [SortDescriptor(\PantryItem.sortOrder)])
+    private var uncategorizedItems: [PantryItem]
 
     @State private var newItemName = ""
     @State private var newItemQuantity = ""
+    @State private var selectedCategory: PantryCategory?
     @State private var editingItem: PantryItem?
     @State private var editName = ""
     @State private var editQuantity = ""
@@ -24,121 +28,88 @@ struct PantryView: View {
 
     @State private var showingError = false
     @State private var errorMessage = ""
+    @State private var showingCategorySheet = false
 
     init(context: ModelContext) {
         _viewModel = State(initialValue: PantryViewModel(context: context))
+
+        // Filter uncategorized items
+        let predicate = #Predicate<PantryItem> { item in
+            item.category == nil
+        }
+        _uncategorizedItems = Query(filter: predicate, sort: [SortDescriptor(\PantryItem.sortOrder)])
     }
 
     var body: some View {
         NavigationStack {
             List {
                 // Add new item section
-                Section {
-                    HStack {
-                        VStack(alignment: .leading, spacing: 4) {
-                            TextField("Ingredient name", text: $newItemName)
-                                .textFieldStyle(.plain)
-                                .focused($isInputFocused)
-                                .onSubmit {
-                                    addNewItem()
-                                }
-                            TextField("Quantity", text: $newItemQuantity)
-                                .textFieldStyle(.plain)
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                                .focused($isInputFocused)
-                                .onSubmit {
-                                    addNewItem()
-                                }
-                        }
+                PantryAddItemSectionView(
+                    newItemName: $newItemName,
+                    newItemQuantity: $newItemQuantity,
+                    selectedCategory: $selectedCategory,
+                    isInputFocused: $isInputFocused,
+                    categories: categories,
+                    onAdd: addNewItem
+                )
 
-                        if !newItemName.isEmpty {
-                            Button {
-                                addNewItem()
-                            } label: {
-                                Image(systemName: "plus.circle.fill")
-                                    .foregroundStyle(.green)
-                            }
-                            .buttonStyle(.plain)
-                        }
-                    }
-                } header: {
-                    Text("Add to Pantry")
+                // Display items by category
+                ForEach(categories) { category in
+                    let items = (category.items ?? []).sorted(by: { $0.sortOrder < $1.sortOrder })
+                    PantryCategorySectionView(
+                        category: category,
+                        items: items,
+                        editingItem: editingItem,
+                        editName: $editName,
+                        editQuantity: $editQuantity,
+                        isInputFocused: $isInputFocused,
+                        viewModel: viewModel,
+                        onStartEdit: startEditing,
+                        onSaveEdit: saveEdit,
+                        onCancelEdit: { editingItem = nil },
+                        onDrop: handleDrop
+                    )
                 }
 
-                // Pantry Items
-                Section {
-                    if pantryItems.isEmpty {
-                        Text("No items in pantry yet.")
-                            .foregroundStyle(.secondary)
-                            .font(.subheadline)
-                    }
-                    ForEach(pantryItems) { item in
-                        if editingItem?.id == item.id {
-                            // Edit mode
-                            HStack {
-                                VStack(alignment: .leading, spacing: 4) {
-                                    TextField("Ingredient name", text: $editName)
-                                        .focused($isInputFocused)
-                                    TextField("Quantity", text: $editQuantity)
-                                        .font(.caption)
-                                        .foregroundStyle(.secondary)
-                                        .focused($isInputFocused)
-                                }
-
-                                Button {
-                                    saveEdit(item)
-                                } label: {
-                                    Image(systemName: "checkmark.circle.fill")
-                                        .foregroundStyle(.green)
-                                }
-                                .buttonStyle(.plain)
-
-                                Button {
-                                    editingItem = nil
-                                } label: {
-                                    Image(systemName: "xmark.circle.fill")
-                                        .foregroundStyle(.red)
-                                }
-                                .buttonStyle(.plain)
-                            }
-                        } else {
-                            // Display mode
-                            HStack {
-                                VStack(alignment: .leading, spacing: 4) {
-                                    Text(item.name)
-                                        .font(.body)
-                                    if !item.quantity.isEmpty {
-                                        Text(item.quantity)
-                                            .font(.caption)
-                                            .foregroundStyle(.secondary)
-                                    }
-                                }
-                                Spacer()
-                                Button {
-                                    startEditing(item)
-                                } label: {
-                                    Image(systemName: "pencil")
-                                        .foregroundStyle(.blue)
-                                }
-                                .buttonStyle(.plain)
-                            }
-                        }
-                    }
-                    .onDelete { offsets in
-                        viewModel.deleteItems(at: offsets, from: pantryItems)
-                    }
-                } header: {
-                    Text("Pantry Items")
+                // Uncategorized items
+                if !uncategorizedItems.isEmpty {
+                    PantryCategorySectionView(
+                        category: nil,
+                        items: uncategorizedItems,
+                        editingItem: editingItem,
+                        editName: $editName,
+                        editQuantity: $editQuantity,
+                        isInputFocused: $isInputFocused,
+                        viewModel: viewModel,
+                        onStartEdit: startEditing,
+                        onSaveEdit: saveEdit,
+                        onCancelEdit: { editingItem = nil },
+                        onDrop: handleDrop
+                    )
                 }
             }
             .onTapGesture {
                 isInputFocused = false
             }
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        showingCategorySheet = true
+                    } label: {
+                        Image(systemName: "folder.badge.plus")
+                    }
+                }
+                ToolbarItem(placement: .topBarTrailing) {
+                    EditButton()
+                }
+            }
             .alert("Error", isPresented: $showingError) {
                 Button("OK", role: .cancel) { }
             } message: {
                 Text(errorMessage)
+            }
+            .sheet(isPresented: $showingCategorySheet) {
+                PantryCategoryManagementView(viewModel: viewModel, categories: categories)
             }
             .navigationTitle("Pantry")
         }
@@ -151,7 +122,7 @@ struct PantryView: View {
         }
 
         do {
-            try viewModel.addItem(name: newItemName, quantity: newItemQuantity)
+            try viewModel.addItem(name: newItemName, quantity: newItemQuantity, category: selectedCategory)
             newItemName = ""
             newItemQuantity = ""
             isInputFocused = false
@@ -174,6 +145,33 @@ struct PantryView: View {
         } catch {
             errorMessage = error.localizedDescription
             showingError = true
+        }
+    }
+
+    private func handleDrop(droppedIds: [String], to category: PantryCategory?) {
+        for droppedIdString in droppedIds {
+            guard let droppedId = UUID(uuidString: droppedIdString) else { continue }
+
+            // Find the item by ID in all categories and uncategorized items
+            var foundItem: PantryItem?
+
+            // Search in all categories
+            for cat in categories {
+                if let item = cat.items?.first(where: { $0.id == droppedId }) {
+                    foundItem = item
+                    break
+                }
+            }
+
+            // If not found, search in uncategorized items
+            if foundItem == nil {
+                foundItem = uncategorizedItems.first(where: { $0.id == droppedId })
+            }
+
+            // Move the item to the target category
+            if let item = foundItem {
+                viewModel.moveItem(item, to: category)
+            }
         }
     }
 }
