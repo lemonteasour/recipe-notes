@@ -1,33 +1,30 @@
 //
-//  PantryItem.swift
+//  PantryCategory.swift
 //  RecipeNotes
 //
-//  Created by Jay Hui on 15/10/2025.
+//  Created by Jay Hui on 23/10/2025.
 //
 
 import Foundation
 import SwiftData
 
 @Model
-class PantryItem {
+class PantryCategory {
     @Attribute(.unique) var id: UUID
     var name: String
-    var quantity: String
     var sortOrder: Int
-    var category: PantryCategory?
     var createdAt: Date
+
+//    @Relationship(deleteRule: .cascade, inverse: \PantryItem.category)
+    var items: [PantryItem]?
 
     init(
         name: String,
-        quantity: String = "",
-        sortOrder: Int,
-        category: PantryCategory? = nil
+        sortOrder: Int = 0
     ) {
         self.id = UUID()
         self.name = name
-        self.quantity = quantity
         self.sortOrder = sortOrder
-        self.category = category
         self.createdAt = Date()
     }
 }
