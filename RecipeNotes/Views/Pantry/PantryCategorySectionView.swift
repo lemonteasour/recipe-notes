@@ -106,23 +106,32 @@ struct PantryCategorySectionView: View {
                             .offset(x: swipedItemId == item.id ? dragOffset : 0)
                             .gesture(
                                 editingItem?.id != item.id ?
-                                DragGesture()
+                                DragGesture(minimumDistance: 20)
                                     .onChanged { gesture in
-                                        // Only allow left swipes
-                                        if gesture.translation.width < 0 {
+                                        let horizontalMovement = abs(gesture.translation.width)
+                                        let verticalMovement = abs(gesture.translation.height)
+
+                                        // Only capture gesture if horizontal movement is greater than vertical
+                                        if horizontalMovement > verticalMovement && gesture.translation.width < 0 {
                                             swipedItemId = item.id
                                             dragOffset = max(gesture.translation.width, -deleteButtonWidth)
                                         }
                                     }
                                     .onEnded { gesture in
-                                        withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                                            if gesture.translation.width < -deleteButtonWidth / 2 {
-                                                // Snap to revealed position
-                                                dragOffset = -deleteButtonWidth
-                                            } else {
-                                                // Snap back
-                                                swipedItemId = nil
-                                                dragOffset = 0
+                                        let horizontalMovement = abs(gesture.translation.width)
+                                        let verticalMovement = abs(gesture.translation.height)
+
+                                        // Only handle the gesture if it was primarily horizontal
+                                        if horizontalMovement > verticalMovement {
+                                            withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
+                                                if gesture.translation.width < -deleteButtonWidth / 2 {
+                                                    // Snap to revealed position
+                                                    dragOffset = -deleteButtonWidth
+                                                } else {
+                                                    // Snap back
+                                                    swipedItemId = nil
+                                                    dragOffset = 0
+                                                }
                                             }
                                         }
                                     }
