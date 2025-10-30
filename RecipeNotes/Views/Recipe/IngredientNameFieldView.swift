@@ -26,11 +26,10 @@ struct IngredientNameFieldView: View {
                         if query.isEmpty {
                             showSuggestions = false
                         } else {
-                            filteredSuggestions = suggestions
+                            filteredSuggestions = Array(suggestions
                                 .filter { $0.localizedCaseInsensitiveContains(query) }
                                 .sorted()
-                                .prefix(5)
-                                .map { $0 }
+                                .prefix(5))
                             showSuggestions = !filteredSuggestions.isEmpty
                         }
                     }

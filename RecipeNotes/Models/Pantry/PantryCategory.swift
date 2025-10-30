@@ -15,7 +15,7 @@ class PantryCategory {
     var sortOrder: Int
     var createdAt: Date
 
-//    @Relationship(deleteRule: .cascade, inverse: \PantryItem.category)
+    @Relationship(deleteRule: .cascade, inverse: \PantryItem.category)
     var items: [PantryItem]?
 
     init(
