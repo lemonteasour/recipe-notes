@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftData
+import UIKit
 
 struct RecipeListView: View {
     @Environment(\.modelContext) private var context
@@ -14,6 +15,8 @@ struct RecipeListView: View {
 
     @Query(sort: \Recipe.createdAt, order: .reverse)
     private var allRecipes: [Recipe]
+
+    @State private var showImportError = false
 
     var body: some View {
         NavigationStack {
@@ -39,11 +42,18 @@ struct RecipeListView: View {
                         Image(systemName: "plus")
                     }
                 }
-                ToolbarItem(placement: .navigationBarTrailing) {
+                ToolbarItem(placement: .navigationBarLeading) {
                     Button {
                         viewModel.showingFilterSheet = true
                     } label: {
-                        Label("Filter", systemImage: "line.3.horizontal.decrease.circle")
+                        Label("Filter", systemImage: "line.3.horizontal.decrease")
+                    }
+                }
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button {
+                        importRecipeFromClipboard()
+                    } label: {
+                        Label("Import", systemImage: "square.and.arrow.down")
                     }
                 }
             }
@@ -55,7 +65,27 @@ struct RecipeListView: View {
                     .environmentObject(viewModel)
             }
             .searchable(text: $viewModel.searchText, prompt: "Search recipes")
+            .alert("Error", isPresented: $showImportError) {
+                Button("OK", role: .cancel) { }
+            } message: {
+                Text("Could not import recipe. Please make sure you have copied valid recipe text.")
+            }
         }
+    }
+
+    private func importRecipeFromClipboard() {
+        guard let clipboardText = UIPasteboard.general.string else {
+            showImportError = true
+            return
+        }
+
+        guard let recipe = RecipeClipboardService.importRecipeFromText(clipboardText) else {
+            showImportError = true
+            return
+        }
+
+        context.insert(recipe)
+        try? context.save()
     }
 }
 

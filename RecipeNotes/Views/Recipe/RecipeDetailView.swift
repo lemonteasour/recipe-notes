@@ -61,6 +61,9 @@ struct RecipeDetailView: View {
         .navigationTitle(recipe.name)
         .toolbar {
             ToolbarItemGroup(placement: .primaryAction) {
+                ShareLink(item: RecipeClipboardService.exportRecipeToText(recipe)) {
+                    Label("Share", systemImage: "square.and.arrow.up")
+                }
                 Button(isCookingMode ? "Normal" : "Cook") {
                     isCookingMode.toggle()
                 }
