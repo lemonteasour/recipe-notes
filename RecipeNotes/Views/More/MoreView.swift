@@ -26,7 +26,7 @@ struct MoreView: View {
 
                     Link(destination: URL(string: "https://lemonteasour.com/projects/recipenotes")!) {
                         HStack {
-                            Image(systemName: "globe.fill")
+                            Image(systemName: "info.circle.fill")
                                 .frame(width: 30)
                             Text("About Recipe Notes")
                             Spacer()
