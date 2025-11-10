@@ -8,6 +8,10 @@
 import SwiftUI
 
 struct MoreView: View {
+    @StateObject private var adMobService = AdMobService.shared
+    @State private var showingAdAlert = false
+    @State private var adAlertMessage = ""
+
     var body: some View {
         NavigationStack {
             List {
@@ -55,7 +59,22 @@ struct MoreView: View {
                 }
 
                 Section {
-                    // Watch an ad
+                    Button {
+                        Task {
+                            await watchAd()
+                        }
+                    } label: {
+                        HStack {
+                            Image(systemName: "play.rectangle.fill")
+                                .frame(width: 30)
+                            Text("Watch an ad")
+                            Spacer()
+                            if adMobService.isAdLoading {
+                                ProgressView()
+                            }
+                        }
+                    }
+                    .disabled(adMobService.isAdLoading)
 
                     Link(destination: URL(string: "https://buymeacoffee.com/lemonteasour")!) {
                         HStack {
@@ -73,6 +92,42 @@ struct MoreView: View {
                 }
             }
             .navigationTitle("More")
+            .onAppear {
+                Task {
+                    await adMobService.loadAd()
+                }
+            }
+            .alert("Ad Status", isPresented: $showingAdAlert) {
+                Button("OK", role: .cancel) { }
+            } message: {
+                Text(adAlertMessage)
+            }
+        }
+    }
+
+    private func watchAd() async {
+        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+              let rootViewController = windowScene.windows.first?.rootViewController else {
+            adAlertMessage = "Unable to show ad. Please try again."
+            showingAdAlert = true
+            return
+        }
+
+        if !adMobService.isAdReady {
+            await adMobService.loadAd()
+            adAlertMessage = "Ad is loading. Please wait a moment and try again."
+            showingAdAlert = true
+            return
+        }
+
+        adMobService.showAd(from: rootViewController) { success in
+            if success {
+                adAlertMessage = "Thank you for supporting the developer!"
+                showingAdAlert = true
+            } else {
+                adAlertMessage = "Failed to show ad. Please try again later."
+                showingAdAlert = true
+            }
         }
     }
 }

@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		69FD89252EC19E8A0015677A /* GoogleMobileAds in Frameworks */ = {isa = PBXBuildFile; productRef = 69FD89242EC19E8A0015677A /* GoogleMobileAds */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXContainerItemProxy section */
 		691C72572E55FEA90040208B /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -29,9 +33,23 @@
 		691C72602E55FEA90040208B /* RecipeNotesUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RecipeNotesUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		69FD89272EC1AD2D0015677A /* Exceptions for "RecipeNotes" folder in "RecipeNotes" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Config/Config.xcconfig,
+				Info.plist,
+			);
+			target = 691C72462E55FEA70040208B /* RecipeNotes */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		691C72492E55FEA70040208B /* RecipeNotes */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				69FD89272EC1AD2D0015677A /* Exceptions for "RecipeNotes" folder in "RecipeNotes" target */,
+			);
 			path = RecipeNotes;
 			sourceTree = "<group>";
 		};
@@ -52,6 +70,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				69FD89252EC19E8A0015677A /* GoogleMobileAds in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -165,7 +184,7 @@
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 1640;
-				LastUpgradeCheck = 2600;
+				LastUpgradeCheck = 2610;
 				TargetAttributes = {
 					691C72462E55FEA70040208B = {
 						CreatedOnToolsVersion = 16.4;
@@ -190,6 +209,9 @@
 			);
 			mainGroup = 691C723E2E55FEA70040208B;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				696446FF2EC19B29007957F2 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 691C72482E55FEA70040208B /* Products */;
 			projectDirPath = "";
@@ -391,6 +413,8 @@
 		};
 		691C726B2E55FEA90040208B /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReferenceAnchor = 691C72492E55FEA70040208B /* RecipeNotes */;
+			baseConfigurationReferenceRelativePath = Config/Config.xcconfig;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -400,6 +424,7 @@
 				DEVELOPMENT_TEAM = 9LW6FG8K55;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = RecipeNotes/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Recipe Notes";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.food-and-drink";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -425,6 +450,8 @@
 		};
 		691C726C2E55FEA90040208B /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReferenceAnchor = 691C72492E55FEA70040208B /* RecipeNotes */;
+			baseConfigurationReferenceRelativePath = Config/Config.xcconfig;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -434,6 +461,7 @@
 				DEVELOPMENT_TEAM = 9LW6FG8K55;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = RecipeNotes/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "Recipe Notes";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.food-and-drink";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
@@ -565,6 +593,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		696446FF2EC19B29007957F2 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/googleads/swift-package-manager-google-mobile-ads.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 12.13.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		69FD89242EC19E8A0015677A /* GoogleMobileAds */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 696446FF2EC19B29007957F2 /* XCRemoteSwiftPackageReference "swift-package-manager-google-mobile-ads" */;
+			productName = GoogleMobileAds;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 691C723F2E55FEA70040208B /* Project object */;
 }

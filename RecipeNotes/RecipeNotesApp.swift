@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftData
+import GoogleMobileAds
 
 @main
 struct RecipeNotesApp: App {
@@ -14,6 +15,7 @@ struct RecipeNotesApp: App {
     private let container: ModelContainer
 
     init() {
+        MobileAds.shared.start()
         container = try! ModelContainer(for: Recipe.self, PantryItem.self, PantryCategory.self)
         let context = container.mainContext
         _recipeListViewModel = StateObject(wrappedValue: RecipeListViewModel(context: context))
