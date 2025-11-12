@@ -24,7 +24,7 @@ struct RecipeNotesApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
-                .tint(.accentColor)
+                .tint(.accent)
                 .environmentObject(recipeListViewModel)
                 .modelContainer(container)
         }
