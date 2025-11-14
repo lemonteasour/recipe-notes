@@ -12,43 +12,54 @@ struct MoreView: View {
     @State private var showingAdAlert = false
     @State private var adAlertMessage = ""
 
+    private let reviewURL = URL(string: "https://apps.apple.com/app/id6752032405?action=write-review")
+    private let aboutURL = URL(string: "https://lemonteasour.com/projects/recipenotes")
+    private let privacyURL = URL(string: "https://lemonteasour.com/projects/recipenotes/privacy")
+    private let coffeeURL = URL(string: "https://buymeacoffee.com/lemonteasour")
+
     var body: some View {
         NavigationStack {
             List {
                 Section {
-                    Link(destination: URL(string: "https://apps.apple.com/app/id6752032405?action=write-review")!) {
-                        HStack {
-                            Image(systemName: "star.fill")
-                                .frame(width: 30)
-                            Text("Leave a review")
-                            Spacer()
-                            Image(systemName: "arrow.up.forward")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
+                    if let reviewURL {
+                        Link(destination: reviewURL) {
+                            HStack {
+                                Image(systemName: "star.fill")
+                                    .frame(width: 30)
+                                Text("Leave a review")
+                                Spacer()
+                                Image(systemName: "arrow.up.forward")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
                         }
                     }
 
-                    Link(destination: URL(string: "https://lemonteasour.com/projects/recipenotes")!) {
-                        HStack {
-                            Image(systemName: "info.circle.fill")
-                                .frame(width: 30)
-                            Text("About Recipe Notes")
-                            Spacer()
-                            Image(systemName: "arrow.up.forward")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
+                    if let aboutURL {
+                        Link(destination: aboutURL) {
+                            HStack {
+                                Image(systemName: "info.circle.fill")
+                                    .frame(width: 30)
+                                Text("About Recipe Notes")
+                                Spacer()
+                                Image(systemName: "arrow.up.forward")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
                         }
                     }
 
-                    Link(destination: URL(string: "https://lemonteasour.com/projects/recipenotes/privacy")!) {
-                        HStack {
-                            Image(systemName: "lock.fill")
-                                .frame(width: 30)
-                            Text("Privacy Policy")
-                            Spacer()
-                            Image(systemName: "arrow.up.forward")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
+                    if let privacyURL {
+                        Link(destination: privacyURL) {
+                            HStack {
+                                Image(systemName: "lock.fill")
+                                    .frame(width: 30)
+                                Text("Privacy Policy")
+                                Spacer()
+                                Image(systemName: "arrow.up.forward")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
                         }
                     }
 
@@ -76,15 +87,17 @@ struct MoreView: View {
                     }
                     .disabled(adMobService.isAdLoading)
 
-                    Link(destination: URL(string: "https://buymeacoffee.com/lemonteasour")!) {
-                        HStack {
-                            Image(systemName: "cup.and.saucer.fill")
-                                .frame(width: 30)
-                            Text("Buy me a coffee")
-                            Spacer()
-                            Image(systemName: "arrow.up.forward")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
+                    if let coffeeURL {
+                        Link(destination: coffeeURL) {
+                            HStack {
+                                Image(systemName: "cup.and.saucer.fill")
+                                    .frame(width: 30)
+                                Text("Buy me a coffee")
+                                Spacer()
+                                Image(systemName: "arrow.up.forward")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
                         }
                     }
                 } header: {

@@ -16,11 +16,8 @@ class AdMobService: NSObject, ObservableObject, FullScreenContentDelegate {
 
     private var rewardedAd: RewardedAd?
 
-    private let adUnitID: String = {
-        guard let adUnitID = Bundle.main.object(forInfoDictionaryKey: "AdMobRewardedAdUnitIdentifier") as? String else {
-            fatalError("AdMobRewardedAdUnitIdentifier not found in Info.plist")
-        }
-        return adUnitID
+    private let adUnitID: String? = {
+        return Bundle.main.object(forInfoDictionaryKey: "AdMobRewardedAdUnitIdentifier") as? String
     }()
 
     private override init() {
@@ -30,6 +27,12 @@ class AdMobService: NSObject, ObservableObject, FullScreenContentDelegate {
 
     func loadAd() async {
         guard !isAdLoading else { return }
+
+        // If adUnitID is not configured, ads are disabled
+        guard let adUnitID else {
+            print("AdMob not configured: AdMobRewardedAdUnitIdentifier missing in Info.plist")
+            return
+        }
 
         await MainActor.run {
             isAdLoading = true
