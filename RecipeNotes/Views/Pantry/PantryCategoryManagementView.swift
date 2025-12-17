@@ -106,6 +106,7 @@ struct PantryCategoryManagementView: View {
                     Text("Categories")
                 }
             }
+            .scrollDismissesKeyboard(.interactively)
             .onTapGesture {
                 isInputFocused = false
             }

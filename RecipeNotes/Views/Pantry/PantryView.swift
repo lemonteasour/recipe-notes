@@ -104,6 +104,7 @@ struct PantryView: View {
                     }
                 }
             }
+            .scrollDismissesKeyboard(.interactively)
             .background(Color(.systemGroupedBackground))
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {

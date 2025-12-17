@@ -30,6 +30,7 @@ struct RecipeListView: View {
                     viewModel.deleteRecipe(at: offsets, from: allRecipes)
                 }
             }
+            .scrollDismissesKeyboard(.interactively)
             .navigationDestination(for: Recipe.self) { recipe in
                 RecipeDetailView(recipe: recipe)
             }

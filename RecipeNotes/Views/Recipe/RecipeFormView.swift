@@ -11,16 +11,16 @@ import SwiftData
 struct RecipeFormView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.dismiss) private var dismiss
-    
+
     @State private var showingError = false
     @State private var errorMessage = ""
-    
+
     @StateObject private var viewModel: RecipeFormViewModel
-    
+
     init(context: ModelContext, recipeToEdit: Recipe? = nil) {
         _viewModel = StateObject(wrappedValue: RecipeFormViewModel(context: context, recipeToEdit: recipeToEdit))
     }
-    
+
     var body: some View {
         NavigationStack {
             Form {
@@ -28,7 +28,7 @@ struct RecipeFormView: View {
                     TextField("Recipe name", text: $viewModel.name)
                     TextField("Description", text: $viewModel.desc, axis: .vertical)
                 }
-                
+
                 Section("Ingredients") {
                     ForEach(viewModel.combinedIngredientItems, id: \.id) { item in
                         if let ingredient = item as? Ingredient,
@@ -50,11 +50,11 @@ struct RecipeFormView: View {
                     }
                     .onDelete(perform: viewModel.deleteIngredientItems)
                     .onMove(perform: viewModel.moveIngredientItems)
-                    
+
                     Button("Add ingredient", action: viewModel.addIngredient)
                     Button("Add heading", action: viewModel.addHeading)
                 }
-                
+
                 Section("Steps") {
                     ForEach(viewModel.sortedSteps, id: \.id) { step in
                         if let binding = viewModel.binding(for: step) {
@@ -62,17 +62,18 @@ struct RecipeFormView: View {
                                 Text("\(step.sortOrder + 1).")
                                     .foregroundStyle(.secondary)
                                     .frame(width: 24)
-                                
+
                                 TextField("Step", text: binding.value, axis: .vertical)
                             }
                         }
                     }
                     .onDelete(perform: viewModel.deleteSteps)
                     .onMove(perform: viewModel.moveSteps)
-                    
+
                     Button("Add step", action: viewModel.addStep)
                 }
             }
+            .scrollDismissesKeyboard(.interactively)
             .navigationTitle(viewModel.recipeToEdit == nil ? "New Recipe" : "Edit Recipe")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -102,7 +103,7 @@ struct RecipeFormView: View {
 
 #Preview {
     let container = PreviewData.containerWithSamples()
-    
+
     return RecipeFormView(context: container.mainContext)
         .modelContainer(container)
 }

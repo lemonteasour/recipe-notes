@@ -43,6 +43,7 @@ struct IngredientFilterView: View {
                     }
                 }
             }
+            .scrollDismissesKeyboard(.interactively)
             .navigationTitle("Filter")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
