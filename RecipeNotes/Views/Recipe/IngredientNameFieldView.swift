@@ -16,46 +16,100 @@ struct IngredientNameFieldView: View {
     @State private var showSuggestions = false
     @FocusState private var isFocused: Bool
 
-    var body: some View {
-        ZStack(alignment: .topLeading) {
-            VStack(alignment: .leading, spacing: 0) {
-                TextField("Ingredient name", text: $text)
-                    .focused($isFocused)
-                    .onChange(of: text) {
-                        let query = text.trimmingCharacters(in: .whitespaces)
-                        if query.isEmpty {
-                            showSuggestions = false
-                        } else {
-                            filteredSuggestions = Array(suggestions
-                                .filter { $0.localizedCaseInsensitiveContains(query) }
-                                .sorted()
-                                .prefix(5))
-                            showSuggestions = !filteredSuggestions.isEmpty
-                        }
-                    }
+    init(text: Binding<String>, suggestions: [String]) {
+        self._text = text
+        self.suggestions = suggestions
+    }
 
-                if showSuggestions {
-                    VStack(alignment: .leading, spacing: 0) {
-                        ForEach(filteredSuggestions, id: \.self) { suggestion in
-                            Button {
-                                text = suggestion
-                                showSuggestions = false
-                                isFocused = false
-                            } label: {
-                                Text(suggestion)
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                    .padding(8)
-                            }
-                            .buttonStyle(.plain)
-                            Divider()
+    var body: some View {
+        TextField("Ingredient name", text: $text)
+            .focused($isFocused)
+            .onChange(of: text) {
+                updateSuggestions()
+            }
+            .onChange(of: isFocused) { oldValue, newValue in
+                if newValue {
+                    // Field just got focus - show suggestions if applicable
+                    let query = text.trimmingCharacters(in: .whitespaces)
+                    if !query.isEmpty {
+                        let matches = suggestions.filter { $0.localizedCaseInsensitiveContains(query) }
+                        filteredSuggestions = Array(matches.sorted().prefix(5))
+                        showSuggestions = !filteredSuggestions.isEmpty
+                    }
+                } else {
+                    // Field lost focus - hide suggestions after delay
+                    Task {
+                        try? await Task.sleep(for: .milliseconds(150))
+                        if !isFocused {
+                            showSuggestions = false
                         }
                     }
-                    .background(Color(.systemBackground))
-                    .cornerRadius(8)
-                    .shadow(radius: 3)
-                    .padding(.top, 4)
                 }
             }
+            .popover(isPresented: $showSuggestions, arrowEdge: .bottom) {
+                SuggestionsPopoverContent(
+                    suggestions: filteredSuggestions,
+                    onSelect: { suggestion in
+                        text = suggestion
+                        showSuggestions = false
+                        isFocused = false
+                    }
+                )
+                .presentationCompactAdaptation(.none)
+            }
+    }
+
+    private func updateSuggestions() {
+        let query = text.trimmingCharacters(in: .whitespaces)
+
+        if query.isEmpty {
+            showSuggestions = false
+            filteredSuggestions = []
+        } else if isFocused {
+            // Only update suggestions if field is focused (user is actively typing)
+            filteredSuggestions = Array(suggestions
+                .filter { $0.localizedCaseInsensitiveContains(query) }
+                .sorted()
+                .prefix(5))
+            showSuggestions = !filteredSuggestions.isEmpty
         }
     }
 }
+
+// MARK: - Suggestions Popover Content
+
+struct SuggestionsPopoverContent: View {
+    let suggestions: [String]
+    let onSelect: (String) -> Void
+
+    var body: some View {
+        VStack(spacing: 0) {
+            ForEach(suggestions, id: \.self) { suggestion in
+                Button {
+                    onSelect(suggestion)
+                } label: {
+                    HStack(spacing: 8) {
+                        Image(systemName: "text.word.spacing")
+                            .foregroundStyle(.secondary)
+                            .font(.caption)
+
+                        Text(suggestion)
+                            .foregroundStyle(.primary)
+
+                        Spacer()
+                    }
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 10)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+
+                if suggestion != suggestions.last {
+                    Divider()
+                }
+            }
+        }
+        .frame(minWidth: 200, idealWidth: 250)
+    }
+}
+

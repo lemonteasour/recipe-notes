@@ -61,7 +61,7 @@ struct RecipeListView: View {
                 }
             }
             .sheet(isPresented: $viewModel.showingAddForm) {
-                RecipeFormView(context: context)
+                RecipeFormView()
             }
             .sheet(isPresented: $viewModel.showingFilterSheet) {
                 IngredientFilterView()

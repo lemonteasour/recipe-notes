@@ -73,7 +73,7 @@ struct RecipeDetailView: View {
             }
         }
         .sheet(isPresented: $isShowingEdit) {
-            RecipeFormView(context: context, recipeToEdit: recipe)
+            RecipeFormView(recipeToEdit: recipe)
         }
         .onChange(of: isCookingMode) {
             UIApplication.shared.isIdleTimerDisabled = isCookingMode

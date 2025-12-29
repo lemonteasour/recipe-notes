@@ -35,8 +35,8 @@ class RecipeFormViewModel: ObservableObject {
     init(context: ModelContext, recipeToEdit: Recipe? = nil) {
         self.context = context
         self.recipeToEdit = recipeToEdit
-        self.allIngredientNames = fetchAllIngredientNames()
         loadRecipe()
+        self.allIngredientNames = fetchAllIngredientNames()
     }
 
     // MARK: - Bindings
@@ -104,15 +104,20 @@ class RecipeFormViewModel: ObservableObject {
     }
 
     private func fetchAllIngredientNames() -> [String] {
-        let descriptor = FetchDescriptor<Ingredient>()
+        // First, try fetching recipes to see if there are any
+        let recipeDescriptor = FetchDescriptor<Recipe>()
+
+        // Now fetch ingredients directly
+        let ingredientDescriptor = FetchDescriptor<Ingredient>()
         do {
-            let ingredients = try context.fetch(descriptor)
-            let names = ingredients
+            let allIngredients = try context.fetch(ingredientDescriptor)
+
+            let names = allIngredients
                 .map { $0.name.trimmingCharacters(in: .whitespacesAndNewlines) }
                 .filter { !$0.isEmpty }
-            return Array(Set(names)).sorted()
+            let uniqueNames = Array(Set(names)).sorted()
+            return uniqueNames
         } catch {
-            print("Error fetching ingredient names: \(error)")
             return []
         }
     }
