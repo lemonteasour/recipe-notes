@@ -11,14 +11,18 @@ struct IngredientNameFieldView: View {
 
     @Binding var text: String
     let suggestions: [String]
+    let excludeCurrent: Bool
 
     @State private var filteredSuggestions: [String] = []
     @State private var showSuggestions = false
+    @State private var originalText: String = ""
     @FocusState private var isFocused: Bool
 
-    init(text: Binding<String>, suggestions: [String]) {
+    init(text: Binding<String>, suggestions: [String], excludeCurrent: Bool = true) {
         self._text = text
         self.suggestions = suggestions
+        self.excludeCurrent = excludeCurrent
+        self._originalText = State(initialValue: text.wrappedValue)
     }
 
     var body: some View {
@@ -29,10 +33,17 @@ struct IngredientNameFieldView: View {
             }
             .onChange(of: isFocused) { oldValue, newValue in
                 if newValue {
-                    // Field just got focus - show suggestions if applicable
+                    // Field just got focus - update originalText and show suggestions if applicable
+                    originalText = text.trimmingCharacters(in: .whitespaces)
                     let query = text.trimmingCharacters(in: .whitespaces)
                     if !query.isEmpty {
-                        let matches = suggestions.filter { $0.localizedCaseInsensitiveContains(query) }
+                        var matches = suggestions.filter { $0.localizedCaseInsensitiveContains(query) }
+
+                        // Exclude the original ingredient name
+                        if excludeCurrent && !originalText.isEmpty {
+                            matches = matches.filter { $0.lowercased() != originalText.lowercased() }
+                        }
+
                         filteredSuggestions = Array(matches.sorted().prefix(5))
                         showSuggestions = !filteredSuggestions.isEmpty
                     }
@@ -67,10 +78,14 @@ struct IngredientNameFieldView: View {
             filteredSuggestions = []
         } else if isFocused {
             // Only update suggestions if field is focused (user is actively typing)
-            filteredSuggestions = Array(suggestions
-                .filter { $0.localizedCaseInsensitiveContains(query) }
-                .sorted()
-                .prefix(5))
+            var matches = suggestions.filter { $0.localizedCaseInsensitiveContains(query) }
+
+            // Exclude the original ingredient name
+            if excludeCurrent && !originalText.isEmpty {
+                matches = matches.filter { $0.lowercased() != originalText.lowercased() }
+            }
+
+            filteredSuggestions = Array(matches.sorted().prefix(5))
             showSuggestions = !filteredSuggestions.isEmpty
         }
     }
