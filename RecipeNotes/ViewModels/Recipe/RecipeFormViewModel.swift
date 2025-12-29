@@ -104,19 +104,13 @@ class RecipeFormViewModel: ObservableObject {
     }
 
     private func fetchAllIngredientNames() -> [String] {
-        // First, try fetching recipes to see if there are any
-        let recipeDescriptor = FetchDescriptor<Recipe>()
-
-        // Now fetch ingredients directly
         let ingredientDescriptor = FetchDescriptor<Ingredient>()
         do {
             let allIngredients = try context.fetch(ingredientDescriptor)
-
             let names = allIngredients
                 .map { $0.name.trimmingCharacters(in: .whitespacesAndNewlines) }
                 .filter { !$0.isEmpty }
-            let uniqueNames = Array(Set(names)).sorted()
-            return uniqueNames
+            return Array(Set(names)).sorted()
         } catch {
             return []
         }
@@ -148,9 +142,17 @@ class RecipeFormViewModel: ObservableObject {
         guard let recipe = recipeToEdit else { return }
         name = recipe.name
         desc = recipe.desc
-        ingredients = recipe.ingredients.sorted { $0.sortOrder < $1.sortOrder }
-        ingredientHeadings = recipe.ingredientHeadings.sorted { $0.sortOrder < $1.sortOrder }
-        steps = recipe.steps.sorted { $0.sortOrder < $1.sortOrder }
+
+        // Create copies of the objects so we don't modify the originals until Save is pressed
+        ingredients = recipe.ingredients.sorted { $0.sortOrder < $1.sortOrder }.map {
+            Ingredient(name: $0.name, quantity: $0.quantity, sortOrder: $0.sortOrder)
+        }
+        ingredientHeadings = recipe.ingredientHeadings.sorted { $0.sortOrder < $1.sortOrder }.map {
+            IngredientHeading(name: $0.name, sortOrder: $0.sortOrder)
+        }
+        steps = recipe.steps.sorted { $0.sortOrder < $1.sortOrder }.map {
+            Step(value: $0.value, sortOrder: $0.sortOrder)
+        }
     }
 
     func saveRecipe() throws {
@@ -161,8 +163,20 @@ class RecipeFormViewModel: ObservableObject {
         // Normalize indices
         let all = combinedIngredientItems
         reindexIngredientItems(using: all)
-        
+
         if let recipe = recipeToEdit {
+            // Delete old objects from context
+            for oldIngredient in recipe.ingredients {
+                context.delete(oldIngredient)
+            }
+            for oldHeading in recipe.ingredientHeadings {
+                context.delete(oldHeading)
+            }
+            for oldStep in recipe.steps {
+                context.delete(oldStep)
+            }
+
+            // Update recipe with new data
             recipe.name = name
             recipe.desc = desc
             recipe.ingredients = ingredients
