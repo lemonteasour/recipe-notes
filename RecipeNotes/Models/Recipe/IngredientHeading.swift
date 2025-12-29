@@ -13,6 +13,7 @@ class IngredientHeading: IngredientItem, Identifiable {
     @Attribute(.unique) var id: UUID
     var name: String
     @Attribute(originalName: "index") var sortOrder: Int
+    var recipe: Recipe?
 
     init(name: String, sortOrder: Int) {
         self.id = UUID()

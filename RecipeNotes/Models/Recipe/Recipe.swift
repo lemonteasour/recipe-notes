@@ -13,9 +13,9 @@ class Recipe {
     @Attribute(.unique) var id: UUID
     var name: String
     var desc: String
-    @Relationship(deleteRule: .cascade) var ingredients: [Ingredient]
-    @Relationship(deleteRule: .cascade) var ingredientHeadings: [IngredientHeading]
-    @Relationship(deleteRule: .cascade) var steps: [Step]
+    @Relationship(deleteRule: .cascade, inverse: \Ingredient.recipe) var ingredients: [Ingredient]
+    @Relationship(deleteRule: .cascade, inverse: \IngredientHeading.recipe) var ingredientHeadings: [IngredientHeading]
+    @Relationship(deleteRule: .cascade, inverse: \Step.recipe) var steps: [Step]
     var createdAt: Date
 
     init(

@@ -17,6 +17,8 @@ struct RecipeListView: View {
     private var allRecipes: [Recipe]
 
     @State private var showImportError = false
+    @State private var showSaveError = false
+    @State private var saveErrorMessage = ""
 
     var body: some View {
         NavigationStack {
@@ -66,10 +68,15 @@ struct RecipeListView: View {
                     .environmentObject(viewModel)
             }
             .searchable(text: $viewModel.searchText, prompt: "Search recipes")
-            .alert("Error", isPresented: $showImportError) {
+            .alert("Import Error", isPresented: $showImportError) {
                 Button("OK", role: .cancel) { }
             } message: {
                 Text("Could not import recipe. Please make sure you have copied valid recipe text.")
+            }
+            .alert("Save Error", isPresented: $showSaveError) {
+                Button("OK", role: .cancel) { }
+            } message: {
+                Text(saveErrorMessage)
             }
         }
     }
@@ -86,7 +93,12 @@ struct RecipeListView: View {
         }
 
         context.insert(recipe)
-        try? context.save()
+        do {
+            try context.save()
+        } catch {
+            saveErrorMessage = "Failed to save recipe: \(error.localizedDescription)"
+            showSaveError = true
+        }
     }
 }
 

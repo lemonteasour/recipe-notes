@@ -22,6 +22,8 @@ struct PantryCategorySectionView: View {
 
     @State private var swipedItemId: UUID?
     @State private var dragOffset: CGFloat = 0
+    @State private var showingError = false
+    @State private var errorMessage = ""
 
     private let deleteButtonWidth: CGFloat = 90
 
@@ -71,7 +73,12 @@ struct PantryCategorySectionView: View {
                             Button(action: {
                                 withAnimation {
                                     if let index = items.firstIndex(of: item) {
-                                        viewModel.deleteItems(at: IndexSet(integer: index), from: items)
+                                        do {
+                                            try viewModel.deleteItems(at: IndexSet(integer: index), from: items)
+                                        } catch {
+                                            errorMessage = "Failed to delete item: \(error.localizedDescription)"
+                                            showingError = true
+                                        }
                                     }
                                     swipedItemId = nil
                                     dragOffset = 0
@@ -169,5 +176,10 @@ struct PantryCategorySectionView: View {
         }
         .padding(.bottom, 16)
         .background(Color(.systemGroupedBackground))
+        .alert("Error", isPresented: $showingError) {
+            Button("OK", role: .cancel) { }
+        } message: {
+            Text(errorMessage)
+        }
     }
 }

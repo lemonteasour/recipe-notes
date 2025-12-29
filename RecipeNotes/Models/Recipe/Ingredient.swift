@@ -14,6 +14,7 @@ class Ingredient: IngredientItem, Identifiable {
     var name: String
     var quantity: String
     @Attribute(originalName: "index") var sortOrder: Int
+    var recipe: Recipe?
 
     init(name: String, quantity: String, sortOrder: Int) {
         self.id = UUID()

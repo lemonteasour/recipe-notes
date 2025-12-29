@@ -18,11 +18,11 @@ class PantryViewModel: ObservableObject {
     }
 
     // MARK: - Item Management
-    func deleteItems(at offsets: IndexSet, from items: [PantryItem]) {
+    func deleteItems(at offsets: IndexSet, from items: [PantryItem]) throws {
         for index in offsets {
             context.delete(items[index])
         }
-        try? context.save()
+        try context.save()
     }
 
     func addItem(name: String, quantity: String, category: PantryCategory?) throws {
@@ -53,15 +53,15 @@ class PantryViewModel: ObservableObject {
         try context.save()
     }
 
-    func moveItem(_ item: PantryItem, to category: PantryCategory?) {
+    func moveItem(_ item: PantryItem, to category: PantryCategory?) throws {
         // Get the highest sort order in the destination category
         let maxSortOrder = category?.items?.map(\.sortOrder).max() ?? -1
         item.category = category
         item.sortOrder = maxSortOrder + 1
-        try? context.save()
+        try context.save()
     }
 
-    func reorderItems(in category: PantryCategory?, from source: IndexSet, to destination: Int, items: [PantryItem]) {
+    func reorderItems(in category: PantryCategory?, from source: IndexSet, to destination: Int, items: [PantryItem]) throws {
         var itemsArray = items
         itemsArray.move(fromOffsets: source, toOffset: destination)
 
@@ -69,7 +69,7 @@ class PantryViewModel: ObservableObject {
         for (index, item) in itemsArray.enumerated() {
             item.sortOrder = index
         }
-        try? context.save()
+        try context.save()
     }
 
     // MARK: - Category Management
@@ -100,12 +100,12 @@ class PantryViewModel: ObservableObject {
         try context.save()
     }
 
-    func deleteCategory(_ category: PantryCategory) {
+    func deleteCategory(_ category: PantryCategory) throws {
         context.delete(category)
-        try? context.save()
+        try context.save()
     }
 
-    func reorderCategories(from source: IndexSet, to destination: Int, categories: [PantryCategory]) {
+    func reorderCategories(from source: IndexSet, to destination: Int, categories: [PantryCategory]) throws {
         var categoriesArray = categories
         categoriesArray.move(fromOffsets: source, toOffset: destination)
 
@@ -113,6 +113,6 @@ class PantryViewModel: ObservableObject {
         for (index, category) in categoriesArray.enumerated() {
             category.sortOrder = index
         }
-        try? context.save()
+        try context.save()
     }
 }

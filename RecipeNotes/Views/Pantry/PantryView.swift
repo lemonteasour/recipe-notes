@@ -180,7 +180,12 @@ struct PantryView: View {
 
             // Move the item to the target category
             if let item = foundItem {
-                viewModel.moveItem(item, to: category)
+                do {
+                    try viewModel.moveItem(item, to: category)
+                } catch {
+                    errorMessage = "Failed to move item: \(error.localizedDescription)"
+                    showingError = true
+                }
             }
         }
     }

@@ -96,11 +96,21 @@ struct PantryCategoryManagementView: View {
                     }
                     .onDelete { offsets in
                         for index in offsets {
-                            viewModel.deleteCategory(categories[index])
+                            do {
+                                try viewModel.deleteCategory(categories[index])
+                            } catch {
+                                errorMessage = "Failed to delete category: \(error.localizedDescription)"
+                                showingError = true
+                            }
                         }
                     }
                     .onMove { source, destination in
-                        viewModel.reorderCategories(from: source, to: destination, categories: categories)
+                        do {
+                            try viewModel.reorderCategories(from: source, to: destination, categories: categories)
+                        } catch {
+                            errorMessage = "Failed to reorder categories: \(error.localizedDescription)"
+                            showingError = true
+                        }
                     }
                 } header: {
                     Text("Categories")

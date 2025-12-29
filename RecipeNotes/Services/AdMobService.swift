@@ -8,6 +8,7 @@
 import UIKit
 import GoogleMobileAds
 
+@MainActor
 class AdMobService: NSObject, ObservableObject, FullScreenContentDelegate {
     static let shared = AdMobService()
 
@@ -15,6 +16,7 @@ class AdMobService: NSObject, ObservableObject, FullScreenContentDelegate {
     @Published var isAdReady = false
 
     private var rewardedAd: RewardedAd?
+    private var loadTask: Task<Void, Never>?
 
     private let adUnitID: String? = {
         return Bundle.main.object(forInfoDictionaryKey: "AdMobRewardedAdUnitIdentifier") as? String
@@ -26,6 +28,10 @@ class AdMobService: NSObject, ObservableObject, FullScreenContentDelegate {
     }
 
     func loadAd() async {
+        // Cancel any existing load task
+        loadTask?.cancel()
+
+        // Prevent multiple simultaneous loads
         guard !isAdLoading else { return }
 
         // If adUnitID is not configured, ads are disabled
@@ -34,49 +40,55 @@ class AdMobService: NSObject, ObservableObject, FullScreenContentDelegate {
             return
         }
 
-        await MainActor.run {
-            isAdLoading = true
-        }
+        isAdLoading = true
 
-        do {
-            let ad = try await RewardedAd.load(
-                with: adUnitID, request: Request())
-            ad.fullScreenContentDelegate = self
+        // Store the load task so we can cancel it if needed
+        loadTask = Task {
+            do {
+                let ad = try await RewardedAd.load(
+                    with: adUnitID, request: Request())
 
-            await MainActor.run {
+                // Check if task was cancelled
+                guard !Task.isCancelled else {
+                    print("Ad load was cancelled")
+                    isAdLoading = false
+                    return
+                }
+
+                ad.fullScreenContentDelegate = self
                 self.rewardedAd = ad
                 self.isAdReady = true
                 self.isAdLoading = false
-            }
-            print("Rewarded ad loaded successfully")
-        } catch {
-            print("Failed to load rewarded ad with error: \(error.localizedDescription)")
-            await MainActor.run {
+                print("Rewarded ad loaded successfully")
+            } catch {
+                print("Failed to load rewarded ad with error: \(error.localizedDescription)")
                 self.isAdReady = false
                 self.isAdLoading = false
             }
         }
+
+        await loadTask?.value
     }
 
-    func showAd(from viewController: UIViewController, completion: @escaping (Bool) -> Void) {
-        guard let ad = rewardedAd, isAdReady else {
-            print("Ad wasn't ready.")
-            completion(false)
-            return
-        }
+    nonisolated func showAd(from viewController: UIViewController, completion: @escaping (Bool) -> Void) {
+        Task { @MainActor in
+            guard let ad = rewardedAd, isAdReady else {
+                print("Ad wasn't ready.")
+                completion(false)
+                return
+            }
 
-        ad.present(from: viewController) {
-            let reward = ad.adReward
-            print("Reward amount: \(reward.amount)")
+            ad.present(from: viewController) {
+                let reward = ad.adReward
+                print("Reward amount: \(reward.amount)")
 
-            Task {
-                await MainActor.run {
+                Task { @MainActor in
                     self.isAdReady = false
                     self.rewardedAd = nil
+                    completion(true)
+                    // Preload next ad
+                    await self.loadAd()
                 }
-                completion(true)
-                // Preload next ad
-                await self.loadAd()
             }
         }
     }

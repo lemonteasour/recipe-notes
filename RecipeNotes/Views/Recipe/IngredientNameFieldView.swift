@@ -39,10 +39,8 @@ struct IngredientNameFieldView: View {
                         ForEach(filteredSuggestions, id: \.self) { suggestion in
                             Button {
                                 text = suggestion
-                                DispatchQueue.main.async {
-                                    showSuggestions = false
-                                    isFocused = false
-                                }
+                                showSuggestions = false
+                                isFocused = false
                             } label: {
                                 Text(suggestion)
                                     .frame(maxWidth: .infinity, alignment: .leading)
