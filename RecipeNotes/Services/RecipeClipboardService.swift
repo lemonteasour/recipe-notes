@@ -20,8 +20,10 @@ class RecipeClipboardService {
 
         // Description
         if !recipe.desc.isEmpty {
-            output += recipe.desc + "\n\n"
+            output += recipe.desc + "\n"
         }
+
+        output += "\n"
 
         // Ingredients
         if !recipe.sortedIngredients.isEmpty {
