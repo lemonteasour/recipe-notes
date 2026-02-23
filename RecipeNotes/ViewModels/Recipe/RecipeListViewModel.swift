@@ -10,14 +10,15 @@ import SwiftUI
 import SwiftData
 
 @MainActor
-final class RecipeListViewModel: ObservableObject {
+@Observable
+final class RecipeListViewModel {
     private let context: ModelContext
-    
-    @Published var searchText = ""
-    @Published var selectedIngredients: Set<String> = []
-    @Published var ingredientSearch = ""
-    @Published var showingAddForm = false
-    @Published var showingFilterSheet = false
+
+    var searchText = ""
+    var selectedIngredients: Set<String> = []
+    var ingredientSearch = ""
+    var showingAddForm = false
+    var showingFilterSheet = false
 
     init(context: ModelContext) {
         self.context = context

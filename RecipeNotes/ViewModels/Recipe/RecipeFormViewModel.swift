@@ -9,17 +9,18 @@ import SwiftUI
 import SwiftData
 
 @MainActor
-class RecipeFormViewModel: ObservableObject {
+@Observable
+class RecipeFormViewModel {
     private let context: ModelContext
     let recipeToEdit: Recipe?
 
-    // MARK: - Published form state
-    @Published var name = ""
-    @Published var desc = ""
-    @Published var ingredients: [Ingredient] = []
-    @Published var allIngredientNames: [String] = []
-    @Published var ingredientHeadings: [IngredientHeading] = []
-    @Published var steps: [Step] = []
+    // MARK: - Form state
+    var name = ""
+    var desc = ""
+    var ingredients: [Ingredient] = []
+    var allIngredientNames: [String] = []
+    var ingredientHeadings: [IngredientHeading] = []
+    var steps: [Step] = []
 
     // MARK: - Computed
     var combinedIngredientItems: [any IngredientItem] {

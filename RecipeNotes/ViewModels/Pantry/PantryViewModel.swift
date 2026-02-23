@@ -9,7 +9,8 @@ import SwiftUI
 import SwiftData
 
 @MainActor
-class PantryViewModel: ObservableObject {
+@Observable
+class PantryViewModel {
     private let context: ModelContext
 
     // MARK: - Init

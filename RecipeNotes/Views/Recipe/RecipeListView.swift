@@ -11,7 +11,7 @@ import UIKit
 
 struct RecipeListView: View {
     @Environment(\.modelContext) private var context
-    @EnvironmentObject private var viewModel: RecipeListViewModel
+    @Environment(RecipeListViewModel.self) private var viewModel
 
     @Query(sort: \Recipe.createdAt, order: .reverse)
     private var allRecipes: [Recipe]
@@ -21,6 +21,7 @@ struct RecipeListView: View {
     @State private var saveErrorMessage = ""
 
     var body: some View {
+        @Bindable var viewModel = viewModel
         NavigationStack {
             List {
                 ForEach(viewModel.filteredRecipes(from: allRecipes)) { recipe in
@@ -65,7 +66,7 @@ struct RecipeListView: View {
             }
             .sheet(isPresented: $viewModel.showingFilterSheet) {
                 IngredientFilterView()
-                    .environmentObject(viewModel)
+                    .environment(viewModel)
             }
             .searchable(text: $viewModel.searchText, prompt: "Search recipes")
             .alert("Import Error", isPresented: $showImportError) {
@@ -107,6 +108,6 @@ struct RecipeListView: View {
     let viewModel = RecipeListViewModel(context: container.mainContext)
 
     return RecipeListView()
-        .environmentObject(viewModel)
+        .environment(viewModel)
         .modelContainer(container)
 }

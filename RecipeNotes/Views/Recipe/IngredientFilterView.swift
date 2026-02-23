@@ -9,7 +9,7 @@ import SwiftUI
 import SwiftData
 
 struct IngredientFilterView: View {
-    @EnvironmentObject private var viewModel: RecipeListViewModel
+    @Environment(RecipeListViewModel.self) private var viewModel
 
     @Query(sort: \Recipe.createdAt, order: .reverse)
     private var allRecipes: [Recipe]
@@ -17,6 +17,7 @@ struct IngredientFilterView: View {
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
+        @Bindable var viewModel = viewModel
         NavigationStack {
             List {
                 Section {
@@ -78,6 +79,6 @@ private struct IngredientRow: View {
     let viewModel = RecipeListViewModel(context: container.mainContext)
 
     return IngredientFilterView()
-        .environmentObject(viewModel)
+        .environment(viewModel)
         .modelContainer(container)
 }

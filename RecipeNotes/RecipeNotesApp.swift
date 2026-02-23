@@ -11,7 +11,7 @@ import GoogleMobileAds
 
 @main
 struct RecipeNotesApp: App {
-    @StateObject private var recipeListViewModel: RecipeListViewModel
+    @State private var recipeListViewModel: RecipeListViewModel
     private let container: ModelContainer?
     private let containerError: Error?
 
@@ -36,7 +36,7 @@ struct RecipeNotesApp: App {
         // Initialize ViewModel only if container succeeded
         if let container = tempContainer {
             let context = container.mainContext
-            _recipeListViewModel = StateObject(wrappedValue: RecipeListViewModel(context: context))
+            _recipeListViewModel = State(initialValue: RecipeListViewModel(context: context))
         } else {
             // Create a dummy ViewModel with a temporary in-memory context
             // This prevents crashes but the app will show error state
@@ -44,7 +44,7 @@ struct RecipeNotesApp: App {
                 for: Recipe.self, PantryItem.self, PantryCategory.self,
                 configurations: ModelConfiguration(isStoredInMemoryOnly: true)
             )
-            _recipeListViewModel = StateObject(wrappedValue: RecipeListViewModel(context: fallbackContainer.mainContext))
+            _recipeListViewModel = State(initialValue: RecipeListViewModel(context: fallbackContainer.mainContext))
         }
     }
 
@@ -56,7 +56,7 @@ struct RecipeNotesApp: App {
             } else if let container = container {
                 ContentView()
                     .tint(.accent)
-                    .environmentObject(recipeListViewModel)
+                    .environment(recipeListViewModel)
                     .modelContainer(container)
             }
         }
