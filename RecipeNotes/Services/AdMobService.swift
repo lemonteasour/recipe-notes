@@ -8,12 +8,13 @@
 import UIKit
 import GoogleMobileAds
 
+@Observable
 @MainActor
-class AdMobService: NSObject, ObservableObject, FullScreenContentDelegate {
+class AdMobService: NSObject, FullScreenContentDelegate {
     static let shared = AdMobService()
 
-    @Published var isAdLoading = false
-    @Published var isAdReady = false
+    var isAdLoading = false
+    var isAdReady = false
 
     private var rewardedAd: RewardedAd?
     private var loadTask: Task<Void, Never>?
@@ -24,7 +25,6 @@ class AdMobService: NSObject, ObservableObject, FullScreenContentDelegate {
 
     private override init() {
         super.init()
-        MobileAds.shared.start()
     }
 
     func loadAd() async {

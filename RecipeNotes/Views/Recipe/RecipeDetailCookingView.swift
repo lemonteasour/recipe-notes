@@ -17,23 +17,8 @@ struct RecipeDetailCookingView: View {
                     .font(.title2).bold()
                     .padding(.vertical, 4)
 
-                ForEach(recipe.sortedIngredients, id: \.id) { ingredientItem in
-                    if let ingredient = ingredientItem as? Ingredient {
-                        HStack {
-                            Text(ingredient.name)
-                            Spacer()
-                            Text(ingredient.quantity)
-                                .foregroundColor(.secondary)
-                        }
-                        .font(.body)
-                    } else if let heading = ingredientItem as? IngredientHeading {
-                        HStack {
-                            Text(heading.name)
-                                .font(.headline)
-                            Spacer()
-                        }
-                        .padding(.top, 2)
-                    }
+                ForEach(recipe.sortedIngredients, id: \.id) { item in
+                    IngredientItemRowView(item: item)
                 }
             }
 
@@ -43,15 +28,8 @@ struct RecipeDetailCookingView: View {
                     .padding(.vertical, 4)
 
                 ForEach(recipe.sortedSteps, id: \.id) { step in
-                    HStack(alignment: .top) {
-                        Text("\(step.sortOrder + 1).")
-                            .foregroundStyle(.secondary)
-                            .frame(width: 24)
-
-                        Text(step.value)
-                        Spacer()
-                    }
-                    .padding(.vertical, 2)
+                    StepRowView(step: step)
+                        .padding(.vertical, 2)
                 }
             }
         }

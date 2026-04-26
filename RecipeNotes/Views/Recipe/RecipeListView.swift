@@ -22,15 +22,16 @@ struct RecipeListView: View {
 
     var body: some View {
         @Bindable var viewModel = viewModel
+        let filtered = viewModel.filteredRecipes(from: allRecipes)
         NavigationStack {
             List {
-                ForEach(viewModel.filteredRecipes(from: allRecipes)) { recipe in
+                ForEach(filtered) { recipe in
                     NavigationLink(value: recipe) {
                         Text(recipe.name)
                     }
                 }
                 .onDelete { offsets in
-                    viewModel.deleteRecipe(at: offsets, from: allRecipes)
+                    viewModel.deleteRecipe(at: offsets, from: filtered)
                 }
             }
             .scrollDismissesKeyboard(.interactively)

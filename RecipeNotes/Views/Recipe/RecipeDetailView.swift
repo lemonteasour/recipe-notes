@@ -14,8 +14,6 @@ struct RecipeDetailView: View {
     @State private var isCookingMode = false
     
     var body: some View {
-        @Environment(\.modelContext) var context
-        
         VStack(alignment: .leading, spacing: 16) {
             if isCookingMode {
                 RecipeDetailCookingView(recipe: recipe)
@@ -28,31 +26,14 @@ struct RecipeDetailView: View {
                     }
                     
                     Section("Ingredients") {
-                        ForEach(recipe.sortedIngredients, id: \.id) { ingredientItem in
-                            if let ingredient = ingredientItem as? Ingredient {
-                                HStack {
-                                    Text(ingredient.name)
-                                    Spacer()
-                                    Text(ingredient.quantity)
-                                        .foregroundColor(.secondary)
-                                }
-                            } else if let heading = ingredientItem as? IngredientHeading {
-                                Text(heading.name)
-                                    .font(.headline)
-                            }
+                        ForEach(recipe.sortedIngredients, id: \.id) { item in
+                            IngredientItemRowView(item: item)
                         }
                     }
-                    
-                    
+
                     Section("Steps") {
                         ForEach(recipe.sortedSteps, id: \.id) { step in
-                            HStack(alignment: .top) {
-                                Text("\(step.sortOrder + 1).")
-                                    .foregroundStyle(.secondary)
-                                    .frame(width: 24)
-                                
-                                Text(step.value)
-                            }
+                            StepRowView(step: step)
                         }
                     }
                 }

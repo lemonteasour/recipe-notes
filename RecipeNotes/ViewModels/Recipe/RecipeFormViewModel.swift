@@ -41,27 +41,36 @@ class RecipeFormViewModel {
     }
 
     // MARK: - Bindings
-    func binding(for ingredient: Ingredient) -> Binding<Ingredient>? {
-        guard let idx = ingredients.firstIndex(where: { $0.id == ingredient.id }) else { return nil }
+func binding(for ingredient: Ingredient) -> Binding<Ingredient>? {
+        guard ingredients.contains(where: { $0.id == ingredient.id }) else { return nil }
         return Binding(
-            get: { self.ingredients[idx] },
-            set: { self.ingredients[idx] = $0 }
+            get: { self.ingredients.first(where: { $0.id == ingredient.id }) ?? ingredient },
+            set: { newValue in
+                guard let idx = self.ingredients.firstIndex(where: { $0.id == ingredient.id }) else { return }
+                self.ingredients[idx] = newValue
+            }
         )
     }
 
     func binding(for heading: IngredientHeading) -> Binding<IngredientHeading>? {
-        guard let idx = ingredientHeadings.firstIndex(where: { $0.id == heading.id }) else { return nil }
+        guard ingredientHeadings.contains(where: { $0.id == heading.id }) else { return nil }
         return Binding(
-            get: { self.ingredientHeadings[idx] },
-            set: { self.ingredientHeadings[idx] = $0 }
+            get: { self.ingredientHeadings.first(where: { $0.id == heading.id }) ?? heading },
+            set: { newValue in
+                guard let idx = self.ingredientHeadings.firstIndex(where: { $0.id == heading.id }) else { return }
+                self.ingredientHeadings[idx] = newValue
+            }
         )
     }
 
     func binding(for step: Step) -> Binding<Step>? {
-        guard let idx = steps.firstIndex(where: { $0.id == step.id }) else { return nil }
+        guard steps.contains(where: { $0.id == step.id }) else { return nil }
         return Binding(
-            get: { self.steps[idx] },
-            set: { self.steps[idx] = $0 }
+            get: { self.steps.first(where: { $0.id == step.id }) ?? step },
+            set: { newValue in
+                guard let idx = self.steps.firstIndex(where: { $0.id == step.id }) else { return }
+                self.steps[idx] = newValue
+            }
         )
     }
 

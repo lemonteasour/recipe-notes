@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct MoreView: View {
-    @StateObject private var adMobService = AdMobService.shared
+    @State private var adMobService = AdMobService.shared
     @State private var showingAdAlert = false
     @State private var adAlertMessage = ""
 

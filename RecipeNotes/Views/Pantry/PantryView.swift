@@ -9,7 +9,6 @@ import SwiftUI
 import SwiftData
 
 struct PantryView: View {
-    @Environment(\.modelContext) private var context
     @State private var viewModel: PantryViewModel
 
     @Query(sort: [SortDescriptor(\PantryCategory.sortOrder)])
