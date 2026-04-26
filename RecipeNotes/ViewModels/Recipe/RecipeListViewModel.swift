@@ -60,6 +60,7 @@ final class RecipeListViewModel {
         for index in offsets {
             context.delete(allRecipes[index])
         }
+        try? context.save()
     }
 
     /// Toggle selection for an ingredient

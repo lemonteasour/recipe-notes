@@ -71,6 +71,7 @@ private struct IngredientRow: View {
                 }
             }
         }
+        .buttonStyle(.plain)
     }
 }
 
