@@ -82,9 +82,9 @@ class PantryViewModel {
         }
 
         // Get the highest sort order
-        let descriptor = FetchDescriptor<PantryCategory>(sortBy: [SortDescriptor(\.sortOrder, order: .reverse)])
-        let categories = try? context.fetch(descriptor)
-        let maxSortOrder = categories?.first?.sortOrder ?? -1
+        var descriptor = FetchDescriptor<PantryCategory>(sortBy: [SortDescriptor(\.sortOrder, order: .reverse)])
+        descriptor.fetchLimit = 1
+        let maxSortOrder = try context.fetch(descriptor).first?.sortOrder ?? -1
 
         let category = PantryCategory(name: trimmedName, sortOrder: maxSortOrder + 1)
         context.insert(category)

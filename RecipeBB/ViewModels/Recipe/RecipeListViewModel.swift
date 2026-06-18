@@ -60,7 +60,11 @@ final class RecipeListViewModel {
         for index in offsets {
             context.delete(allRecipes[index])
         }
-        try? context.save()
+        do {
+            try context.save()
+        } catch {
+            print("Failed to save after deleting recipes: \(error)")
+        }
     }
 
     /// Toggle selection for an ingredient
