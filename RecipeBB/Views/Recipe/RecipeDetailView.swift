@@ -19,6 +19,18 @@ struct RecipeDetailView: View {
                 RecipeDetailCookingView(recipe: recipe)
             } else {
                 List {
+                    if let data = recipe.photo, let uiImage = UIImage(data: data) {
+                        Section {
+                            Image(uiImage: uiImage)
+                                .resizable()
+                                .scaledToFill()
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 220)
+                                .clipped()
+                                .listRowInsets(EdgeInsets())
+                        }
+                    }
+
                     if !recipe.desc.isEmpty {
                         Section("Details") {
                             Text(recipe.desc)

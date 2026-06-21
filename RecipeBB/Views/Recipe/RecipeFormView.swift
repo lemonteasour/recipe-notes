@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftData
+import PhotosUI
 
 struct RecipeFormView: View {
     @Environment(\.modelContext) private var context
@@ -63,8 +64,48 @@ struct RecipeFormView: View {
 struct RecipeFormContentView: View {
     @Bindable var viewModel: RecipeFormViewModel
 
+    @State private var selectedPhotoItem: PhotosPickerItem?
+
     var body: some View {
         Form {
+            Section("Photo") {
+                if let data = viewModel.photo, let uiImage = UIImage(data: data) {
+                    Image(uiImage: uiImage)
+                        .resizable()
+                        .scaledToFill()
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 200)
+                        .clipShape(RoundedRectangle(cornerRadius: 8))
+                        .listRowInsets(EdgeInsets())
+                }
+
+                PhotosPicker(
+                    selection: $selectedPhotoItem,
+                    matching: .images,
+                    photoLibrary: .shared()
+                ) {
+                    Label(viewModel.photo == nil ? "Add photo" : "Change photo",
+                          systemImage: "photo")
+                }
+
+                if viewModel.photo != nil {
+                    Button("Remove photo", role: .destructive) {
+                        viewModel.photo = nil
+                        selectedPhotoItem = nil
+                    }
+                }
+            }
+            .onChange(of: selectedPhotoItem) { _, newItem in
+                guard let newItem else { return }
+                Task {
+                    if let data = try? await newItem.loadTransferable(type: Data.self),
+                       let uiImage = UIImage(data: data),
+                       let jpeg = uiImage.jpegData(compressionQuality: 0.8) {
+                        viewModel.photo = jpeg
+                    }
+                }
+            }
+
             Section("Details") {
                 TextField("Recipe name", text: $viewModel.name)
                 TextField("Description", text: $viewModel.desc, axis: .vertical)

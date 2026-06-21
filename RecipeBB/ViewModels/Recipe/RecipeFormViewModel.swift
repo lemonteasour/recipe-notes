@@ -17,6 +17,7 @@ class RecipeFormViewModel {
     // MARK: - Form state
     var name = ""
     var desc = ""
+    var photo: Data?
     var ingredients: [Ingredient] = []
     var allIngredientNames: [String] = []
     var ingredientHeadings: [IngredientHeading] = []
@@ -152,6 +153,7 @@ func binding(for ingredient: Ingredient) -> Binding<Ingredient>? {
         guard let recipe = recipeToEdit else { return }
         name = recipe.name
         desc = recipe.desc
+        photo = recipe.photo
 
         // Create copies of the objects so we don't modify the originals until Save is pressed
         ingredients = recipe.ingredients.sorted { $0.sortOrder < $1.sortOrder }.map {
@@ -189,6 +191,7 @@ func binding(for ingredient: Ingredient) -> Binding<Ingredient>? {
             // Update recipe with new data
             recipe.name = name
             recipe.desc = desc
+            recipe.photo = photo
             recipe.ingredients = ingredients
             recipe.ingredientHeadings = ingredientHeadings
             recipe.steps = steps
@@ -196,6 +199,7 @@ func binding(for ingredient: Ingredient) -> Binding<Ingredient>? {
             let newRecipe = Recipe(
                 name: name,
                 desc: desc,
+                photo: photo,
                 ingredients: ingredients,
                 ingredientHeadings: ingredientHeadings,
                 steps: steps

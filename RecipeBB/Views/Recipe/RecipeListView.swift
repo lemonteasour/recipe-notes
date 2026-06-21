@@ -27,7 +27,16 @@ struct RecipeListView: View {
             List {
                 ForEach(filtered) { recipe in
                     NavigationLink(value: recipe) {
-                        Text(recipe.name)
+                        HStack(spacing: 12) {
+                            if let data = recipe.photo, let uiImage = UIImage(data: data) {
+                                Image(uiImage: uiImage)
+                                    .resizable()
+                                    .scaledToFill()
+                                    .frame(width: 48, height: 48)
+                                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                            }
+                            Text(recipe.name)
+                        }
                     }
                 }
                 .onDelete { offsets in
