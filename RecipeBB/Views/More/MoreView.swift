@@ -13,8 +13,8 @@ struct MoreView: View {
     @State private var adAlertMessage = ""
 
     private let reviewURL = URL(string: "https://apps.apple.com/app/id6752032405?action=write-review")
-    private let aboutURL = URL(string: "https://lemonteasour.com/projects/recipenotes")
-    private let privacyURL = URL(string: "https://lemonteasour.com/projects/recipenotes/privacy")
+    private let aboutURL = URL(string: "https://lemonteasour.com/projects/recipebb")
+    private let privacyURL = URL(string: "https://lemonteasour.com/projects/recipebb/privacy")
     private let coffeeURL = URL(string: "https://buymeacoffee.com/lemonteasour")
 
     var body: some View {
@@ -40,7 +40,7 @@ struct MoreView: View {
                             HStack {
                                 Image(systemName: "info.circle.fill")
                                     .frame(width: 30)
-                                Text("About Recipe Notes")
+                                Text("About RecipeBB")
                                 Spacer()
                                 Image(systemName: "arrow.up.forward")
                                     .font(.caption)

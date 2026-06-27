@@ -40,7 +40,7 @@ Clone the repository and open in Xcode:
 git clone https://github.com/lemonteasour/recipe-notes.git
 cd recipe-notes
 pod install
-open RecipeNotes.xcworkspace
+open RecipeBB.xcodeproj
 ```
 
 Run on Simulator or a physical device.

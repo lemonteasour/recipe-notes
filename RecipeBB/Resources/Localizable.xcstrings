@@ -57,12 +57,12 @@
         }
       }
     },
-    "About Recipe Notes" : {
+    "About RecipeBB" : {
       "localizations" : {
         "ja" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "レシピノートについて"
+            "value" : "レシビビについて"
           }
         }
       }
