@@ -18,8 +18,7 @@ struct PantryCategoryManagementView: View {
     @State private var editName = ""
     @FocusState private var isInputFocused: Bool
 
-    @State private var showingError = false
-    @State private var errorMessage = ""
+    @State private var errorMessage: String?
 
     var body: some View {
         NavigationStack {
@@ -100,7 +99,6 @@ struct PantryCategoryManagementView: View {
                                 try viewModel.deleteCategory(categories[index])
                             } catch {
                                 errorMessage = "Failed to delete category: \(error.localizedDescription)"
-                                showingError = true
                             }
                         }
                     }
@@ -109,7 +107,6 @@ struct PantryCategoryManagementView: View {
                             try viewModel.reorderCategories(from: source, to: destination, categories: categories)
                         } catch {
                             errorMessage = "Failed to reorder categories: \(error.localizedDescription)"
-                            showingError = true
                         }
                     }
                 } header: {
@@ -130,11 +127,7 @@ struct PantryCategoryManagementView: View {
                     EditButton()
                 }
             }
-            .alert("Error", isPresented: $showingError) {
-                Button("OK", role: .cancel) { }
-            } message: {
-                Text(errorMessage)
-            }
+            .errorAlert($errorMessage)
             .navigationTitle("Manage Categories")
             .navigationBarTitleDisplayMode(.inline)
         }
@@ -152,7 +145,6 @@ struct PantryCategoryManagementView: View {
             isInputFocused = false
         } catch {
             errorMessage = error.localizedDescription
-            showingError = true
         }
     }
 
@@ -167,7 +159,6 @@ struct PantryCategoryManagementView: View {
             editingCategory = nil
         } catch {
             errorMessage = error.localizedDescription
-            showingError = true
         }
     }
 }

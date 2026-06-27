@@ -42,29 +42,21 @@ final class RecipeListViewModel {
 
     /// Return all unique ingredients (used for filtering)
     func allIngredients(from allRecipes: [Recipe]) -> [String] {
-        let names = allRecipes.flatMap { recipe in
-            recipe.ingredients.map { $0.name }
-        }
-        return Array(Set(names)).sorted()
+        IngredientCatalog.normalized(allRecipes.flatMap { $0.ingredients.map(\.name) })
     }
 
-    /// Return ingredients filtered by ingredientSearch
-    func filteredIngredients(from allRecipes: [Recipe]) -> [String] {
-        let all = allIngredients(from: allRecipes)
-        if ingredientSearch.isEmpty { return all }
-        return all.filter { $0.localizedStandardContains(ingredientSearch) }
+    /// Return ingredient names filtered by `ingredientSearch`
+    func filteredIngredients(from allIngredients: [String]) -> [String] {
+        if ingredientSearch.isEmpty { return allIngredients }
+        return allIngredients.filter { $0.localizedStandardContains(ingredientSearch) }
     }
 
     /// Delete recipes
-    func deleteRecipe(at offsets: IndexSet, from allRecipes: [Recipe]) {
+    func deleteRecipe(at offsets: IndexSet, from allRecipes: [Recipe]) throws {
         for index in offsets {
             context.delete(allRecipes[index])
         }
-        do {
-            try context.save()
-        } catch {
-            print("Failed to save after deleting recipes: \(error)")
-        }
+        try context.save()
     }
 
     /// Toggle selection for an ingredient

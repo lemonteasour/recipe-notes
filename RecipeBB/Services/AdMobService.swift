@@ -7,6 +7,7 @@
 
 import UIKit
 import GoogleMobileAds
+import os
 
 @Observable
 @MainActor
@@ -36,7 +37,7 @@ class AdMobService: NSObject, FullScreenContentDelegate {
 
         // If adUnitID is not configured, ads are disabled
         guard let adUnitID else {
-            print("AdMob not configured: AdMobRewardedAdUnitIdentifier missing in Info.plist")
+            Logger.ads.notice("AdMob not configured: AdMobRewardedAdUnitIdentifier missing in Info.plist")
             return
         }
 
@@ -50,7 +51,7 @@ class AdMobService: NSObject, FullScreenContentDelegate {
 
                 // Check if task was cancelled
                 guard !Task.isCancelled else {
-                    print("Ad load was cancelled")
+                    Logger.ads.debug("Ad load was cancelled")
                     isAdLoading = false
                     return
                 }
@@ -59,9 +60,9 @@ class AdMobService: NSObject, FullScreenContentDelegate {
                 self.rewardedAd = ad
                 self.isAdReady = true
                 self.isAdLoading = false
-                print("Rewarded ad loaded successfully")
+                Logger.ads.info("Rewarded ad loaded successfully")
             } catch {
-                print("Failed to load rewarded ad with error: \(error.localizedDescription)")
+                Logger.ads.error("Failed to load rewarded ad: \(error.localizedDescription)")
                 self.isAdReady = false
                 self.isAdLoading = false
             }
@@ -70,17 +71,31 @@ class AdMobService: NSObject, FullScreenContentDelegate {
         await loadTask?.value
     }
 
+    /// Presents a loaded ad from the app's current root view controller.
+    /// - Returns: `true` if the user was shown the ad and earned the reward.
+    func presentAd() async -> Bool {
+        guard let rootViewController = Self.rootViewController() else {
+            Logger.ads.error("Unable to present ad: no root view controller")
+            return false
+        }
+        return await withCheckedContinuation { continuation in
+            showAd(from: rootViewController) { success in
+                continuation.resume(returning: success)
+            }
+        }
+    }
+
     nonisolated func showAd(from viewController: UIViewController, completion: @escaping (Bool) -> Void) {
         Task { @MainActor in
             guard let ad = rewardedAd, isAdReady else {
-                print("Ad wasn't ready.")
+                Logger.ads.notice("Ad wasn't ready.")
                 completion(false)
                 return
             }
 
             ad.present(from: viewController) {
                 let reward = ad.adReward
-                print("Reward amount: \(reward.amount)")
+                Logger.ads.debug("Reward amount: \(reward.amount)")
 
                 Task { @MainActor in
                     self.isAdReady = false
@@ -93,13 +108,22 @@ class AdMobService: NSObject, FullScreenContentDelegate {
         }
     }
 
+    /// Resolves the key window's root view controller for ad presentation.
+    private static func rootViewController() -> UIViewController? {
+        UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .flatMap { $0.windows }
+            .first { $0.isKeyWindow }?
+            .rootViewController
+    }
+
     // MARK: - FullScreenContentDelegate
 
     func adDidDismissFullScreenContent(_ ad: FullScreenPresentingAd) {
-        print("Ad did dismiss")
+        Logger.ads.debug("Ad did dismiss")
     }
 
     func ad(_ ad: FullScreenPresentingAd, didFailToPresentFullScreenContentWithError error: Error) {
-        print("Ad failed to present with error: \(error.localizedDescription)")
+        Logger.ads.error("Ad failed to present: \(error.localizedDescription)")
     }
 }

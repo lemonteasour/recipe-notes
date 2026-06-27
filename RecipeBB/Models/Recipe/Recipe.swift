@@ -39,10 +39,10 @@ class Recipe {
 
     // MARK: - Computed properties
     var sortedIngredients: [any IngredientItem] {
-        (ingredients as [any IngredientItem] + ingredientHeadings as [any IngredientItem]).sorted { $0.sortOrder < $1.sortOrder }
+        mergedIngredientItems(ingredients, ingredientHeadings)
     }
 
     var sortedSteps: [Step] {
-        steps.sorted { $0.sortOrder < $1.sortOrder }
+        steps.sortedByOrder()
     }
 }

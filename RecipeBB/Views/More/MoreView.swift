@@ -8,7 +8,7 @@
 import SwiftUI
 
 struct MoreView: View {
-    @State private var adMobService = AdMobService.shared
+    private let adMobService = AdMobService.shared
     @State private var showingAdAlert = false
     @State private var adAlertMessage = ""
 
@@ -119,13 +119,6 @@ struct MoreView: View {
     }
 
     private func watchAd() async {
-        guard let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-              let rootViewController = windowScene.windows.first?.rootViewController else {
-            adAlertMessage = "Unable to show ad. Please try again."
-            showingAdAlert = true
-            return
-        }
-
         if !adMobService.isAdReady {
             await adMobService.loadAd()
             adAlertMessage = "Ad is loading. Please wait a moment and try again."
@@ -133,15 +126,11 @@ struct MoreView: View {
             return
         }
 
-        adMobService.showAd(from: rootViewController) { success in
-            if success {
-                adAlertMessage = "Thank you for supporting the developer!"
-                showingAdAlert = true
-            } else {
-                adAlertMessage = "Failed to show ad. Please try again later."
-                showingAdAlert = true
-            }
-        }
+        let success = await adMobService.presentAd()
+        adAlertMessage = success
+            ? "Thank you for supporting the developer!"
+            : "Failed to show ad. Please try again later."
+        showingAdAlert = true
     }
 }
 

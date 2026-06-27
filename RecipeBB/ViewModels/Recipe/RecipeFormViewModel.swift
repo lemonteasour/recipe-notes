@@ -7,6 +7,7 @@
 
 import SwiftUI
 import SwiftData
+import PhotosUI
 
 @MainActor
 @Observable
@@ -25,12 +26,11 @@ class RecipeFormViewModel {
 
     // MARK: - Computed
     var combinedIngredientItems: [any IngredientItem] {
-        let all: [any IngredientItem] = ingredients + ingredientHeadings
-        return all.sorted { $0.sortOrder < $1.sortOrder }
+        mergedIngredientItems(ingredients, ingredientHeadings)
     }
 
     var sortedSteps: [Step] {
-        steps.sorted { $0.sortOrder < $1.sortOrder }
+        steps.sortedByOrder()
     }
 
     // MARK: - Init
@@ -38,41 +38,45 @@ class RecipeFormViewModel {
         self.context = context
         self.recipeToEdit = recipeToEdit
         loadRecipe()
-        self.allIngredientNames = fetchAllIngredientNames()
+        self.allIngredientNames = IngredientCatalog.uniqueNames(in: context)
     }
 
     // MARK: - Bindings
-func binding(for ingredient: Ingredient) -> Binding<Ingredient>? {
-        guard ingredients.contains(where: { $0.id == ingredient.id }) else { return nil }
-        return Binding(
-            get: { self.ingredients.first(where: { $0.id == ingredient.id }) ?? ingredient },
-            set: { newValue in
-                guard let idx = self.ingredients.firstIndex(where: { $0.id == ingredient.id }) else { return }
-                self.ingredients[idx] = newValue
-            }
-        )
+    func binding(for ingredient: Ingredient) -> Binding<Ingredient>? {
+        binding(for: ingredient, in: \.ingredients)
     }
 
     func binding(for heading: IngredientHeading) -> Binding<IngredientHeading>? {
-        guard ingredientHeadings.contains(where: { $0.id == heading.id }) else { return nil }
+        binding(for: heading, in: \.ingredientHeadings)
+    }
+
+    func binding(for step: Step) -> Binding<Step>? {
+        binding(for: step, in: \.steps)
+    }
+
+    /// A two-way binding to the array element matching `element`'s id, or nil if it's no longer present.
+    private func binding<T: Identifiable>(
+        for element: T,
+        in arrayKeyPath: ReferenceWritableKeyPath<RecipeFormViewModel, [T]>
+    ) -> Binding<T>? where T.ID == UUID {
+        guard self[keyPath: arrayKeyPath].contains(where: { $0.id == element.id }) else { return nil }
         return Binding(
-            get: { self.ingredientHeadings.first(where: { $0.id == heading.id }) ?? heading },
+            get: { self[keyPath: arrayKeyPath].first(where: { $0.id == element.id }) ?? element },
             set: { newValue in
-                guard let idx = self.ingredientHeadings.firstIndex(where: { $0.id == heading.id }) else { return }
-                self.ingredientHeadings[idx] = newValue
+                guard let idx = self[keyPath: arrayKeyPath].firstIndex(where: { $0.id == element.id }) else { return }
+                self[keyPath: arrayKeyPath][idx] = newValue
             }
         )
     }
 
-    func binding(for step: Step) -> Binding<Step>? {
-        guard steps.contains(where: { $0.id == step.id }) else { return nil }
-        return Binding(
-            get: { self.steps.first(where: { $0.id == step.id }) ?? step },
-            set: { newValue in
-                guard let idx = self.steps.firstIndex(where: { $0.id == step.id }) else { return }
-                self.steps[idx] = newValue
-            }
-        )
+    // MARK: - Photo
+    func updatePhoto(from item: PhotosPickerItem) async {
+        guard
+            let data = try? await item.loadTransferable(type: Data.self),
+            let image = UIImage(data: data),
+            let jpeg = image.jpegData(compressionQuality: 0.8)
+        else { return }
+        photo = jpeg
     }
 
     // MARK: - Ingredient Items
@@ -114,19 +118,6 @@ func binding(for ingredient: Ingredient) -> Binding<Ingredient>? {
         reindexIngredientItems(using: all)
     }
 
-    private func fetchAllIngredientNames() -> [String] {
-        let ingredientDescriptor = FetchDescriptor<Ingredient>()
-        do {
-            let allIngredients = try context.fetch(ingredientDescriptor)
-            let names = allIngredients
-                .map { $0.name.trimmingCharacters(in: .whitespacesAndNewlines) }
-                .filter { !$0.isEmpty }
-            return Array(Set(names)).sorted()
-        } catch {
-            return []
-        }
-    }
-
     // MARK: - Steps
     func addStep() {
         steps.append(Step(value: "", sortOrder: steps.count))
@@ -155,21 +146,53 @@ func binding(for ingredient: Ingredient) -> Binding<Ingredient>? {
         desc = recipe.desc
         photo = recipe.photo
 
-        // Create copies of the objects so we don't modify the originals until Save is pressed
+        // Create detached copies so we don't mutate the originals until Save is pressed.
+        // Copies keep the originals' ids so they can be matched back up on save.
         ingredients = recipe.ingredients.sorted { $0.sortOrder < $1.sortOrder }.map {
-            Ingredient(name: $0.name, quantity: $0.quantity, sortOrder: $0.sortOrder)
+            let copy = Ingredient(name: $0.name, quantity: $0.quantity, sortOrder: $0.sortOrder)
+            copy.id = $0.id
+            return copy
         }
         ingredientHeadings = recipe.ingredientHeadings.sorted { $0.sortOrder < $1.sortOrder }.map {
-            IngredientHeading(name: $0.name, sortOrder: $0.sortOrder)
+            let copy = IngredientHeading(name: $0.name, sortOrder: $0.sortOrder)
+            copy.id = $0.id
+            return copy
         }
         steps = recipe.steps.sorted { $0.sortOrder < $1.sortOrder }.map {
-            Step(value: $0.value, sortOrder: $0.sortOrder)
+            let copy = Step(value: $0.value, sortOrder: $0.sortOrder)
+            copy.id = $0.id
+            return copy
+        }
+    }
+
+    /// Reconciles a recipe's stored children against the edited copies, matching by id:
+    /// survivors are updated in place, missing ones are deleted, and brand-new ones are inserted.
+    private func reconcileChildren<Model>(
+        existing: [Model],
+        edited: [Model],
+        update: (_ original: Model, _ edited: Model) -> Void,
+        attach: (Model) -> Void
+    ) where Model: PersistentModel, Model: Identifiable, Model.ID == UUID {
+        let existingByID = Dictionary(existing.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
+        let editedIDs = Set(edited.map(\.id))
+
+        for original in existing where !editedIDs.contains(original.id) {
+            context.delete(original)
+        }
+
+        for copy in edited {
+            if let original = existingByID[copy.id] {
+                update(original, copy)
+            } else {
+                attach(copy)
+                context.insert(copy)
+            }
         }
     }
 
     func saveRecipe() throws {
         guard !name.isEmpty else {
-            throw RecipeError.emptyName
+            throw ValidationError.emptyRecipeName
         }
 
         // Normalize indices
@@ -177,24 +200,40 @@ func binding(for ingredient: Ingredient) -> Binding<Ingredient>? {
         reindexIngredientItems(using: all)
 
         if let recipe = recipeToEdit {
-            // Delete old objects from context
-            for oldIngredient in recipe.ingredients {
-                context.delete(oldIngredient)
-            }
-            for oldHeading in recipe.ingredientHeadings {
-                context.delete(oldHeading)
-            }
-            for oldStep in recipe.steps {
-                context.delete(oldStep)
-            }
-
-            // Update recipe with new data
             recipe.name = name
             recipe.desc = desc
             recipe.photo = photo
-            recipe.ingredients = ingredients
-            recipe.ingredientHeadings = ingredientHeadings
-            recipe.steps = steps
+
+            // Reconcile children in place: update survivors, delete removed, insert new.
+            // This preserves object identity instead of churning the whole graph on every save.
+            reconcileChildren(
+                existing: recipe.ingredients,
+                edited: ingredients,
+                update: { original, copy in
+                    original.name = copy.name
+                    original.quantity = copy.quantity
+                    original.sortOrder = copy.sortOrder
+                },
+                attach: { $0.recipe = recipe }
+            )
+            reconcileChildren(
+                existing: recipe.ingredientHeadings,
+                edited: ingredientHeadings,
+                update: { original, copy in
+                    original.name = copy.name
+                    original.sortOrder = copy.sortOrder
+                },
+                attach: { $0.recipe = recipe }
+            )
+            reconcileChildren(
+                existing: recipe.steps,
+                edited: steps,
+                update: { original, copy in
+                    original.value = copy.value
+                    original.sortOrder = copy.sortOrder
+                },
+                attach: { $0.recipe = recipe }
+            )
         } else {
             let newRecipe = Recipe(
                 name: name,

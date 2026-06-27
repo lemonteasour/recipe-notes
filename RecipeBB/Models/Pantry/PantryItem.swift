@@ -15,7 +15,6 @@ class PantryItem {
     var quantity: String
     var sortOrder: Int
     var category: PantryCategory?
-    var createdAt: Date
 
     init(
         name: String,
@@ -28,6 +27,5 @@ class PantryItem {
         self.quantity = quantity
         self.sortOrder = sortOrder
         self.category = category
-        self.createdAt = Date()
     }
 }

@@ -17,8 +17,7 @@ struct RecipeListView: View {
     private var allRecipes: [Recipe]
 
     @State private var showImportError = false
-    @State private var showSaveError = false
-    @State private var saveErrorMessage = ""
+    @State private var errorMessage: String?
 
     var body: some View {
         @Bindable var viewModel = viewModel
@@ -40,7 +39,11 @@ struct RecipeListView: View {
                     }
                 }
                 .onDelete { offsets in
-                    viewModel.deleteRecipe(at: offsets, from: filtered)
+                    do {
+                        try viewModel.deleteRecipe(at: offsets, from: filtered)
+                    } catch {
+                        errorMessage = "Failed to delete recipe: \(error.localizedDescription)"
+                    }
                 }
             }
             .scrollDismissesKeyboard(.interactively)
@@ -72,10 +75,10 @@ struct RecipeListView: View {
                 }
             }
             .sheet(isPresented: $viewModel.showingAddForm) {
-                RecipeFormView()
+                RecipeFormView(context: context)
             }
             .sheet(isPresented: $viewModel.showingFilterSheet) {
-                IngredientFilterView()
+                IngredientFilterView(ingredients: viewModel.allIngredients(from: allRecipes))
                     .environment(viewModel)
             }
             .searchable(text: $viewModel.searchText, prompt: "Search recipes")
@@ -84,11 +87,7 @@ struct RecipeListView: View {
             } message: {
                 Text("Could not import recipe. Please make sure you have copied valid recipe text.")
             }
-            .alert("Save Error", isPresented: $showSaveError) {
-                Button("OK", role: .cancel) { }
-            } message: {
-                Text(saveErrorMessage)
-            }
+            .errorAlert($errorMessage)
         }
     }
 
@@ -107,8 +106,7 @@ struct RecipeListView: View {
         do {
             try context.save()
         } catch {
-            saveErrorMessage = "Failed to save recipe: \(error.localizedDescription)"
-            showSaveError = true
+            errorMessage = "Failed to save recipe: \(error.localizedDescription)"
         }
     }
 }

@@ -13,7 +13,6 @@ class PantryCategory {
     @Attribute(.unique) var id: UUID
     var name: String
     var sortOrder: Int
-    var createdAt: Date
 
     @Relationship(deleteRule: .cascade, inverse: \PantryItem.category)
     var items: [PantryItem]?
@@ -25,6 +24,5 @@ class PantryCategory {
         self.id = UUID()
         self.name = name
         self.sortOrder = sortOrder
-        self.createdAt = Date()
     }
 }

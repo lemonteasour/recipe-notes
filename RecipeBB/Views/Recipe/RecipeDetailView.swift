@@ -8,8 +8,10 @@
 import SwiftUI
 
 struct RecipeDetailView: View {
+    @Environment(\.modelContext) private var context
+
     var recipe: Recipe
-    
+
     @State private var isShowingEdit = false
     @State private var isCookingMode = false
     
@@ -66,7 +68,7 @@ struct RecipeDetailView: View {
             }
         }
         .sheet(isPresented: $isShowingEdit) {
-            RecipeFormView(recipeToEdit: recipe)
+            RecipeFormView(context: context, recipeToEdit: recipe)
         }
         .onChange(of: isCookingMode) {
             UIApplication.shared.isIdleTimerDisabled = isCookingMode

@@ -25,8 +25,7 @@ struct PantryView: View {
     @State private var editQuantity = ""
     @FocusState private var isInputFocused: Bool
 
-    @State private var showingError = false
-    @State private var errorMessage = ""
+    @State private var errorMessage: String?
     @State private var showingCategorySheet = false
 
     init(context: ModelContext) {
@@ -77,11 +76,11 @@ struct PantryView: View {
                             editName: $editName,
                             editQuantity: $editQuantity,
                             isInputFocused: $isInputFocused,
-                            viewModel: viewModel,
                             onStartEdit: startEditing,
                             onSaveEdit: saveEdit,
                             onCancelEdit: { editingItem = nil },
-                            onDrop: handleDrop
+                            onDrop: handleDrop,
+                            onDelete: deleteItem
                         )
                     }
 
@@ -94,11 +93,11 @@ struct PantryView: View {
                             editName: $editName,
                             editQuantity: $editQuantity,
                             isInputFocused: $isInputFocused,
-                            viewModel: viewModel,
                             onStartEdit: startEditing,
                             onSaveEdit: saveEdit,
                             onCancelEdit: { editingItem = nil },
-                            onDrop: handleDrop
+                            onDrop: handleDrop,
+                            onDelete: deleteItem
                         )
                     }
                 }
@@ -114,11 +113,7 @@ struct PantryView: View {
                     }
                 }
             }
-            .alert("Error", isPresented: $showingError) {
-                Button("OK", role: .cancel) { }
-            } message: {
-                Text(errorMessage)
-            }
+            .errorAlert($errorMessage)
             .sheet(isPresented: $showingCategorySheet) {
                 PantryCategoryManagementView(viewModel: viewModel, categories: categories)
             }
@@ -139,7 +134,14 @@ struct PantryView: View {
             isInputFocused = false
         } catch {
             errorMessage = error.localizedDescription
-            showingError = true
+        }
+    }
+
+    private func deleteItem(_ item: PantryItem) {
+        do {
+            try viewModel.deleteItem(item)
+        } catch {
+            errorMessage = "Failed to delete item: \(error.localizedDescription)"
         }
     }
 
@@ -155,7 +157,6 @@ struct PantryView: View {
             editingItem = nil
         } catch {
             errorMessage = error.localizedDescription
-            showingError = true
         }
     }
 
@@ -183,7 +184,6 @@ struct PantryView: View {
                     try viewModel.moveItem(item, to: category)
                 } catch {
                     errorMessage = "Failed to move item: \(error.localizedDescription)"
-                    showingError = true
                 }
             }
         }

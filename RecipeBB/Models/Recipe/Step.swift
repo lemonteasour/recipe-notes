@@ -21,3 +21,10 @@ class Step: Identifiable {
         self.sortOrder = sortOrder
     }
 }
+
+extension Array where Element == Step {
+    /// Returns the steps ordered by their `sortOrder`.
+    func sortedByOrder() -> [Step] {
+        sorted { $0.sortOrder < $1.sortOrder }
+    }
+}

@@ -19,17 +19,15 @@ class PantryViewModel {
     }
 
     // MARK: - Item Management
-    func deleteItems(at offsets: IndexSet, from items: [PantryItem]) throws {
-        for index in offsets {
-            context.delete(items[index])
-        }
+    func deleteItem(_ item: PantryItem) throws {
+        context.delete(item)
         try context.save()
     }
 
     func addItem(name: String, quantity: String, category: PantryCategory?) throws {
         let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedName.isEmpty else {
-            throw PantryError.emptyName
+            throw ValidationError.emptyPantryItemName
         }
 
         let maxSortOrder = category?.items?.map(\.sortOrder).max() ?? -1
@@ -46,7 +44,7 @@ class PantryViewModel {
     func updateItem(_ item: PantryItem, name: String, quantity: String) throws {
         let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedName.isEmpty else {
-            throw PantryError.emptyName
+            throw ValidationError.emptyPantryItemName
         }
 
         item.name = trimmedName
@@ -78,7 +76,7 @@ class PantryViewModel {
     func addCategory(name: String) throws {
         let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedName.isEmpty else {
-            throw PantryError.emptyName
+            throw ValidationError.emptyCategoryName
         }
 
         // Get the highest sort order
@@ -94,7 +92,7 @@ class PantryViewModel {
     func updateCategory(_ category: PantryCategory, name: String) throws {
         let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedName.isEmpty else {
-            throw PantryError.emptyName
+            throw ValidationError.emptyCategoryName
         }
 
         category.name = trimmedName

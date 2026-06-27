@@ -6,15 +6,13 @@
 //
 
 import SwiftUI
-import SwiftData
 
 struct IngredientFilterView: View {
     @Environment(RecipeListViewModel.self) private var viewModel
-
-    @Query(sort: \Recipe.createdAt, order: .reverse)
-    private var allRecipes: [Recipe]
-
     @Environment(\.dismiss) private var dismiss
+
+    /// All unique ingredient names, supplied by the owning list view.
+    let ingredients: [String]
 
     var body: some View {
         @Bindable var viewModel = viewModel
@@ -25,7 +23,7 @@ struct IngredientFilterView: View {
                 }
 
                 Section("Ingredients") {
-                    ForEach(viewModel.filteredIngredients(from: allRecipes), id: \.self) { ingredient in
+                    ForEach(viewModel.filteredIngredients(from: ingredients), id: \.self) { ingredient in
                         IngredientRow(
                             ingredient: ingredient,
                             isSelected: viewModel.selectedIngredients.contains(ingredient)
@@ -79,7 +77,6 @@ private struct IngredientRow: View {
     let container = PreviewData.containerWithSamples()
     let viewModel = RecipeListViewModel(context: container.mainContext)
 
-    return IngredientFilterView()
+    return IngredientFilterView(ingredients: ["Flour", "Sugar", "Eggs", "Butter"])
         .environment(viewModel)
-        .modelContainer(container)
 }

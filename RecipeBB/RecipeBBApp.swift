@@ -8,6 +8,7 @@
 import SwiftUI
 import SwiftData
 import GoogleMobileAds
+import os
 
 @main
 struct RecipeBBApp: App {
@@ -27,7 +28,7 @@ struct RecipeBBApp: App {
         } catch {
             tempError = error
             // Log the error for debugging
-            print("CRITICAL: Failed to initialize ModelContainer: \(error)")
+            Logger.persistence.critical("Failed to initialize ModelContainer: \(error)")
         }
 
         self.container = tempContainer

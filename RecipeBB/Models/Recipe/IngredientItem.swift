@@ -12,3 +12,9 @@ protocol IngredientItem: Identifiable {
     var name: String { get set }
     var sortOrder: Int { get set }
 }
+
+/// Merges ingredients and headings into a single list ordered by `sortOrder`.
+func mergedIngredientItems(_ ingredients: [Ingredient], _ headings: [IngredientHeading]) -> [any IngredientItem] {
+    (ingredients as [any IngredientItem] + headings as [any IngredientItem])
+        .sorted { $0.sortOrder < $1.sortOrder }
+}

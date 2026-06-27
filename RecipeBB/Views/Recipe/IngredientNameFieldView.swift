@@ -35,16 +35,8 @@ struct IngredientNameFieldView: View {
                 if newValue {
                     // Field just got focus - update originalText and show suggestions if applicable
                     originalText = text.trimmingCharacters(in: .whitespaces)
-                    let query = text.trimmingCharacters(in: .whitespaces)
-                    if !query.isEmpty {
-                        var matches = suggestions.filter { $0.localizedCaseInsensitiveContains(query) }
-
-                        // Exclude the original ingredient name
-                        if excludeCurrent && !originalText.isEmpty {
-                            matches = matches.filter { $0.lowercased() != originalText.lowercased() }
-                        }
-
-                        filteredSuggestions = Array(matches.sorted().prefix(5))
+                    if !originalText.isEmpty {
+                        filteredSuggestions = suggestionMatches(for: originalText)
                         showSuggestions = !filteredSuggestions.isEmpty
                     }
                 } else {
@@ -78,16 +70,18 @@ struct IngredientNameFieldView: View {
             filteredSuggestions = []
         } else if isFocused {
             // Only update suggestions if field is focused (user is actively typing)
-            var matches = suggestions.filter { $0.localizedCaseInsensitiveContains(query) }
-
-            // Exclude the original ingredient name
-            if excludeCurrent && !originalText.isEmpty {
-                matches = matches.filter { $0.lowercased() != originalText.lowercased() }
-            }
-
-            filteredSuggestions = Array(matches.sorted().prefix(5))
+            filteredSuggestions = suggestionMatches(for: query)
             showSuggestions = !filteredSuggestions.isEmpty
         }
+    }
+
+    /// Up to five suggestions containing `query`, excluding the field's original value.
+    private func suggestionMatches(for query: String) -> [String] {
+        var matches = suggestions.filter { $0.localizedCaseInsensitiveContains(query) }
+        if excludeCurrent && !originalText.isEmpty {
+            matches = matches.filter { $0.lowercased() != originalText.lowercased() }
+        }
+        return Array(matches.sorted().prefix(5))
     }
 }
 
