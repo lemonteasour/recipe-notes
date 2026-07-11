@@ -143,16 +143,6 @@
         }
       }
     },
-    "Buy me a coffee" : {
-      "localizations" : {
-        "ja" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "寄付する"
-          }
-        }
-      }
-    },
     "Cancel" : {
       "localizations" : {
         "ja" : {

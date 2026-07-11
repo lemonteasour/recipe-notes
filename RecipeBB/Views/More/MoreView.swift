@@ -15,7 +15,6 @@ struct MoreView: View {
     private let reviewURL = URL(string: "https://apps.apple.com/app/id6752032405?action=write-review")
     private let aboutURL = URL(string: "https://lemonteasour.com/projects/recipebb")
     private let privacyURL = URL(string: "https://lemonteasour.com/projects/recipebb/privacy")
-    private let coffeeURL = URL(string: "https://buymeacoffee.com/lemonteasour")
 
     var body: some View {
         NavigationStack {
@@ -86,20 +85,6 @@ struct MoreView: View {
                         }
                     }
                     .disabled(adMobService.isAdLoading)
-
-                    if let coffeeURL {
-                        Link(destination: coffeeURL) {
-                            HStack {
-                                Image(systemName: "cup.and.saucer.fill")
-                                    .frame(width: 30)
-                                Text("Buy me a coffee")
-                                Spacer()
-                                Image(systemName: "arrow.up.forward")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                            }
-                        }
-                    }
                 } header: {
                     Text("Support the developer")
                 }
