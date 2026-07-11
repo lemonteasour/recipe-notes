@@ -36,7 +36,7 @@ struct RecipeFormView: View {
                                 errorMessage = error.localizedDescription
                             }
                         }
-                        .disabled(viewModel.name.isEmpty)
+                        .disabled(viewModel.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                     }
                 }
                 .errorAlert($errorMessage)

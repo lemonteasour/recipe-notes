@@ -17,7 +17,7 @@ struct RecipeDetailCookingView: View {
                     .font(.title2).bold()
                     .padding(.vertical, 4)
 
-                ForEach(recipe.sortedIngredients, id: \.id) { item in
+                ForEach(recipe.sortedIngredientItems, id: \.id) { item in
                     IngredientItemRowView(item: item)
                 }
             }

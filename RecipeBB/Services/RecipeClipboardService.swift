@@ -26,10 +26,10 @@ class RecipeClipboardService {
         output += "\n"
 
         // Ingredients
-        if !recipe.sortedIngredients.isEmpty {
+        if !recipe.sortedIngredientItems.isEmpty {
             output += String(localized: "Ingredients") + "\n"
 
-            for item in recipe.sortedIngredients {
+            for item in recipe.sortedIngredientItems {
                 if let heading = item as? IngredientHeading {
                     // Ingredient heading
                     output += heading.name + ":\n"

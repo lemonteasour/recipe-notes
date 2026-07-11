@@ -191,7 +191,8 @@ class RecipeFormViewModel {
     }
 
     func saveRecipe() throws {
-        guard !name.isEmpty else {
+        let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmedName.isEmpty else {
             throw ValidationError.emptyRecipeName
         }
 
@@ -200,7 +201,7 @@ class RecipeFormViewModel {
         reindexIngredientItems(using: all)
 
         if let recipe = recipeToEdit {
-            recipe.name = name
+            recipe.name = trimmedName
             recipe.desc = desc
             recipe.photo = photo
 
@@ -236,7 +237,7 @@ class RecipeFormViewModel {
             )
         } else {
             let newRecipe = Recipe(
-                name: name,
+                name: trimmedName,
                 desc: desc,
                 photo: photo,
                 ingredients: ingredients,

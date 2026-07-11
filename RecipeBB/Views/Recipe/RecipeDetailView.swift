@@ -40,7 +40,7 @@ struct RecipeDetailView: View {
                     }
                     
                     Section("Ingredients") {
-                        ForEach(recipe.sortedIngredients, id: \.id) { item in
+                        ForEach(recipe.sortedIngredientItems, id: \.id) { item in
                             IngredientItemRowView(item: item)
                         }
                     }

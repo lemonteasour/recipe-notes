@@ -14,8 +14,8 @@ struct PantryView: View {
     @Query(sort: [SortDescriptor(\PantryCategory.sortOrder)])
     private var categories: [PantryCategory]
 
-    @Query(sort: [SortDescriptor(\PantryItem.sortOrder)])
-    private var uncategorizedItems: [PantryItem]
+    // Configured in init: uncategorized items sorted by sortOrder
+    @Query private var uncategorizedItems: [PantryItem]
 
     @State private var newItemName = ""
     @State private var newItemQuantity = ""
@@ -31,7 +31,6 @@ struct PantryView: View {
     init(context: ModelContext) {
         _viewModel = State(initialValue: PantryViewModel(context: context))
 
-        // Filter uncategorized items
         let predicate = #Predicate<PantryItem> { item in
             item.category == nil
         }

@@ -42,5 +42,10 @@ struct ContentView: View {
 }
 
 #Preview {
-    ContentView()
+    let container = PreviewData.containerWithSamples()
+    let viewModel = RecipeListViewModel(context: container.mainContext)
+
+    return ContentView()
+        .environment(viewModel)
+        .modelContainer(container)
 }

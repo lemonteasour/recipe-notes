@@ -7,7 +7,6 @@
 
 import SwiftUI
 import SwiftData
-import GoogleMobileAds
 import os
 
 @main
@@ -17,8 +16,6 @@ struct RecipeBBApp: App {
     private let containerError: Error?
 
     init() {
-        MobileAds.shared.start()
-
         // Safely initialize ModelContainer with error handling
         var tempContainer: ModelContainer?
         var tempError: Error?
@@ -59,6 +56,11 @@ struct RecipeBBApp: App {
                     .tint(.accent)
                     .environment(recipeListViewModel)
                     .modelContainer(container)
+                    .task {
+                        // Gather ad consent (showing the form if required),
+                        // then start the Mobile Ads SDK
+                        await AdMobService.shared.requestConsentAndStart()
+                    }
             }
         }
     }

@@ -38,7 +38,8 @@ class Recipe {
     }
 
     // MARK: - Computed properties
-    var sortedIngredients: [any IngredientItem] {
+    /// Ingredients and headings merged into a single list ordered by `sortOrder`.
+    var sortedIngredientItems: [any IngredientItem] {
         mergedIngredientItems(ingredients, ingredientHeadings)
     }
 

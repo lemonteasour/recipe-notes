@@ -106,15 +106,18 @@ struct MoreView: View {
     private func watchAd() async {
         if !adMobService.isAdReady {
             await adMobService.loadAd()
-            adAlertMessage = "Ad is loading. Please wait a moment and try again."
+        }
+
+        guard adMobService.isAdReady else {
+            adAlertMessage = String(localized: "Could not load an ad. Please try again later.")
             showingAdAlert = true
             return
         }
 
         let success = await adMobService.presentAd()
         adAlertMessage = success
-            ? "Thank you for supporting the developer!"
-            : "Failed to show ad. Please try again later."
+            ? String(localized: "Thank you for supporting the developer!")
+            : String(localized: "Failed to show ad. Please try again later.")
         showingAdAlert = true
     }
 }

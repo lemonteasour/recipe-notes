@@ -24,17 +24,29 @@ class PantryViewModel {
         try context.save()
     }
 
+    /// Highest sort order among the items in `category`, or among uncategorized items when nil.
+    private func maxSortOrder(in category: PantryCategory?) throws -> Int {
+        if let category {
+            return category.items?.map(\.sortOrder).max() ?? -1
+        }
+        var descriptor = FetchDescriptor<PantryItem>(
+            predicate: #Predicate { $0.category == nil },
+            sortBy: [SortDescriptor(\.sortOrder, order: .reverse)]
+        )
+        descriptor.fetchLimit = 1
+        return try context.fetch(descriptor).first?.sortOrder ?? -1
+    }
+
     func addItem(name: String, quantity: String, category: PantryCategory?) throws {
         let trimmedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmedName.isEmpty else {
             throw ValidationError.emptyPantryItemName
         }
 
-        let maxSortOrder = category?.items?.map(\.sortOrder).max() ?? -1
         let item = PantryItem(
             name: trimmedName,
             quantity: quantity,
-            sortOrder: maxSortOrder + 1,
+            sortOrder: try maxSortOrder(in: category) + 1,
             category: category
         )
         context.insert(item)
@@ -53,21 +65,10 @@ class PantryViewModel {
     }
 
     func moveItem(_ item: PantryItem, to category: PantryCategory?) throws {
-        // Get the highest sort order in the destination category
-        let maxSortOrder = category?.items?.map(\.sortOrder).max() ?? -1
+        // Place the item at the end of the destination category
+        let maxSortOrder = try maxSortOrder(in: category)
         item.category = category
         item.sortOrder = maxSortOrder + 1
-        try context.save()
-    }
-
-    func reorderItems(in category: PantryCategory?, from source: IndexSet, to destination: Int, items: [PantryItem]) throws {
-        var itemsArray = items
-        itemsArray.move(fromOffsets: source, toOffset: destination)
-
-        // Update sort order for all items
-        for (index, item) in itemsArray.enumerated() {
-            item.sortOrder = index
-        }
         try context.save()
     }
 

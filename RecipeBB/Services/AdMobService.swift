@@ -7,6 +7,7 @@
 
 import UIKit
 import GoogleMobileAds
+import UserMessagingPlatform
 import os
 
 @Observable
@@ -19,6 +20,9 @@ class AdMobService: NSObject, FullScreenContentDelegate {
 
     private var rewardedAd: RewardedAd?
     private var loadTask: Task<Void, Never>?
+    private var isMobileAdsStarted = false
+    private var presentationCompletion: (@Sendable (Bool) -> Void)?
+    private var rewardEarned = false
 
     private let adUnitID: String? = {
         return Bundle.main.object(forInfoDictionaryKey: "AdMobRewardedAdUnitIdentifier") as? String
@@ -28,12 +32,34 @@ class AdMobService: NSObject, FullScreenContentDelegate {
         super.init()
     }
 
-    func loadAd() async {
-        // Cancel any existing load task
-        loadTask?.cancel()
+    /// Gathers UMP consent (presenting the consent form if required),
+    /// then starts the Mobile Ads SDK if ads may be requested.
+    func requestConsentAndStart() async {
+        do {
+            try await ConsentInformation.shared.requestConsentInfoUpdate(with: RequestParameters())
+            try await ConsentForm.loadAndPresentIfRequired(from: nil)
+        } catch {
+            Logger.ads.error("Consent gathering failed: \(error.localizedDescription)")
+        }
 
-        // Prevent multiple simultaneous loads
-        guard !isAdLoading else { return }
+        // canRequestAds can still be true on error if consent was obtained previously.
+        guard ConsentInformation.shared.canRequestAds, !isMobileAdsStarted else { return }
+        isMobileAdsStarted = true
+        await MobileAds.shared.start()
+    }
+
+    func loadAd() async {
+        // If a load is already in flight, wait for it instead of starting another
+        if isAdLoading {
+            await loadTask?.value
+            return
+        }
+
+        // Ads may only be requested once consent has been resolved and the SDK started
+        guard isMobileAdsStarted else {
+            Logger.ads.notice("Ad not loaded: Mobile Ads SDK not started (no consent yet)")
+            return
+        }
 
         // If adUnitID is not configured, ads are disabled
         guard let adUnitID else {
@@ -43,29 +69,20 @@ class AdMobService: NSObject, FullScreenContentDelegate {
 
         isAdLoading = true
 
-        // Store the load task so we can cancel it if needed
         loadTask = Task {
             do {
                 let ad = try await RewardedAd.load(
                     with: adUnitID, request: Request())
 
-                // Check if task was cancelled
-                guard !Task.isCancelled else {
-                    Logger.ads.debug("Ad load was cancelled")
-                    isAdLoading = false
-                    return
-                }
-
                 ad.fullScreenContentDelegate = self
                 self.rewardedAd = ad
                 self.isAdReady = true
-                self.isAdLoading = false
                 Logger.ads.info("Rewarded ad loaded successfully")
             } catch {
                 Logger.ads.error("Failed to load rewarded ad: \(error.localizedDescription)")
                 self.isAdReady = false
-                self.isAdLoading = false
             }
+            self.isAdLoading = false
         }
 
         await loadTask?.value
@@ -85,27 +102,41 @@ class AdMobService: NSObject, FullScreenContentDelegate {
         }
     }
 
-    nonisolated func showAd(from viewController: UIViewController, completion: @escaping (Bool) -> Void) {
-        Task { @MainActor in
-            guard let ad = rewardedAd, isAdReady else {
-                Logger.ads.notice("Ad wasn't ready.")
-                completion(false)
-                return
-            }
+    func showAd(from viewController: UIViewController, completion: @escaping @Sendable (Bool) -> Void) {
+        guard let ad = rewardedAd, isAdReady else {
+            Logger.ads.notice("Ad wasn't ready.")
+            completion(false)
+            return
+        }
 
-            ad.present(from: viewController) {
-                let reward = ad.adReward
-                Logger.ads.debug("Reward amount: \(reward.amount)")
+        // The reward handler only fires if the user watches enough of the ad;
+        // completion is called from the delegate once the ad is dismissed or fails.
+        isAdReady = false
+        rewardEarned = false
+        presentationCompletion = completion
 
-                Task { @MainActor in
-                    self.isAdReady = false
-                    self.rewardedAd = nil
-                    completion(true)
-                    // Preload next ad
-                    await self.loadAd()
-                }
+        ad.present(from: viewController) {
+            let reward = ad.adReward
+            Logger.ads.debug("Reward amount: \(reward.amount)")
+
+            Task { @MainActor in
+                self.rewardEarned = true
             }
         }
+    }
+
+    /// Tears down the presented ad and resumes the caller, in all outcomes:
+    /// reward earned, dismissed early, or failed to present.
+    private func finishPresentation() {
+        isAdReady = false
+        rewardedAd = nil
+
+        let completion = presentationCompletion
+        presentationCompletion = nil
+        completion?(rewardEarned)
+
+        // Preload next ad
+        Task { await loadAd() }
     }
 
     /// Resolves the key window's root view controller for ad presentation.
@@ -121,9 +152,11 @@ class AdMobService: NSObject, FullScreenContentDelegate {
 
     func adDidDismissFullScreenContent(_ ad: FullScreenPresentingAd) {
         Logger.ads.debug("Ad did dismiss")
+        finishPresentation()
     }
 
     func ad(_ ad: FullScreenPresentingAd, didFailToPresentFullScreenContentWithError error: Error) {
         Logger.ads.error("Ad failed to present: \(error.localizedDescription)")
+        finishPresentation()
     }
 }
