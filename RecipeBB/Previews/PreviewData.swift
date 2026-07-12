@@ -78,7 +78,7 @@ enum PreviewData {
     static func containerWithSamples() -> ModelContainer {
         do {
             let container = try ModelContainer(
-                for: Recipe.self, PantryItem.self, PantryCategory.self,
+                for: Recipe.self, RecipeTag.self, PantryItem.self, PantryCategory.self,
                 configurations: ModelConfiguration(isStoredInMemoryOnly: true)
             )
             let context = container.mainContext
@@ -86,6 +86,12 @@ enum PreviewData {
             // Seed if empty
             if try context.fetch(FetchDescriptor<Recipe>()).isEmpty {
                 context.insert(sampleRecipeEnglish)
+                let dinner = RecipeTag(name: "Dinner")
+                let italian = RecipeTag(name: "Italian")
+                context.insert(dinner)
+                context.insert(italian)
+                sampleRecipeEnglish.tags = [dinner, italian]
+                sampleRecipeEnglish.isFavorite = true
             }
             if try context.fetch(FetchDescriptor<PantryItem>()).isEmpty {
                 context.insert(samplePantryItemEnglish)

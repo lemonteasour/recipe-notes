@@ -21,7 +21,7 @@ struct RecipeBBApp: App {
         var tempError: Error?
 
         do {
-            tempContainer = try ModelContainer(for: Recipe.self, PantryItem.self, PantryCategory.self)
+            tempContainer = try ModelContainer(for: Recipe.self, RecipeTag.self, PantryItem.self, PantryCategory.self)
         } catch {
             tempError = error
             // Log the error for debugging
@@ -39,7 +39,7 @@ struct RecipeBBApp: App {
             // Create a dummy ViewModel with a temporary in-memory context
             // This prevents crashes but the app will show error state
             let fallbackContainer = try! ModelContainer(
-                for: Recipe.self, PantryItem.self, PantryCategory.self,
+                for: Recipe.self, RecipeTag.self, PantryItem.self, PantryCategory.self,
                 configurations: ModelConfiguration(isStoredInMemoryOnly: true)
             )
             _recipeListViewModel = State(initialValue: RecipeListViewModel(context: fallbackContainer.mainContext))

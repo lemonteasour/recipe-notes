@@ -23,6 +23,13 @@ class RecipeFormViewModel {
     var allIngredientNames: [String] = []
     var ingredientHeadings: [IngredientHeading] = []
     var steps: [Step] = []
+    var allTags: [RecipeTag] = []
+    var selectedTagIDs: Set<UUID> = []
+    var newTagName = ""
+
+    // Tags created in this form session. They are only inserted into the
+    // context on save (and only if still selected), so cancelling leaks nothing.
+    private var pendingNewTags: [RecipeTag] = []
 
     // MARK: - Computed
     var combinedIngredientItems: [any IngredientItem] {
@@ -39,6 +46,41 @@ class RecipeFormViewModel {
         self.recipeToEdit = recipeToEdit
         loadRecipe()
         self.allIngredientNames = IngredientCatalog.uniqueNames(in: context)
+        let descriptor = FetchDescriptor<RecipeTag>(sortBy: [SortDescriptor(\.name)])
+        self.allTags = (try? context.fetch(descriptor)) ?? []
+    }
+
+    // MARK: - Tags
+    func isTagSelected(_ tag: RecipeTag) -> Bool {
+        selectedTagIDs.contains(tag.id)
+    }
+
+    func toggleTag(_ tag: RecipeTag) {
+        if selectedTagIDs.contains(tag.id) {
+            selectedTagIDs.remove(tag.id)
+        } else {
+            selectedTagIDs.insert(tag.id)
+        }
+    }
+
+    /// Create (or reuse, matching case-insensitively) a tag from `newTagName` and select it.
+    func addTag() {
+        let trimmed = newTagName.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+        newTagName = ""
+
+        if let existing = allTags.first(where: {
+            $0.name.compare(trimmed, options: [.caseInsensitive, .diacriticInsensitive]) == .orderedSame
+        }) {
+            selectedTagIDs.insert(existing.id)
+            return
+        }
+
+        let tag = RecipeTag(name: trimmed)
+        pendingNewTags.append(tag)
+        allTags.append(tag)
+        allTags.sort { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
+        selectedTagIDs.insert(tag.id)
     }
 
     // MARK: - Bindings
@@ -145,6 +187,7 @@ class RecipeFormViewModel {
         name = recipe.name
         desc = recipe.desc
         photo = recipe.photo
+        selectedTagIDs = Set(recipe.tags.map(\.id))
 
         // Create detached copies so we don't mutate the originals until Save is pressed.
         // Copies keep the originals' ids so they can be matched back up on save.
@@ -200,10 +243,17 @@ class RecipeFormViewModel {
         let all = combinedIngredientItems
         reindexIngredientItems(using: all)
 
+        // Only tags still selected at save time get persisted
+        for tag in pendingNewTags where selectedTagIDs.contains(tag.id) {
+            context.insert(tag)
+        }
+        let selectedTags = allTags.filter { selectedTagIDs.contains($0.id) }
+
         if let recipe = recipeToEdit {
             recipe.name = trimmedName
             recipe.desc = desc
             recipe.photo = photo
+            recipe.tags = selectedTags
 
             // Reconcile children in place: update survivors, delete removed, insert new.
             // This preserves object identity instead of churning the whole graph on every save.
@@ -245,6 +295,7 @@ class RecipeFormViewModel {
                 steps: steps
             )
             context.insert(newRecipe)
+            newRecipe.tags = selectedTags
         }
 
         try context.save()

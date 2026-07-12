@@ -1,31 +1,59 @@
 //
-//  IngredientFilterView.swift
+//  RecipeFilterView.swift
 //  RecipeBB
 //
 //  Created by Jay Hui on 05/09/2025.
 //
 
 import SwiftUI
+import SwiftData
 
-struct IngredientFilterView: View {
+struct RecipeFilterView: View {
     @Environment(RecipeListViewModel.self) private var viewModel
     @Environment(\.dismiss) private var dismiss
 
     /// All unique ingredient names, supplied by the owning list view.
     let ingredients: [String]
 
+    @Query(sort: \RecipeTag.name)
+    private var allTags: [RecipeTag]
+
+    @State private var errorMessage: String?
+
     var body: some View {
         @Bindable var viewModel = viewModel
         NavigationStack {
             List {
+                if !allTags.isEmpty {
+                    Section("Tags") {
+                        ForEach(allTags) { tag in
+                            FilterRow(
+                                title: tag.name,
+                                isSelected: viewModel.selectedTagIDs.contains(tag.id)
+                            ) {
+                                viewModel.toggleTag(tag)
+                            }
+                        }
+                        .onDelete { offsets in
+                            do {
+                                for index in offsets {
+                                    try viewModel.deleteTag(allTags[index])
+                                }
+                            } catch {
+                                errorMessage = "Failed to delete tag: \(error.localizedDescription)"
+                            }
+                        }
+                    }
+                }
+
                 Section {
                     TextField("Search ingredients", text: $viewModel.ingredientSearch)
                 }
 
                 Section("Ingredients") {
                     ForEach(viewModel.filteredIngredients(from: ingredients), id: \.self) { ingredient in
-                        IngredientRow(
-                            ingredient: ingredient,
+                        FilterRow(
+                            title: ingredient,
                             isSelected: viewModel.selectedIngredients.contains(ingredient)
                         ) {
                             viewModel.toggleIngredient(ingredient)
@@ -33,10 +61,11 @@ struct IngredientFilterView: View {
                     }
                 }
 
-                if !viewModel.selectedIngredients.isEmpty {
+                if viewModel.hasActiveFilters {
                     Section {
                         Button("Clear filters") {
                             viewModel.selectedIngredients.removeAll()
+                            viewModel.selectedTagIDs.removeAll()
                         }
                         .foregroundStyle(.red)
                     }
@@ -49,19 +78,20 @@ struct IngredientFilterView: View {
                     Button("Close") { dismiss() }
                 }
             }
+            .errorAlert($errorMessage)
         }
     }
 }
 
-private struct IngredientRow: View {
-    let ingredient: String
+private struct FilterRow: View {
+    let title: String
     let isSelected: Bool
     let toggle: () -> Void
 
     var body: some View {
         Button(action: toggle) {
             HStack {
-                Text(ingredient)
+                Text(title)
                 Spacer()
                 if isSelected {
                     Image(systemName: "checkmark")
@@ -77,6 +107,7 @@ private struct IngredientRow: View {
     let container = PreviewData.containerWithSamples()
     let viewModel = RecipeListViewModel(context: container.mainContext)
 
-    return IngredientFilterView(ingredients: ["Flour", "Sugar", "Eggs", "Butter"])
+    return RecipeFilterView(ingredients: ["Flour", "Sugar", "Eggs", "Butter"])
         .environment(viewModel)
+        .modelContainer(container)
 }

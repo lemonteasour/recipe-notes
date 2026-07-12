@@ -17,6 +17,9 @@ class Recipe {
     @Relationship(deleteRule: .cascade, inverse: \Ingredient.recipe) var ingredients: [Ingredient]
     @Relationship(deleteRule: .cascade, inverse: \IngredientHeading.recipe) var ingredientHeadings: [IngredientHeading]
     @Relationship(deleteRule: .cascade, inverse: \Step.recipe) var steps: [Step]
+    // Default values let existing stores lightweight-migrate to this schema.
+    @Relationship(deleteRule: .nullify, inverse: \RecipeTag.recipes) var tags: [RecipeTag] = []
+    var isFavorite: Bool = false
     var createdAt: Date
 
     init(
@@ -45,5 +48,9 @@ class Recipe {
 
     var sortedSteps: [Step] {
         steps.sortedByOrder()
+    }
+
+    var sortedTags: [RecipeTag] {
+        tags.sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
     }
 }

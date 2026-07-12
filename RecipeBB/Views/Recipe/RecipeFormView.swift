@@ -89,6 +89,31 @@ struct RecipeFormContentView: View {
                 TextField("Description", text: $viewModel.desc, axis: .vertical)
             }
 
+            Section("Tags") {
+                ForEach(viewModel.allTags) { tag in
+                    Button {
+                        viewModel.toggleTag(tag)
+                    } label: {
+                        HStack {
+                            Text(tag.name)
+                            Spacer()
+                            if viewModel.isTagSelected(tag) {
+                                Image(systemName: "checkmark")
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                    }
+                    .buttonStyle(.plain)
+                }
+
+                HStack {
+                    TextField("New tag", text: $viewModel.newTagName)
+                        .onSubmit(viewModel.addTag)
+                    Button("Add tag", action: viewModel.addTag)
+                        .disabled(viewModel.newTagName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                }
+            }
+
             Section("Ingredients") {
                 ForEach(viewModel.combinedIngredientItems, id: \.id) { item in
                     if let ingredient = item as? Ingredient,

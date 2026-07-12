@@ -14,6 +14,7 @@ struct RecipeDetailView: View {
 
     @State private var isShowingEdit = false
     @State private var isCookingMode = false
+    @State private var errorMessage: String?
     
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -33,9 +34,19 @@ struct RecipeDetailView: View {
                         }
                     }
 
-                    if !recipe.desc.isEmpty {
+                    if !recipe.desc.isEmpty || !recipe.tags.isEmpty {
                         Section("Details") {
-                            Text(recipe.desc)
+                            if !recipe.desc.isEmpty {
+                                Text(recipe.desc)
+                            }
+                            if !recipe.tags.isEmpty {
+                                Label(
+                                    recipe.sortedTags.map(\.name).joined(separator: " · "),
+                                    systemImage: "tag"
+                                )
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                            }
                         }
                     }
                     
@@ -56,6 +67,18 @@ struct RecipeDetailView: View {
         .navigationTitle(recipe.name)
         .toolbar {
             ToolbarItemGroup(placement: .primaryAction) {
+                Button {
+                    recipe.isFavorite.toggle()
+                    do {
+                        try context.save()
+                    } catch {
+                        errorMessage = "Failed to update recipe: \(error.localizedDescription)"
+                    }
+                } label: {
+                    Label(recipe.isFavorite ? "Unfavorite" : "Favorite",
+                          systemImage: recipe.isFavorite ? "heart.fill" : "heart")
+                }
+                .tint(.pink)
                 ShareLink(item: RecipeClipboardService.exportRecipeToText(recipe)) {
                     Label("Share", systemImage: "square.and.arrow.up")
                 }
@@ -70,6 +93,7 @@ struct RecipeDetailView: View {
         .sheet(isPresented: $isShowingEdit) {
             RecipeFormView(context: context, recipeToEdit: recipe)
         }
+        .errorAlert($errorMessage)
         .onChange(of: isCookingMode) {
             UIApplication.shared.isIdleTimerDisabled = isCookingMode
         }

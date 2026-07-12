@@ -16,37 +16,34 @@ struct RecipeListView: View {
     @Query(sort: \Recipe.createdAt, order: .reverse)
     private var allRecipes: [Recipe]
 
+    @State private var path: [Recipe] = []
     @State private var showImportError = false
     @State private var errorMessage: String?
 
     var body: some View {
         @Bindable var viewModel = viewModel
-        let filtered = viewModel.filteredRecipes(from: allRecipes)
-        NavigationStack {
-            List {
-                ForEach(filtered) { recipe in
-                    NavigationLink(value: recipe) {
-                        HStack(spacing: 12) {
-                            if let data = recipe.photo, let uiImage = UIImage(data: data) {
-                                Image(uiImage: uiImage)
-                                    .resizable()
-                                    .scaledToFill()
-                                    .frame(width: 48, height: 48)
-                                    .clipShape(RoundedRectangle(cornerRadius: 8))
-                            }
-                            Text(recipe.name)
-                        }
-                    }
-                }
-                .onDelete { offsets in
+        NavigationStack(path: $path) {
+            RecipeIndexedListView(
+                sections: viewModel.sections(from: allRecipes),
+                onSelect: { recipe in
+                    path.append(recipe)
+                },
+                onToggleFavorite: { recipe in
                     do {
-                        try viewModel.deleteRecipe(at: offsets, from: filtered)
+                        try viewModel.toggleFavorite(recipe)
+                    } catch {
+                        errorMessage = "Failed to update recipe: \(error.localizedDescription)"
+                    }
+                },
+                onDelete: { recipe in
+                    do {
+                        try viewModel.deleteRecipe(recipe)
                     } catch {
                         errorMessage = "Failed to delete recipe: \(error.localizedDescription)"
                     }
                 }
-            }
-            .scrollDismissesKeyboard(.interactively)
+            )
+            .ignoresSafeArea(edges: .bottom)
             .navigationDestination(for: Recipe.self) { recipe in
                 RecipeDetailView(recipe: recipe)
             }
@@ -63,7 +60,24 @@ struct RecipeListView: View {
                     Button {
                         viewModel.showingFilterSheet = true
                     } label: {
-                        Label("Filter", systemImage: "line.3.horizontal.decrease")
+                        Label("Filter", systemImage: viewModel.hasActiveFilters
+                              ? "line.3.horizontal.decrease.circle.fill"
+                              : "line.3.horizontal.decrease")
+                    }
+                }
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Menu {
+                        Picker("Sort", selection: $viewModel.sortOption) {
+                            ForEach(RecipeSortOption.allCases) { option in
+                                Text(option.label).tag(option)
+                            }
+                        }
+                        Divider()
+                        Toggle(isOn: $viewModel.favoritesOnTop) {
+                            Label("Favorites on top", systemImage: "heart")
+                        }
+                    } label: {
+                        Label("Sort", systemImage: "arrow.up.arrow.down")
                     }
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -78,7 +92,7 @@ struct RecipeListView: View {
                 RecipeFormView(context: context)
             }
             .sheet(isPresented: $viewModel.showingFilterSheet) {
-                IngredientFilterView(ingredients: viewModel.allIngredients(from: allRecipes))
+                RecipeFilterView(ingredients: viewModel.allIngredients(from: allRecipes))
                     .environment(viewModel)
             }
             .searchable(text: $viewModel.searchText, prompt: "Search recipes")
