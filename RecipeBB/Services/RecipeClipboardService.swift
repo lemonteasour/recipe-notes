@@ -23,6 +23,11 @@ class RecipeClipboardService {
             output += recipe.desc + "\n"
         }
 
+        // Tags as a single hashtag line, e.g. "#Dinner #Italian"
+        if !recipe.tags.isEmpty {
+            output += recipe.sortedTags.map { "#" + $0.name }.joined(separator: " ") + "\n"
+        }
+
         output += "\n"
 
         // Ingredients
@@ -59,8 +64,10 @@ class RecipeClipboardService {
 
     /// Imports a recipe from formatted text
     /// - Parameter text: The formatted text to parse
-    /// - Returns: A Recipe object if parsing is successful, nil otherwise
-    static func importRecipeFromText(_ text: String) -> Recipe? {
+    /// - Returns: The parsed recipe plus any tag names found, or nil if parsing
+    ///   fails. Tag names are returned separately because resolving them against
+    ///   existing tags needs a ModelContext the caller owns.
+    static func importRecipeFromText(_ text: String) -> (recipe: Recipe, tagNames: [String])? {
         let lines = text.components(separatedBy: .newlines).map { $0.trimmingCharacters(in: .whitespaces) }
 
         guard !lines.isEmpty else { return nil }
@@ -76,15 +83,22 @@ class RecipeClipboardService {
         let ingredientsIndex = lines.firstIndex { $0 == ingredientsHeader }
         let stepsIndex = lines.firstIndex { $0 == stepsHeader }
 
-        // Extract description (everything between recipe name and ingredients section)
+        // Extract description and tags (everything between recipe name and the
+        // ingredients section; lines starting with "#" are hashtag tag lines)
         var description = ""
-        if let ingredientsIdx = ingredientsIndex {
-            let descLines = lines[1..<ingredientsIdx]
-                .filter { !$0.isEmpty }
-            description = descLines.joined(separator: "\n")
-        } else if let stepsIdx = stepsIndex {
-            let descLines = lines[1..<stepsIdx]
-                .filter { !$0.isEmpty }
+        var tagNames: [String] = []
+        if let endIdx = ingredientsIndex ?? stepsIndex {
+            var descLines: [String] = []
+            for line in lines[1..<endIdx] where !line.isEmpty {
+                if line.hasPrefix("#") {
+                    // Split on "#" rather than whitespace so tag names can contain spaces
+                    tagNames += line.split(separator: "#")
+                        .map { $0.trimmingCharacters(in: .whitespaces) }
+                        .filter { !$0.isEmpty }
+                } else {
+                    descLines.append(line)
+                }
+            }
             description = descLines.joined(separator: "\n")
         }
 
@@ -152,12 +166,13 @@ class RecipeClipboardService {
         }
 
         // Create and return the recipe
-        return Recipe(
+        let recipe = Recipe(
             name: recipeName,
             desc: description,
             ingredients: ingredients,
             ingredientHeadings: ingredientHeadings,
             steps: steps
         )
+        return (recipe, tagNames)
     }
 }

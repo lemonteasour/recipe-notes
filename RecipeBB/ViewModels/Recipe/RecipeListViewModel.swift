@@ -247,6 +247,28 @@ final class RecipeListViewModel {
         }
     }
 
+    /// Resolve imported tag names to tags, reusing existing ones
+    /// (case-insensitively) and creating the rest. Duplicates are dropped.
+    func tags(named names: [String]) throws -> [RecipeTag] {
+        var known = try context.fetch(FetchDescriptor<RecipeTag>())
+        var result: [RecipeTag] = []
+        for name in names {
+            if let match = known.first(where: {
+                $0.name.compare(name, options: [.caseInsensitive, .diacriticInsensitive]) == .orderedSame
+            }) {
+                if !result.contains(where: { $0.id == match.id }) {
+                    result.append(match)
+                }
+            } else {
+                let tag = RecipeTag(name: name)
+                context.insert(tag)
+                known.append(tag)
+                result.append(tag)
+            }
+        }
+        return result
+    }
+
     /// Delete a tag everywhere (recipes keep working, they just lose the tag)
     func deleteTag(_ tag: RecipeTag) throws {
         selectedTagIDs.remove(tag.id)

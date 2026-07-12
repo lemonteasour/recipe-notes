@@ -111,13 +111,14 @@ struct RecipeListView: View {
             return
         }
 
-        guard let recipe = RecipeClipboardService.importRecipeFromText(clipboardText) else {
+        guard let imported = RecipeClipboardService.importRecipeFromText(clipboardText) else {
             showImportError = true
             return
         }
 
-        context.insert(recipe)
+        context.insert(imported.recipe)
         do {
+            imported.recipe.tags = try viewModel.tags(named: imported.tagNames)
             try context.save()
         } catch {
             errorMessage = "Failed to save recipe: \(error.localizedDescription)"
