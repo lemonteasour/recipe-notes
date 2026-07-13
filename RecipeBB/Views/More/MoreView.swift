@@ -6,11 +6,16 @@
 //
 
 import SwiftUI
+import SwiftData
 
 struct MoreView: View {
+    @Environment(\.modelContext) private var modelContext
     private let adMobService = AdMobService.shared
     @State private var showingAdAlert = false
     @State private var adAlertMessage = ""
+    #if DEBUG
+    @State private var showingResetConfirmation = false
+    #endif
 
     private let reviewURL = URL(string: "https://apps.apple.com/app/id6752032405?action=write-review")
     private let aboutURL = URL(string: "https://lemonteasour.com/projects/recipebb")
@@ -88,6 +93,23 @@ struct MoreView: View {
                 } header: {
                     Text("Support the developer")
                 }
+
+                #if DEBUG
+                Section {
+                    Button(role: .destructive) {
+                        showingResetConfirmation = true
+                    } label: {
+                        HStack {
+                            Image(systemName: "arrow.counterclockwise")
+                                .frame(width: 30)
+                            Text(verbatim: "Reset to sample data")
+                        }
+                    }
+                } header: {
+                    // verbatim: debug-only strings stay out of the string catalog
+                    Text(verbatim: "Developer")
+                }
+                #endif
             }
             .navigationTitle("More")
             .onAppear {
@@ -100,6 +122,20 @@ struct MoreView: View {
             } message: {
                 Text(adAlertMessage)
             }
+            #if DEBUG
+            .alert(Text(verbatim: "Reset to sample data?"), isPresented: $showingResetConfirmation) {
+                Button(role: .destructive) {
+                    PreviewData.wipeAndReseed(context: modelContext)
+                } label: {
+                    Text(verbatim: "Reset")
+                }
+                Button(role: .cancel) { } label: {
+                    Text(verbatim: "Cancel")
+                }
+            } message: {
+                Text(verbatim: "All recipes, tags, and pantry items will be deleted and replaced with sample data.")
+            }
+            #endif
         }
     }
 
