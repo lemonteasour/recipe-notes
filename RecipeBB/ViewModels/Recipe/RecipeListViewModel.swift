@@ -28,12 +28,13 @@ enum RecipeSortOption: String, CaseIterable, Identifiable {
     }
 }
 
-/// One section of the recipe list. `indexTitle` is the entry shown in the
-/// scrubber bar on the right (nil = no entry, e.g. repeated years).
+/// One section of the recipe list. `indexTitles` are the entries this section
+/// contributes to the scrubber bar on the right — usually one, but a section
+/// that starts a new year contributes both the year marker and its month.
 struct RecipeListSection: Identifiable {
     let id: String
     let title: String
-    let indexTitle: String?
+    let indexTitles: [String]
     let recipes: [Recipe]
 }
 
@@ -93,7 +94,7 @@ final class RecipeListViewModel {
                 sections.append(RecipeListSection(
                     id: "favorites",
                     title: String(localized: "Favorites"),
-                    indexTitle: "♥",
+                    indexTitles: ["♥"],
                     recipes: favorites
                 ))
             }
@@ -161,14 +162,17 @@ final class RecipeListViewModel {
             return RecipeListSection(
                 id: "name-\(titles[index])",
                 title: titles[index],
-                indexTitle: titles[index],
+                indexTitles: [titles[index]],
                 recipes: buckets[index]
             )
         }
     }
 
-    /// Month sections for the date sorts; the scrubber indexes years, so only
-    /// the first section of each year gets an index entry.
+    /// Month sections for the date sorts. The scrubber shows a tappable "•"
+    /// per month with year markers wherever the year changes (the leading year
+    /// is implied). A year spanning more than 4 month sections also gets its
+    /// middle month named as a mid-year landmark, reading like
+    /// "• • • Mar • • • 2025 • • 2024 …".
     private func dateSections(for recipes: [Recipe]) -> [RecipeListSection] {
         let calendar = Calendar.current
 
@@ -182,19 +186,43 @@ final class RecipeListViewModel {
             }
         }
 
-        var lastYear: Int?
-        return grouped.map { key, recipes in
-            let year = key.year ?? 0
-            let indexTitle = year != lastYear ? "\(year)" : nil
-            lastYear = year
+        // Walk the contiguous run of sections belonging to each year
+        var indexTitlesPerSection = Array(repeating: [String](), count: grouped.count)
+        var start = 0
+        while start < grouped.count {
+            let year = grouped[start].key.year
+            var end = start
+            while end < grouped.count, grouped[end].key.year == year { end += 1 }
+
+            if start > 0 {
+                indexTitlesPerSection[start].append("\(year ?? 0)")
+            }
+            let labeled = (end - start) > 4 ? start + (end - start) / 2 : nil
+            for position in start..<end {
+                if position == labeled,
+                   let month = grouped[position].key.month,
+                   Self.shortMonthSymbols.indices.contains(month - 1) {
+                    indexTitlesPerSection[position].append(Self.shortMonthSymbols[month - 1])
+                } else {
+                    indexTitlesPerSection[position].append("•")
+                }
+            }
+            start = end
+        }
+
+        return grouped.enumerated().map { position, group in
+            let (key, recipes) = group
             return RecipeListSection(
-                id: "date-\(year)-\(key.month ?? 0)",
+                id: "date-\(key.year ?? 0)-\(key.month ?? 0)",
                 title: Self.monthYearFormatter.string(from: recipes[0].createdAt),
-                indexTitle: indexTitle,
+                indexTitles: indexTitlesPerSection[position],
                 recipes: recipes
             )
         }
     }
+
+    /// Localized abbreviated month names ("Jul" / "7月" / "7月")
+    private static let shortMonthSymbols = Calendar.current.shortMonthSymbols
 
     private static let monthYearFormatter: DateFormatter = {
         let formatter = DateFormatter()

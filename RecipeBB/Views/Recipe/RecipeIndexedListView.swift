@@ -41,16 +41,19 @@ struct RecipeIndexedListView: UIViewRepresentable {
 
         var parent: RecipeIndexedListView
         fileprivate var sections: [RecipeListSection] = []
-        /// Table section number for each entry in the index bar
+        /// Entries in the index bar, and the table section each one jumps to
+        fileprivate var indexTitles: [String] = []
         fileprivate var indexTargets: [Int] = []
         private var recipesByID: [UUID: Recipe] = [:]
         private var dataSource: DataSource?
+        private weak var tableView: UITableView?
 
         init(parent: RecipeIndexedListView) {
             self.parent = parent
         }
 
         func configureDataSource(for tableView: UITableView) {
+            self.tableView = tableView
             let dataSource = DataSource(tableView: tableView) { [weak self] tableView, indexPath, recipeID in
                 let cell = tableView.dequeueReusableCell(withIdentifier: Self.cellIdentifier, for: indexPath)
                 guard let recipe = self?.recipesByID[recipeID] else { return cell }
@@ -67,8 +70,13 @@ struct RecipeIndexedListView: UIViewRepresentable {
 
         func apply(sections: [RecipeListSection], animated: Bool) {
             self.sections = sections
-            indexTargets = sections.enumerated().compactMap { index, section in
-                section.indexTitle != nil ? index : nil
+            indexTitles = []
+            indexTargets = []
+            for (index, section) in sections.enumerated() {
+                for title in section.indexTitles {
+                    indexTitles.append(title)
+                    indexTargets.append(index)
+                }
             }
             recipesByID = Dictionary(
                 sections.flatMap { $0.recipes.map { ($0.id, $0) } },
@@ -83,6 +91,9 @@ struct RecipeIndexedListView: UIViewRepresentable {
             // Surviving rows may still have changed (favorite heart, tags, name)
             snapshot.reconfigureItems(snapshot.itemIdentifiers)
             dataSource?.apply(snapshot, animatingDifferences: animated)
+            // Batch updates don't re-query sectionIndexTitles; only an explicit
+            // reload refreshes the scrubber after sort/filter changes
+            tableView?.reloadSectionIndexTitles()
         }
 
         private func recipe(at indexPath: IndexPath) -> Recipe? {
@@ -142,7 +153,7 @@ struct RecipeIndexedListView: UIViewRepresentable {
         }
 
         override func sectionIndexTitles(for tableView: UITableView) -> [String]? {
-            let titles = coordinator?.sections.compactMap(\.indexTitle) ?? []
+            let titles = coordinator?.indexTitles ?? []
             // A one-entry scrubber is noise, not navigation
             return titles.count > 1 ? titles : nil
         }
@@ -162,6 +173,17 @@ struct RecipeRowView: View {
     let recipe: Recipe
 
     var body: some View {
+        // A cell can re-render for a recipe deleted out from under it (bulk
+        // deletes, debug reset); touching attributes then faults destroyed
+        // backing data and crashes, so render a placeholder instead.
+        if recipe.isDeleted || recipe.modelContext == nil {
+            Color.clear.frame(height: 48)
+        } else {
+            content
+        }
+    }
+
+    private var content: some View {
         HStack(spacing: 12) {
             if let data = recipe.photo, let uiImage = UIImage(data: data) {
                 Image(uiImage: uiImage)
