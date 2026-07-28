@@ -35,9 +35,15 @@ struct RecipeFilterView: View {
                             }
                         }
                         .onDelete { offsets in
+                            // Resolve every offset up front: deleting saves,
+                            // which can shrink the @Query array mid-loop and
+                            // leave the remaining offsets out of range.
+                            let doomed = offsets.compactMap { index in
+                                allTags.indices.contains(index) ? allTags[index] : nil
+                            }
                             do {
-                                for index in offsets {
-                                    try viewModel.deleteTag(allTags[index])
+                                for tag in doomed {
+                                    try viewModel.deleteTag(tag)
                                 }
                             } catch {
                                 errorMessage = "Failed to delete tag: \(error.localizedDescription)"

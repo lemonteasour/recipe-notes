@@ -84,7 +84,12 @@ final class RecipeListViewModel {
     /// for name sorts, month sections for date sorts, plus an optional
     /// favorites section pinned to the top.
     func sections(from allRecipes: [Recipe]) -> [RecipeListSection] {
-        var recipes = allRecipes.filter(matchesFilters).sorted(by: isOrderedBySortOption)
+        // Drop deleted recipes before anything reads their attributes. This
+        // runs on every render over a live @Query array, so a swipe- or bulk
+        // delete can otherwise land mid-computation and fault destroyed data.
+        var recipes = allRecipes
+            .filter { $0.isLive && matchesFilters($0) }
+            .sorted(by: isOrderedBySortOption)
 
         var sections: [RecipeListSection] = []
         if favoritesOnTop {
@@ -117,7 +122,7 @@ final class RecipeListViewModel {
 
         let matchesTags =
             selectedTagIDs.isEmpty ||
-            recipe.tags.contains { selectedTagIDs.contains($0.id) }
+            recipe.tags.contains { $0.isLive && selectedTagIDs.contains($0.id) }
 
         let matchesIngredients =
             selectedIngredients.isEmpty ||
@@ -151,6 +156,7 @@ final class RecipeListViewModel {
                 for: CollationTarget(recipe.name),
                 collationStringSelector: #selector(getter: CollationTarget.collationName)
             )
+            guard buckets.indices.contains(index) else { continue }
             buckets[index].append(recipe)
         }
 
@@ -300,6 +306,12 @@ final class RecipeListViewModel {
     /// Delete a tag everywhere (recipes keep working, they just lose the tag)
     func deleteTag(_ tag: RecipeTag) throws {
         selectedTagIDs.remove(tag.id)
+        // Unlink by hand rather than trusting the .nullify rule to have run by
+        // the time the next render reads Recipe.tags — a stale entry there is
+        // a destroyed object, and reading its name or id traps.
+        for recipe in tag.recipes ?? [] where recipe.isLive {
+            recipe.tags.removeAll { $0.id == tag.id }
+        }
         context.delete(tag)
         try context.save()
     }

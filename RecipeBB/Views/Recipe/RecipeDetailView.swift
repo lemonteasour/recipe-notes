@@ -15,7 +15,14 @@ struct RecipeDetailView: View {
     @State private var isShowingEdit = false
     @State private var isCookingMode = false
     @State private var errorMessage: String?
-    
+
+    /// Nil when no live tags remain, so a recipe whose tags were just deleted
+    /// doesn't show an empty label (or an empty Details section).
+    private var tagLine: String? {
+        let names = recipe.sortedTags.map(\.name)
+        return names.isEmpty ? nil : names.joined(separator: " · ")
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             if isCookingMode {
@@ -34,18 +41,15 @@ struct RecipeDetailView: View {
                         }
                     }
 
-                    if !recipe.desc.isEmpty || !recipe.tags.isEmpty {
+                    if !recipe.desc.isEmpty || tagLine != nil {
                         Section("Details") {
                             if !recipe.desc.isEmpty {
                                 Text(recipe.desc)
                             }
-                            if !recipe.tags.isEmpty {
-                                Label(
-                                    recipe.sortedTags.map(\.name).joined(separator: " · "),
-                                    systemImage: "tag"
-                                )
-                                .font(.subheadline)
-                                .foregroundStyle(.secondary)
+                            if let tagLine {
+                                Label(tagLine, systemImage: "tag")
+                                    .font(.subheadline)
+                                    .foregroundStyle(.secondary)
                             }
                         }
                     }

@@ -94,9 +94,15 @@ struct PantryCategoryManagementView: View {
                         }
                     }
                     .onDelete { offsets in
-                        for index in offsets {
+                        // Resolve every offset up front: deleting saves, which
+                        // can shrink the @Query array mid-loop and leave the
+                        // remaining offsets out of range.
+                        let doomed = offsets.compactMap { index in
+                            categories.indices.contains(index) ? categories[index] : nil
+                        }
+                        for category in doomed {
                             do {
-                                try viewModel.deleteCategory(categories[index])
+                                try viewModel.deleteCategory(category)
                             } catch {
                                 errorMessage = "Failed to delete category: \(error.localizedDescription)"
                             }

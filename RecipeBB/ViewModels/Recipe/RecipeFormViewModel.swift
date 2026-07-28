@@ -187,7 +187,7 @@ class RecipeFormViewModel {
         name = recipe.name
         desc = recipe.desc
         photo = recipe.photo
-        selectedTagIDs = Set(recipe.tags.map(\.id))
+        selectedTagIDs = Set(recipe.sortedTags.map(\.id))
 
         // Create detached copies so we don't mutate the originals until Save is pressed.
         // Copies keep the originals' ids so they can be matched back up on save.

@@ -176,11 +176,18 @@ struct RecipeRowView: View {
         // A cell can re-render for a recipe deleted out from under it (bulk
         // deletes, debug reset); touching attributes then faults destroyed
         // backing data and crashes, so render a placeholder instead.
-        if recipe.isDeleted || recipe.modelContext == nil {
-            Color.clear.frame(height: 48)
-        } else {
+        if recipe.isLive {
             content
+        } else {
+            Color.clear.frame(height: 48)
         }
+    }
+
+    /// Nil when there's nothing live to show, so a recipe whose only tags were
+    /// just deleted doesn't render an empty line.
+    private var tagLine: String? {
+        let names = recipe.sortedTags.map(\.name)
+        return names.isEmpty ? nil : names.joined(separator: " · ")
     }
 
     private var content: some View {
@@ -194,8 +201,8 @@ struct RecipeRowView: View {
             }
             VStack(alignment: .leading, spacing: 2) {
                 Text(recipe.name)
-                if !recipe.tags.isEmpty {
-                    Text(recipe.sortedTags.map(\.name).joined(separator: " · "))
+                if let tagLine {
+                    Text(tagLine)
                         .font(.caption)
                         .foregroundStyle(.secondary)
                         .lineLimit(1)

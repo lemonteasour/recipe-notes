@@ -24,8 +24,9 @@ class RecipeClipboardService {
         }
 
         // Tags as a single hashtag line, e.g. "#Dinner #Italian"
-        if !recipe.tags.isEmpty {
-            output += recipe.sortedTags.map { "#" + $0.name }.joined(separator: " ") + "\n"
+        let tagNames = recipe.sortedTags.map(\.name)
+        if !tagNames.isEmpty {
+            output += tagNames.map { "#" + $0 }.joined(separator: " ") + "\n"
         }
 
         output += "\n"

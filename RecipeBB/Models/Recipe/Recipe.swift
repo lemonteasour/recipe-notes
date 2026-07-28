@@ -50,7 +50,11 @@ class Recipe {
         steps.sortedByOrder()
     }
 
+    /// Deleted tags can linger in `tags` until the relationship change is
+    /// processed, so filter them out before anyone reads a name off one.
     var sortedTags: [RecipeTag] {
-        tags.sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
+        tags
+            .filter(\.isLive)
+            .sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
     }
 }
