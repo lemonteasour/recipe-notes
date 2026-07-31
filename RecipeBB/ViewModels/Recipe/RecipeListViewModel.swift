@@ -210,7 +210,7 @@ final class RecipeListViewModel {
                    Self.shortMonthSymbols.indices.contains(month - 1) {
                     indexTitlesPerSection[position].append(Self.shortMonthSymbols[month - 1])
                 } else {
-                    indexTitlesPerSection[position].append("•")
+                    indexTitlesPerSection[position].append(Self.monthDotTitle)
                 }
             }
             start = end
@@ -226,6 +226,15 @@ final class RecipeListViewModel {
             )
         }
     }
+
+    /// The unnamed-month marker in the scrubber: a bullet carrying a text
+    /// variation selector. UIKit reserves a *bare* U+2022 as its own elision
+    /// marker in the section index, strips those entries when measuring, then
+    /// reads element 0 of what's left — so an index of nothing but bare
+    /// bullets (2–4 months in one year, no favorites section) crashes
+    /// -[UITableViewIndex _displayTitles] on the first layout pass. The
+    /// selector renders identically and keeps us out of that path.
+    static let monthDotTitle = "\u{2022}\u{FE0E}"
 
     /// Localized abbreviated month names ("Jul" / "7月" / "7月")
     private static let shortMonthSymbols = Calendar.current.shortMonthSymbols
