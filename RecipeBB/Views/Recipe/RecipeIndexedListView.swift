@@ -140,6 +140,67 @@ struct RecipeIndexedListView: UIViewRepresentable {
             action.image = UIImage(systemName: "trash")
             return UISwipeActionsConfiguration(actions: [action])
         }
+
+        func tableView(
+            _ tableView: UITableView,
+            contextMenuConfigurationForRowAt indexPath: IndexPath,
+            point: CGPoint
+        ) -> UIContextMenuConfiguration? {
+            guard let recipe = recipe(at: indexPath), recipe.isLive else { return nil }
+            // The id round-trips through the configuration so the commit
+            // handler can resolve the recipe without capturing a model that
+            // may have been deleted while the menu was open.
+            return UIContextMenuConfiguration(identifier: recipe.id.uuidString as NSString) {
+                Self.previewController(for: recipe, in: tableView)
+            } actionProvider: { [weak self] _ in
+                self?.previewMenu(for: recipe)
+            }
+        }
+
+        func tableView(
+            _ tableView: UITableView,
+            willPerformPreviewActionForMenuWith configuration: UIContextMenuConfiguration,
+            animator: UIContextMenuInteractionCommitAnimating
+        ) {
+            guard let identifier = configuration.identifier as? String,
+                  let id = UUID(uuidString: identifier) else { return }
+            animator.addCompletion { [weak self] in
+                guard let recipe = self?.recipesByID[id], recipe.isLive else { return }
+                self?.parent.onSelect(recipe)
+            }
+        }
+
+        private static func previewController(
+            for recipe: Recipe,
+            in tableView: UITableView
+        ) -> UIViewController {
+            let controller = UIHostingController(rootView: RecipePreviewView(recipe: recipe))
+            let width = tableView.bounds.width
+            let maxHeight = tableView.bounds.height * 0.7
+            let idealHeight = RecipePreviewView.idealHeight(for: recipe, width: width)
+            controller.preferredContentSize = CGSize(
+                width: width,
+                height: min(max(idealHeight, 60), maxHeight)
+            )
+            return controller
+        }
+
+        private func previewMenu(for recipe: Recipe) -> UIMenu {
+            let favorite = UIAction(
+                title: recipe.isFavorite ? String(localized: "Unfavorite") : String(localized: "Favorite"),
+                image: UIImage(systemName: recipe.isFavorite ? "heart.slash" : "heart")
+            ) { [weak self] _ in
+                self?.parent.onToggleFavorite(recipe)
+            }
+            let delete = UIAction(
+                title: String(localized: "Delete"),
+                image: UIImage(systemName: "trash"),
+                attributes: .destructive
+            ) { [weak self] _ in
+                self?.parent.onDelete(recipe)
+            }
+            return UIMenu(children: [favorite, delete])
+        }
     }
 
     /// Diffable data source subclass so section headers and the index bar can
