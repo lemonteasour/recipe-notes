@@ -122,11 +122,11 @@ final class RecipeListViewModel {
 
         let matchesTags =
             selectedTagIDs.isEmpty ||
-            recipe.tags.contains { $0.isLive && selectedTagIDs.contains($0.id) }
+            recipe.tagList.contains { $0.isLive && selectedTagIDs.contains($0.id) }
 
         let matchesIngredients =
             selectedIngredients.isEmpty ||
-            recipe.ingredients.contains { selectedIngredients.contains($0.name) }
+            recipe.ingredientList.contains { selectedIngredients.contains($0.name) }
 
         return matchesNameOrDesc && matchesTags && matchesIngredients
     }
@@ -251,7 +251,7 @@ final class RecipeListViewModel {
 
     /// Return all unique ingredients (used for filtering)
     func allIngredients(from allRecipes: [Recipe]) -> [String] {
-        IngredientCatalog.normalized(allRecipes.flatMap { $0.ingredients.map(\.name) })
+        IngredientCatalog.normalized(allRecipes.flatMap { $0.ingredientList.map(\.name) })
     }
 
     /// Return ingredient names filtered by `ingredientSearch`
@@ -318,8 +318,8 @@ final class RecipeListViewModel {
         // Unlink by hand rather than trusting the .nullify rule to have run by
         // the time the next render reads Recipe.tags — a stale entry there is
         // a destroyed object, and reading its name or id traps.
-        for recipe in tag.recipes ?? [] where recipe.isLive {
-            recipe.tags.removeAll { $0.id == tag.id }
+        for recipe in tag.recipeList where recipe.isLive {
+            recipe.tags?.removeAll { $0.id == tag.id }
         }
         context.delete(tag)
         try context.save()

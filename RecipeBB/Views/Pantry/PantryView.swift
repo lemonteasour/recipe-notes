@@ -67,7 +67,7 @@ struct PantryView: View {
 
                     // Display items by category
                     ForEach(categories) { category in
-                        let items = (category.items ?? []).sorted(by: { $0.sortOrder < $1.sortOrder })
+                        let items = category.itemList.sorted(by: { $0.sortOrder < $1.sortOrder })
                         PantryCategorySectionView(
                             category: category,
                             items: items,
@@ -166,7 +166,7 @@ struct PantryView: View {
 
             // Search in all categories
             for cat in categories {
-                if let item = cat.items?.first(where: { $0.id == droppedId }) {
+                if let item = cat.itemList.first(where: { $0.id == droppedId }) {
                     foundItem = item
                     break
                 }

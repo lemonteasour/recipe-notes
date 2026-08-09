@@ -10,10 +10,10 @@ import SwiftData
 
 @Model
 class PantryItem {
-    @Attribute(.unique) var id: UUID
-    var name: String
-    var quantity: String
-    var sortOrder: Int
+    var id: UUID = UUID()
+    var name: String = ""
+    var quantity: String = ""
+    var sortOrder: Int = 0
     var category: PantryCategory?
 
     init(

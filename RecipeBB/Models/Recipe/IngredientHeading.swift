@@ -10,9 +10,9 @@ import SwiftData
 
 @Model
 class IngredientHeading: IngredientItem, Identifiable {
-    @Attribute(.unique) var id: UUID
-    var name: String
-    @Attribute(originalName: "index") var sortOrder: Int
+    var id: UUID = UUID()
+    var name: String = ""
+    @Attribute(originalName: "index") var sortOrder: Int = 0
     var recipe: Recipe?
 
     init(name: String, sortOrder: Int) {

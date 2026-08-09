@@ -14,7 +14,18 @@ protocol IngredientItem: Identifiable {
 }
 
 /// Merges ingredients and headings into a single list ordered by `sortOrder`.
+///
+/// Ingredients and headings share one index space, so ties are possible across
+/// the two types. Nothing in the app produces one today — every writer numbers
+/// both from the same running count — but once devices sync, two of them
+/// reordering the same recipe offline merge field-by-field and can land on
+/// duplicate `sortOrder`s. Breaking ties on `id` keeps the list from shuffling
+/// between renders until the next save renormalizes it. See `sortedByOrder()`.
 func mergedIngredientItems(_ ingredients: [Ingredient], _ headings: [IngredientHeading]) -> [any IngredientItem] {
     (ingredients as [any IngredientItem] + headings as [any IngredientItem])
-        .sorted { $0.sortOrder < $1.sortOrder }
+        .sorted { lhs, rhs in
+            lhs.sortOrder == rhs.sortOrder
+                ? lhs.id.uuidString < rhs.id.uuidString
+                : lhs.sortOrder < rhs.sortOrder
+        }
 }

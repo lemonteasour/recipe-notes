@@ -10,13 +10,16 @@ import SwiftData
 
 @Model
 class RecipeTag {
-    @Attribute(.unique) var id: UUID
-    var name: String
-    var createdAt: Date
+    var id: UUID = UUID()
+    var name: String = ""
+    var createdAt: Date = Date()
 
     // Inverse is declared on Recipe.tags. Deleting a tag only unlinks it
     // from its recipes; deleting a recipe only unlinks it from its tags.
     var recipes: [Recipe]?
+
+    /// Non-optional view onto `recipes` — see the schema rules on `Recipe`.
+    var recipeList: [Recipe] { recipes ?? [] }
 
     init(name: String) {
         self.id = UUID()

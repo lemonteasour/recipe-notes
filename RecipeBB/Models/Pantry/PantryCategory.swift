@@ -10,9 +10,9 @@ import SwiftData
 
 @Model
 class PantryCategory {
-    @Attribute(.unique) var id: UUID
-    var name: String
-    var sortOrder: Int
+    var id: UUID = UUID()
+    var name: String = ""
+    var sortOrder: Int = 0
 
     // Deleting a category orphans its items (they become uncategorized) rather
     // than deleting them. This was .cascade up to 0.6.0; changing it shipped
@@ -22,6 +22,9 @@ class PantryCategory {
     // now survive as uncategorized.
     @Relationship(deleteRule: .nullify, inverse: \PantryItem.category)
     var items: [PantryItem]?
+
+    /// Non-optional view onto `items` — see the schema rules on `Recipe`.
+    var itemList: [PantryItem] { items ?? [] }
 
     init(
         name: String,

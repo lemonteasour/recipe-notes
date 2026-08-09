@@ -10,9 +10,9 @@ import SwiftData
 
 @Model
 class Step: Identifiable {
-    @Attribute(.unique) var id: UUID
-    var value: String
-    @Attribute(originalName: "index") var sortOrder: Int
+    var id: UUID = UUID()
+    var value: String = ""
+    @Attribute(originalName: "index") var sortOrder: Int = 0
     var recipe: Recipe?
 
     init(value: String, sortOrder: Int) {
@@ -24,7 +24,16 @@ class Step: Identifiable {
 
 extension Array where Element == Step {
     /// Returns the steps ordered by their `sortOrder`.
+    ///
+    /// Ties break on `id` so the order is deterministic. Once devices sync,
+    /// two of them reordering the same recipe offline merge field-by-field and
+    /// can land on duplicate `sortOrder`s; without a tie-break the list would
+    /// shuffle between renders until the next save renormalizes it.
     func sortedByOrder() -> [Step] {
-        sorted { $0.sortOrder < $1.sortOrder }
+        sorted { lhs, rhs in
+            lhs.sortOrder == rhs.sortOrder
+                ? lhs.id.uuidString < rhs.id.uuidString
+                : lhs.sortOrder < rhs.sortOrder
+        }
     }
 }

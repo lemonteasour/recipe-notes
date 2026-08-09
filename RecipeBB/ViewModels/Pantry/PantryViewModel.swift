@@ -27,7 +27,7 @@ class PantryViewModel {
     /// Highest sort order among the items in `category`, or among uncategorized items when nil.
     private func maxSortOrder(in category: PantryCategory?) throws -> Int {
         if let category {
-            return category.items?.map(\.sortOrder).max() ?? -1
+            return category.itemList.map(\.sortOrder).max() ?? -1
         }
         var descriptor = FetchDescriptor<PantryItem>(
             predicate: #Predicate { $0.category == nil },

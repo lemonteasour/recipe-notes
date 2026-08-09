@@ -8,19 +8,37 @@
 import Foundation
 import SwiftData
 
+// MARK: - CloudKit schema rules
+//
+// Every model in this app is shaped for NSPersistentCloudKitContainer, which
+// rejects a store that breaks any of these:
+//
+//   1. No uniqueness constraints. `id` carries no `@Attribute(.unique)`; it is
+//      an ordinary attribute the app assigns in `init`. Nothing relies on the
+//      store enforcing uniqueness — see `newObjectsOnCloudKitSchemaGetDistinctIDs`.
+//   2. Every non-optional attribute has a default value.
+//   3. Every relationship is optional, including to-many, and declares an
+//      explicit inverse. That is why the arrays below are `[T]?` and why each
+//      has a non-optional `…List` accessor: reads go through the accessor,
+//      only writes touch the optional.
+//
+// The `.deny` delete rule is also unsupported; `.cascade` and `.nullify` are
+// fine, as is `@Attribute(.externalStorage)` — it maps to a `CKAsset`.
+//
+// StoreMigrationTests pins that a populated 0.7.2 store still opens here.
+
 @Model
 class Recipe {
-    @Attribute(.unique) var id: UUID
-    var name: String
-    var desc: String
+    var id: UUID = UUID()
+    var name: String = ""
+    var desc: String = ""
     @Attribute(.externalStorage) var photo: Data?
-    @Relationship(deleteRule: .cascade, inverse: \Ingredient.recipe) var ingredients: [Ingredient]
-    @Relationship(deleteRule: .cascade, inverse: \IngredientHeading.recipe) var ingredientHeadings: [IngredientHeading]
-    @Relationship(deleteRule: .cascade, inverse: \Step.recipe) var steps: [Step]
-    // Default values let existing stores lightweight-migrate to this schema.
-    @Relationship(deleteRule: .nullify, inverse: \RecipeTag.recipes) var tags: [RecipeTag] = []
+    @Relationship(deleteRule: .cascade, inverse: \Ingredient.recipe) var ingredients: [Ingredient]?
+    @Relationship(deleteRule: .cascade, inverse: \IngredientHeading.recipe) var ingredientHeadings: [IngredientHeading]?
+    @Relationship(deleteRule: .cascade, inverse: \Step.recipe) var steps: [Step]?
+    @Relationship(deleteRule: .nullify, inverse: \RecipeTag.recipes) var tags: [RecipeTag]?
     var isFavorite: Bool = false
-    var createdAt: Date
+    var createdAt: Date = Date()
 
     init(
         name: String,
@@ -40,20 +58,29 @@ class Recipe {
         self.createdAt = Date()
     }
 
+    // MARK: - Relationship accessors
+    /// Non-optional views onto the relationships. CloudKit forces the stored
+    /// properties to be optional; nothing reading them cares about the
+    /// difference between "empty" and "not set", so reads go through these.
+    var ingredientList: [Ingredient] { ingredients ?? [] }
+    var headingList: [IngredientHeading] { ingredientHeadings ?? [] }
+    var stepList: [Step] { steps ?? [] }
+    var tagList: [RecipeTag] { tags ?? [] }
+
     // MARK: - Computed properties
     /// Ingredients and headings merged into a single list ordered by `sortOrder`.
     var sortedIngredientItems: [any IngredientItem] {
-        mergedIngredientItems(ingredients, ingredientHeadings)
+        mergedIngredientItems(ingredientList, headingList)
     }
 
     var sortedSteps: [Step] {
-        steps.sortedByOrder()
+        stepList.sortedByOrder()
     }
 
     /// Deleted tags can linger in `tags` until the relationship change is
     /// processed, so filter them out before anyone reads a name off one.
     var sortedTags: [RecipeTag] {
-        tags
+        tagList
             .filter(\.isLive)
             .sorted { $0.name.localizedStandardCompare($1.name) == .orderedAscending }
     }

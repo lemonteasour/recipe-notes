@@ -191,17 +191,17 @@ class RecipeFormViewModel {
 
         // Create detached copies so we don't mutate the originals until Save is pressed.
         // Copies keep the originals' ids so they can be matched back up on save.
-        ingredients = recipe.ingredients.sorted { $0.sortOrder < $1.sortOrder }.map {
+        ingredients = recipe.ingredientList.sorted { $0.sortOrder < $1.sortOrder }.map {
             let copy = Ingredient(name: $0.name, quantity: $0.quantity, sortOrder: $0.sortOrder)
             copy.id = $0.id
             return copy
         }
-        ingredientHeadings = recipe.ingredientHeadings.sorted { $0.sortOrder < $1.sortOrder }.map {
+        ingredientHeadings = recipe.headingList.sorted { $0.sortOrder < $1.sortOrder }.map {
             let copy = IngredientHeading(name: $0.name, sortOrder: $0.sortOrder)
             copy.id = $0.id
             return copy
         }
-        steps = recipe.steps.sorted { $0.sortOrder < $1.sortOrder }.map {
+        steps = recipe.stepList.sorted { $0.sortOrder < $1.sortOrder }.map {
             let copy = Step(value: $0.value, sortOrder: $0.sortOrder)
             copy.id = $0.id
             return copy
@@ -239,9 +239,14 @@ class RecipeFormViewModel {
             throw ValidationError.emptyRecipeName
         }
 
-        // Normalize indices
+        // Normalize indices. Steps carry their own index space, so they need
+        // the same treatment: two devices reordering offline merge into
+        // duplicate sortOrders, and only a save that renormalizes clears them
+        // rather than leaving the list leaning on the id tie-break forever.
         let all = combinedIngredientItems
         reindexIngredientItems(using: all)
+        steps = sortedSteps
+        reindexSteps()
 
         // Only tags still selected at save time get persisted
         for tag in pendingNewTags where selectedTagIDs.contains(tag.id) {
@@ -258,7 +263,7 @@ class RecipeFormViewModel {
             // Reconcile children in place: update survivors, delete removed, insert new.
             // This preserves object identity instead of churning the whole graph on every save.
             reconcileChildren(
-                existing: recipe.ingredients,
+                existing: recipe.ingredientList,
                 edited: ingredients,
                 update: { original, copy in
                     original.name = copy.name
@@ -268,7 +273,7 @@ class RecipeFormViewModel {
                 attach: { $0.recipe = recipe }
             )
             reconcileChildren(
-                existing: recipe.ingredientHeadings,
+                existing: recipe.headingList,
                 edited: ingredientHeadings,
                 update: { original, copy in
                     original.name = copy.name
@@ -277,7 +282,7 @@ class RecipeFormViewModel {
                 attach: { $0.recipe = recipe }
             )
             reconcileChildren(
-                existing: recipe.steps,
+                existing: recipe.stepList,
                 edited: steps,
                 update: { original, copy in
                     original.value = copy.value
