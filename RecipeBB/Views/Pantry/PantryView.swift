@@ -65,6 +65,17 @@ struct PantryView: View {
                     }
                     .padding(.bottom, 16)
 
+                    // Nothing at all yet — the per-category "No items" line
+                    // can't speak for a pantry with no categories either.
+                    if categories.isEmpty, uncategorizedItems.isEmpty {
+                        ContentUnavailableView(
+                            "Pantry Is Empty",
+                            systemImage: "cabinet",
+                            description: Text("Add what you have on hand above, or make a category with the folder button.")
+                        )
+                        .padding(.top, 40)
+                    }
+
                     // Display items by category
                     ForEach(categories) { category in
                         let items = category.itemList.sorted(by: { $0.sortOrder < $1.sortOrder })

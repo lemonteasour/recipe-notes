@@ -14,7 +14,20 @@ struct RecipeDetailCookingView: View {
 
     var body: some View {
         let ingredientItems = recipe.sortedIngredientItems
+        let steps = recipe.sortedSteps
 
+        if ingredientItems.isEmpty, steps.isEmpty {
+            ContentUnavailableView(
+                "Nothing to Cook",
+                systemImage: "list.bullet.rectangle",
+                description: Text("This recipe has no ingredients or steps yet.")
+            )
+        } else {
+            content(ingredientItems: ingredientItems, steps: steps)
+        }
+    }
+
+    private func content(ingredientItems: [any IngredientItem], steps: [Step]) -> some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 32) {
                 if !ingredientItems.isEmpty {
@@ -52,7 +65,7 @@ struct RecipeDetailCookingView: View {
                     }
                 }
 
-                if !recipe.sortedSteps.isEmpty {
+                if !steps.isEmpty {
                     VStack(alignment: .leading, spacing: 20) {
                         Text("Steps")
                             .font(.title2).bold()
@@ -60,7 +73,7 @@ struct RecipeDetailCookingView: View {
                         // Numbered by position rather than `sortOrder`, so steps
                         // that land on a duplicate order after a sync merge still
                         // read 1, 2, 3.
-                        ForEach(Array(recipe.sortedSteps.enumerated()), id: \.element.id) { index, step in
+                        ForEach(Array(steps.enumerated()), id: \.element.id) { index, step in
                             HStack(alignment: .firstTextBaseline, spacing: 12) {
                                 Text(index + 1, format: .number)
                                     .font(.title3).bold()

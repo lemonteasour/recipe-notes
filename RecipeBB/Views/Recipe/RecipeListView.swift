@@ -22,28 +22,37 @@ struct RecipeListView: View {
 
     var body: some View {
         @Bindable var viewModel = viewModel
+        let sections = viewModel.sections(from: allRecipes)
         NavigationStack(path: $path) {
-            RecipeIndexedListView(
-                sections: viewModel.sections(from: allRecipes),
-                onSelect: { recipe in
-                    path.append(recipe)
-                },
-                onToggleFavorite: { recipe in
-                    do {
-                        try viewModel.toggleFavorite(recipe)
-                    } catch {
-                        errorMessage = "Failed to update recipe: \(error.localizedDescription)"
+            // The empty state sits outside the `ignoresSafeArea`, so it centres
+            // in the visible area rather than behind the tab bar.
+            ZStack {
+                RecipeIndexedListView(
+                    sections: sections,
+                    onSelect: { recipe in
+                        path.append(recipe)
+                    },
+                    onToggleFavorite: { recipe in
+                        do {
+                            try viewModel.toggleFavorite(recipe)
+                        } catch {
+                            errorMessage = "Failed to update recipe: \(error.localizedDescription)"
+                        }
+                    },
+                    onDelete: { recipe in
+                        do {
+                            try viewModel.deleteRecipe(recipe)
+                        } catch {
+                            errorMessage = "Failed to delete recipe: \(error.localizedDescription)"
+                        }
                     }
-                },
-                onDelete: { recipe in
-                    do {
-                        try viewModel.deleteRecipe(recipe)
-                    } catch {
-                        errorMessage = "Failed to delete recipe: \(error.localizedDescription)"
-                    }
+                )
+                .ignoresSafeArea(edges: .bottom)
+
+                if sections.isEmpty {
+                    emptyState
                 }
-            )
-            .ignoresSafeArea(edges: .bottom)
+            }
             .navigationDestination(for: Recipe.self) { recipe in
                 RecipeDetailView(recipe: recipe)
             }
@@ -102,6 +111,27 @@ struct RecipeListView: View {
                 Text("Could not import recipe. Please make sure you have copied valid recipe text.")
             }
             .errorAlert($errorMessage)
+        }
+    }
+
+    /// Why the list is blank: an unmatched search, filters that exclude
+    /// everything, or no recipes at all.
+    @ViewBuilder
+    private var emptyState: some View {
+        if !viewModel.searchText.isEmpty {
+            ContentUnavailableView.search(text: viewModel.searchText)
+        } else if viewModel.hasActiveFilters {
+            ContentUnavailableView(
+                "No Matches",
+                systemImage: "line.3.horizontal.decrease",
+                description: Text("No recipes match the filters you've chosen.")
+            )
+        } else {
+            ContentUnavailableView(
+                "No Recipes",
+                systemImage: "book.closed",
+                description: Text("Add one with the + button, or copy a recipe and tap Import.")
+            )
         }
     }
 
