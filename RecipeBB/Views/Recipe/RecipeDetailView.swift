@@ -61,8 +61,8 @@ struct RecipeDetailView: View {
                     }
 
                     Section("Steps") {
-                        ForEach(recipe.sortedSteps, id: \.id) { step in
-                            StepRowView(step: step)
+                        ForEach(Array(recipe.sortedSteps.enumerated()), id: \.element.id) { index, step in
+                            StepRowView(step: step, number: index + 1)
                         }
                     }
                 }
