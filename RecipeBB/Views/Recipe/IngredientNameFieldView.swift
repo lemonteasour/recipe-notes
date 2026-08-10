@@ -12,22 +12,35 @@ struct IngredientNameFieldView: View {
     @Binding var text: String
     let suggestions: [String]
     let excludeCurrent: Bool
+    /// Focus is owned by the form so a newly added row can be focused from the
+    /// outside; the suggestions popover reads the same state.
+    var focus: FocusState<RecipeFormField?>.Binding
+    let field: RecipeFormField
 
     @State private var filteredSuggestions: [String] = []
     @State private var showSuggestions = false
     @State private var originalText: String = ""
-    @FocusState private var isFocused: Bool
 
-    init(text: Binding<String>, suggestions: [String], excludeCurrent: Bool = true) {
+    private var isFocused: Bool { focus.wrappedValue == field }
+
+    init(
+        text: Binding<String>,
+        suggestions: [String],
+        focus: FocusState<RecipeFormField?>.Binding,
+        field: RecipeFormField,
+        excludeCurrent: Bool = true
+    ) {
         self._text = text
         self.suggestions = suggestions
+        self.focus = focus
+        self.field = field
         self.excludeCurrent = excludeCurrent
         self._originalText = State(initialValue: text.wrappedValue)
     }
 
     var body: some View {
         TextField("Ingredient name", text: $text)
-            .focused($isFocused)
+            .focused(focus, equals: field)
             .onChange(of: text) {
                 updateSuggestions()
             }
@@ -55,7 +68,7 @@ struct IngredientNameFieldView: View {
                     onSelect: { suggestion in
                         text = suggestion
                         showSuggestions = false
-                        isFocused = false
+                        focus.wrappedValue = nil
                     }
                 )
                 .presentationCompactAdaptation(.none)

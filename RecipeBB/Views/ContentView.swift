@@ -10,9 +10,9 @@ import SwiftUI
 struct ContentView: View {
     @Environment(\.modelContext) private var context
 
-    @State private var selection: Tab = .recipes
+    @State private var selection: AppTab = .recipes
 
-    enum Tab {
+    enum AppTab {
         case recipes
         case pantry
         case more
@@ -20,23 +20,17 @@ struct ContentView: View {
 
     var body: some View {
         TabView(selection: $selection) {
-            RecipeListView()
-                .tabItem {
-                    Label("Recipes", systemImage: "book.pages.fill")
-                }
-                .tag(Tab.recipes)
+            Tab("Recipes", systemImage: "book.pages.fill", value: AppTab.recipes) {
+                RecipeListView()
+            }
 
-            PantryView(context: context)
-                .tabItem {
-                    Label("Pantry", systemImage: "carrot.fill")
-                }
-                .tag(Tab.pantry)
+            Tab("Pantry", systemImage: "carrot.fill", value: AppTab.pantry) {
+                PantryView(context: context)
+            }
 
-            MoreView()
-                .tabItem {
-                    Label("More", systemImage: "ellipsis.circle.fill")
-                }
-                .tag(Tab.more)
+            Tab("More", systemImage: "ellipsis.circle.fill", value: AppTab.more) {
+                MoreView()
+            }
         }
     }
 }

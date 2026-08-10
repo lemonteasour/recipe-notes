@@ -82,6 +82,63 @@ struct RecipeFormViewModelTests {
         #expect(recipe.sortedSteps.map(\.sortOrder) == [0, 1, 2])
     }
 
+    /// The form renumbers as the drag lands, not at save. The row's number comes
+    /// from its draft, so a move that left `sortOrder` alone would show stale
+    /// numbers until the recipe was saved.
+    @Test func movingAStepRenumbersBeforeSave() throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+
+        let recipe = Recipe(
+            name: "Ordered",
+            desc: "",
+            steps: [
+                Step(value: "Mix", sortOrder: 0),
+                Step(value: "Bake", sortOrder: 1),
+                Step(value: "Cool", sortOrder: 2),
+            ]
+        )
+        context.insert(recipe)
+        try context.save()
+
+        let form = RecipeFormViewModel(context: context, recipeToEdit: recipe)
+        form.moveSteps(from: IndexSet(integer: 2), to: 0)
+
+        #expect(form.steps.map(\.value) == ["Cool", "Mix", "Bake"])
+        #expect(form.steps.map(\.sortOrder) == [0, 1, 2])
+    }
+
+    /// Ingredients and headings share one editable list, and are split back into
+    /// their two relationships on save. The order the user left them in has to
+    /// survive that round trip.
+    @Test func reorderingAcrossIngredientsAndHeadingsSurvivesSave() throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+
+        let recipe = Recipe(
+            name: "Grouped",
+            desc: "",
+            ingredients: [
+                Ingredient(name: "Flour", quantity: "200g", sortOrder: 0),
+                Ingredient(name: "Sugar", quantity: "50g", sortOrder: 2),
+            ],
+            ingredientHeadings: [IngredientHeading(name: "Base", sortOrder: 1)]
+        )
+        context.insert(recipe)
+        try context.save()
+
+        let form = RecipeFormViewModel(context: context, recipeToEdit: recipe)
+        #expect(form.ingredientItems.map(\.name) == ["Flour", "Base", "Sugar"])
+
+        form.moveIngredientItems(from: IndexSet(integer: 2), to: 0)
+        #expect(form.ingredientItems.map(\.name) == ["Sugar", "Flour", "Base"])
+
+        try form.saveRecipe()
+
+        #expect(recipe.sortedIngredientItems.map { $0.name } == ["Sugar", "Flour", "Base"])
+        #expect(recipe.sortedIngredientItems.map { $0.sortOrder } == [0, 1, 2])
+    }
+
     /// A recipe whose indices are already clean comes through untouched —
     /// renormalizing is a repair, not a reshuffle.
     @Test func savingLeavesWellOrderedRecipesAlone() throws {

@@ -44,10 +44,19 @@ struct RecipeFormView: View {
     }
 }
 
+/// The form's focusable text fields, keyed by the row they belong to, so a
+/// freshly added row can take focus without an extra tap.
+enum RecipeFormField: Hashable {
+    case ingredientName(UUID)
+    case heading(UUID)
+    case step(UUID)
+}
+
 struct RecipeFormContentView: View {
     @Bindable var viewModel: RecipeFormViewModel
 
     @State private var selectedPhotoItem: PhotosPickerItem?
+    @FocusState private var focusedField: RecipeFormField?
 
     var body: some View {
         let hasPhoto = viewModel.photo != nil
@@ -115,51 +124,64 @@ struct RecipeFormContentView: View {
             }
 
             Section("Ingredients") {
-                ForEach(viewModel.combinedIngredientItems, id: \.id) { item in
-                    if let ingredient = item as? Ingredient,
-                       let binding = viewModel.binding(for: ingredient) {
+                ForEach($viewModel.ingredientItems) { $item in
+                    if item.kind == .heading {
+                        TextField("Heading", text: $item.name)
+                            .font(.headline)
+                            .focused($focusedField, equals: .heading(item.id))
+                    } else {
                         HStack {
                             IngredientNameFieldView(
-                                text: binding.name,
-                                suggestions: viewModel.allIngredientNames
+                                text: $item.name,
+                                suggestions: viewModel.allIngredientNames,
+                                focus: $focusedField,
+                                field: .ingredientName(item.id)
                             )
 
-                            TextField("Quantity", text: binding.quantity)
+                            TextField("Quantity", text: $item.quantity)
                                 .frame(width: 100)
                                 .multilineTextAlignment(.trailing)
                         }
-                    } else if let heading = item as? IngredientHeading,
-                              let binding = viewModel.binding(for: heading) {
-                        TextField("Heading", text: binding.name)
-                            .font(.headline)
                     }
                 }
                 .onDelete(perform: viewModel.deleteIngredientItems)
                 .onMove(perform: viewModel.moveIngredientItems)
 
-                Button("Add ingredient", action: viewModel.addIngredient)
-                Button("Add heading", action: viewModel.addHeading)
+                Button("Add ingredient") {
+                    focus(on: .ingredientName(viewModel.addIngredient().id))
+                }
+                Button("Add heading") {
+                    focus(on: .heading(viewModel.addHeading().id))
+                }
             }
 
             Section("Steps") {
-                ForEach(viewModel.sortedSteps, id: \.id) { step in
-                    if let binding = viewModel.binding(for: step) {
-                        HStack(alignment: .top) {
-                            Text("\(step.sortOrder + 1).")
-                                .foregroundStyle(.secondary)
-                                .frame(width: 24)
+                ForEach($viewModel.steps) { $step in
+                    HStack(alignment: .top) {
+                        Text("\(step.sortOrder + 1).")
+                            .foregroundStyle(.secondary)
+                            .frame(width: 24)
 
-                            TextField("Step", text: binding.value, axis: .vertical)
-                        }
+                        TextField("Step", text: $step.value, axis: .vertical)
+                            .focused($focusedField, equals: .step(step.id))
                     }
                 }
                 .onDelete(perform: viewModel.deleteSteps)
                 .onMove(perform: viewModel.moveSteps)
 
-                Button("Add step", action: viewModel.addStep)
+                Button("Add step") {
+                    focus(on: .step(viewModel.addStep().id))
+                }
             }
         }
         .scrollDismissesKeyboard(.interactively)
+    }
+
+    /// Focus lands a runloop late: the row is only added to the hierarchy on the
+    /// update this button triggers, and a field that doesn't exist yet can't take
+    /// focus.
+    private func focus(on field: RecipeFormField) {
+        Task { focusedField = field }
     }
 }
 

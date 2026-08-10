@@ -9,6 +9,36 @@ import SwiftUI
 import SwiftData
 import PhotosUI
 
+// MARK: - Drafts
+//
+// The form edits value types and only touches the models on save. It used to
+// hold detached `@Model` copies, but mutating a property on one of those leaves
+// the array holding it unchanged, so SwiftUI never re-rendered the row —
+// renumbering after a drag stayed invisible until the recipe was saved.
+
+/// A row of the form's ingredient list: an ingredient, or a heading that groups
+/// the rows under it. Both kinds share one list because the user reorders them
+/// together.
+struct IngredientDraft: Identifiable, Hashable {
+    enum Kind: Hashable {
+        case ingredient
+        case heading
+    }
+
+    var id = UUID()
+    var kind: Kind
+    var name: String = ""
+    /// Unused by headings.
+    var quantity: String = ""
+    var sortOrder: Int
+}
+
+struct StepDraft: Identifiable, Hashable {
+    var id = UUID()
+    var value: String = ""
+    var sortOrder: Int
+}
+
 @MainActor
 @Observable
 class RecipeFormViewModel {
@@ -19,10 +49,9 @@ class RecipeFormViewModel {
     var name = ""
     var desc = ""
     var photo: Data?
-    var ingredients: [Ingredient] = []
+    var ingredientItems: [IngredientDraft] = []
+    var steps: [StepDraft] = []
     var allIngredientNames: [String] = []
-    var ingredientHeadings: [IngredientHeading] = []
-    var steps: [Step] = []
     var allTags: [RecipeTag] = []
     var selectedTagIDs: Set<UUID> = []
     var newTagName = ""
@@ -30,15 +59,6 @@ class RecipeFormViewModel {
     // Tags created in this form session. They are only inserted into the
     // context on save (and only if still selected), so cancelling leaks nothing.
     private var pendingNewTags: [RecipeTag] = []
-
-    // MARK: - Computed
-    var combinedIngredientItems: [any IngredientItem] {
-        mergedIngredientItems(ingredients, ingredientHeadings)
-    }
-
-    var sortedSteps: [Step] {
-        steps.sortedByOrder()
-    }
 
     // MARK: - Init
     init(context: ModelContext, recipeToEdit: Recipe? = nil) {
@@ -83,34 +103,6 @@ class RecipeFormViewModel {
         selectedTagIDs.insert(tag.id)
     }
 
-    // MARK: - Bindings
-    func binding(for ingredient: Ingredient) -> Binding<Ingredient>? {
-        binding(for: ingredient, in: \.ingredients)
-    }
-
-    func binding(for heading: IngredientHeading) -> Binding<IngredientHeading>? {
-        binding(for: heading, in: \.ingredientHeadings)
-    }
-
-    func binding(for step: Step) -> Binding<Step>? {
-        binding(for: step, in: \.steps)
-    }
-
-    /// A two-way binding to the array element matching `element`'s id, or nil if it's no longer present.
-    private func binding<T: Identifiable>(
-        for element: T,
-        in arrayKeyPath: ReferenceWritableKeyPath<RecipeFormViewModel, [T]>
-    ) -> Binding<T>? where T.ID == UUID {
-        guard self[keyPath: arrayKeyPath].contains(where: { $0.id == element.id }) else { return nil }
-        return Binding(
-            get: { self[keyPath: arrayKeyPath].first(where: { $0.id == element.id }) ?? element },
-            set: { newValue in
-                guard let idx = self[keyPath: arrayKeyPath].firstIndex(where: { $0.id == element.id }) else { return }
-                self[keyPath: arrayKeyPath][idx] = newValue
-            }
-        )
-    }
-
     // MARK: - Photo
     func updatePhoto(from item: PhotosPickerItem) async {
         guard
@@ -121,64 +113,59 @@ class RecipeFormViewModel {
         photo = jpeg
     }
 
-    // MARK: - Ingredient Items
-    func addIngredient() {
-        let newIndex = combinedIngredientItems.count
-        ingredients.append(Ingredient(name: "", quantity: "", sortOrder: newIndex))
+    // MARK: - Rows
+
+    /// The add methods return the new row so the form can move focus into it.
+    @discardableResult
+    func addIngredient() -> IngredientDraft {
+        let draft = IngredientDraft(kind: .ingredient, sortOrder: ingredientItems.count)
+        ingredientItems.append(draft)
+        return draft
     }
 
-    func addHeading() {
-        let newIndex = combinedIngredientItems.count
-        ingredientHeadings.append(IngredientHeading(name: "", sortOrder: newIndex))
+    @discardableResult
+    func addHeading() -> IngredientDraft {
+        let draft = IngredientDraft(kind: .heading, sortOrder: ingredientItems.count)
+        ingredientItems.append(draft)
+        return draft
     }
 
-    func reindexIngredientItems(using ordered: [any IngredientItem]) {
-        for (i, item) in ordered.enumerated() {
-            if let ing = item as? Ingredient,
-               let idx = ingredients.firstIndex(where: { $0.id == ing.id }) {
-                ingredients[idx].sortOrder = i
-            } else if let heading = item as? IngredientHeading,
-                      let idx = ingredientHeadings.firstIndex(where: { $0.id == heading.id }) {
-                ingredientHeadings[idx].sortOrder = i
-            }
-        }
+    @discardableResult
+    func addStep() -> StepDraft {
+        let draft = StepDraft(sortOrder: steps.count)
+        steps.append(draft)
+        return draft
     }
 
     func deleteIngredientItems(at offsets: IndexSet) {
-        var all = combinedIngredientItems
-        all.remove(atOffsets: offsets)
-        ingredients = all.compactMap { $0 as? Ingredient }
-        ingredientHeadings = all.compactMap { $0 as? IngredientHeading }
-        reindexIngredientItems(using: all)
+        ingredientItems.remove(atOffsets: offsets)
+        renumber()
     }
 
     func moveIngredientItems(from indices: IndexSet, to newOffset: Int) {
-        var all = combinedIngredientItems
-        all.move(fromOffsets: indices, toOffset: newOffset)
-        ingredients = all.compactMap { $0 as? Ingredient }
-        ingredientHeadings = all.compactMap { $0 as? IngredientHeading }
-        reindexIngredientItems(using: all)
-    }
-
-    // MARK: - Steps
-    func addStep() {
-        steps.append(Step(value: "", sortOrder: steps.count))
-    }
-
-    private func reindexSteps() {
-        for (i, step) in steps.enumerated() {
-            step.sortOrder = i
-        }
+        ingredientItems.move(fromOffsets: indices, toOffset: newOffset)
+        renumber()
     }
 
     func deleteSteps(at offsets: IndexSet) {
         steps.remove(atOffsets: offsets)
-        reindexSteps()
+        renumber()
     }
 
     func moveSteps(from indices: IndexSet, to newOffset: Int) {
         steps.move(fromOffsets: indices, toOffset: newOffset)
-        reindexSteps()
+        renumber()
+    }
+
+    /// Position in the array is the order; `sortOrder` mirrors it, which is what
+    /// the rows display and what lands on the models at save.
+    private func renumber() {
+        for index in ingredientItems.indices {
+            ingredientItems[index].sortOrder = index
+        }
+        for index in steps.indices {
+            steps[index].sortOrder = index
+        }
     }
 
     // MARK: - Persistence
@@ -189,33 +176,35 @@ class RecipeFormViewModel {
         photo = recipe.photo
         selectedTagIDs = Set(recipe.sortedTags.map(\.id))
 
-        // Create detached copies so we don't mutate the originals until Save is pressed.
-        // Copies keep the originals' ids so they can be matched back up on save.
-        ingredients = recipe.ingredientList.sorted { $0.sortOrder < $1.sortOrder }.map {
-            let copy = Ingredient(name: $0.name, quantity: $0.quantity, sortOrder: $0.sortOrder)
-            copy.id = $0.id
-            return copy
+        // Loaded in the order the user was shown, which is the tie-broken one.
+        // Numbering from that order is what clears duplicate sortOrders on save.
+        ingredientItems = recipe.sortedIngredientItems.enumerated().map { index, item in
+            if let ingredient = item as? Ingredient {
+                return IngredientDraft(
+                    id: ingredient.id,
+                    kind: .ingredient,
+                    name: ingredient.name,
+                    quantity: ingredient.quantity,
+                    sortOrder: index
+                )
+            }
+            return IngredientDraft(id: item.id, kind: .heading, name: item.name, sortOrder: index)
         }
-        ingredientHeadings = recipe.headingList.sorted { $0.sortOrder < $1.sortOrder }.map {
-            let copy = IngredientHeading(name: $0.name, sortOrder: $0.sortOrder)
-            copy.id = $0.id
-            return copy
-        }
-        steps = recipe.stepList.sorted { $0.sortOrder < $1.sortOrder }.map {
-            let copy = Step(value: $0.value, sortOrder: $0.sortOrder)
-            copy.id = $0.id
-            return copy
+        steps = recipe.sortedSteps.enumerated().map { index, step in
+            StepDraft(id: step.id, value: step.value, sortOrder: index)
         }
     }
 
-    /// Reconciles a recipe's stored children against the edited copies, matching by id:
-    /// survivors are updated in place, missing ones are deleted, and brand-new ones are inserted.
-    private func reconcileChildren<Model>(
+    /// Reconciles a recipe's stored children against the edited drafts, matching
+    /// by id: survivors are updated in place, missing ones are deleted, and
+    /// brand-new ones are built and inserted.
+    private func reconcileChildren<Model, Draft>(
         existing: [Model],
-        edited: [Model],
-        update: (_ original: Model, _ edited: Model) -> Void,
-        attach: (Model) -> Void
-    ) where Model: PersistentModel, Model: Identifiable, Model.ID == UUID {
+        edited: [Draft],
+        update: (_ model: Model, _ draft: Draft) -> Void,
+        make: (_ draft: Draft) -> Model
+    ) where Model: PersistentModel, Model: Identifiable, Model.ID == UUID,
+            Draft: Identifiable, Draft.ID == UUID {
         let existingByID = Dictionary(existing.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
         let editedIDs = Set(edited.map(\.id))
 
@@ -223,12 +212,11 @@ class RecipeFormViewModel {
             context.delete(original)
         }
 
-        for copy in edited {
-            if let original = existingByID[copy.id] {
-                update(original, copy)
+        for draft in edited {
+            if let original = existingByID[draft.id] {
+                update(original, draft)
             } else {
-                attach(copy)
-                context.insert(copy)
+                context.insert(make(draft))
             }
         }
     }
@@ -239,14 +227,14 @@ class RecipeFormViewModel {
             throw ValidationError.emptyRecipeName
         }
 
-        // Normalize indices. Steps carry their own index space, so they need
-        // the same treatment: two devices reordering offline merge into
-        // duplicate sortOrders, and only a save that renormalizes clears them
-        // rather than leaving the list leaning on the id tie-break forever.
-        let all = combinedIngredientItems
-        reindexIngredientItems(using: all)
-        steps = sortedSteps
-        reindexSteps()
+        // Normalize indices. Ingredients and steps carry separate index spaces,
+        // and both need it: two devices reordering offline merge into duplicate
+        // sortOrders, and only a save that renormalizes clears them rather than
+        // leaving the list leaning on the id tie-break forever.
+        renumber()
+
+        let ingredientDrafts = ingredientItems.filter { $0.kind == .ingredient }
+        let headingDrafts = ingredientItems.filter { $0.kind == .heading }
 
         // Only tags still selected at save time get persisted
         for tag in pendingNewTags where selectedTagIDs.contains(tag.id) {
@@ -264,40 +252,61 @@ class RecipeFormViewModel {
             // This preserves object identity instead of churning the whole graph on every save.
             reconcileChildren(
                 existing: recipe.ingredientList,
-                edited: ingredients,
-                update: { original, copy in
-                    original.name = copy.name
-                    original.quantity = copy.quantity
-                    original.sortOrder = copy.sortOrder
+                edited: ingredientDrafts,
+                update: { model, draft in
+                    model.name = draft.name
+                    model.quantity = draft.quantity
+                    model.sortOrder = draft.sortOrder
                 },
-                attach: { $0.recipe = recipe }
+                make: { draft in
+                    let model = Ingredient(name: draft.name, quantity: draft.quantity, sortOrder: draft.sortOrder)
+                    model.id = draft.id
+                    model.recipe = recipe
+                    return model
+                }
             )
             reconcileChildren(
                 existing: recipe.headingList,
-                edited: ingredientHeadings,
-                update: { original, copy in
-                    original.name = copy.name
-                    original.sortOrder = copy.sortOrder
+                edited: headingDrafts,
+                update: { model, draft in
+                    model.name = draft.name
+                    model.sortOrder = draft.sortOrder
                 },
-                attach: { $0.recipe = recipe }
+                make: { draft in
+                    let model = IngredientHeading(name: draft.name, sortOrder: draft.sortOrder)
+                    model.id = draft.id
+                    model.recipe = recipe
+                    return model
+                }
             )
             reconcileChildren(
                 existing: recipe.stepList,
                 edited: steps,
-                update: { original, copy in
-                    original.value = copy.value
-                    original.sortOrder = copy.sortOrder
+                update: { model, draft in
+                    model.value = draft.value
+                    model.sortOrder = draft.sortOrder
                 },
-                attach: { $0.recipe = recipe }
+                make: { draft in
+                    let model = Step(value: draft.value, sortOrder: draft.sortOrder)
+                    model.id = draft.id
+                    model.recipe = recipe
+                    return model
+                }
             )
         } else {
             let newRecipe = Recipe(
                 name: trimmedName,
                 desc: desc,
                 photo: photo,
-                ingredients: ingredients,
-                ingredientHeadings: ingredientHeadings,
-                steps: steps
+                ingredients: ingredientDrafts.map {
+                    Ingredient(name: $0.name, quantity: $0.quantity, sortOrder: $0.sortOrder)
+                },
+                ingredientHeadings: headingDrafts.map {
+                    IngredientHeading(name: $0.name, sortOrder: $0.sortOrder)
+                },
+                steps: steps.map {
+                    Step(value: $0.value, sortOrder: $0.sortOrder)
+                }
             )
             context.insert(newRecipe)
             newRecipe.tags = selectedTags

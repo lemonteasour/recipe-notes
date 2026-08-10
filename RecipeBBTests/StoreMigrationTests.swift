@@ -526,8 +526,8 @@ struct StoreMigrationTests {
         let form = RecipeFormViewModel(context: context, recipeToEdit: recipe)
         form.name = "Carbonara (updated)"
         form.addIngredient()
-        form.ingredients[form.ingredients.count - 1].name = "Egg yolk"
-        form.ingredients[form.ingredients.count - 1].quantity = "4"
+        form.ingredientItems[form.ingredientItems.count - 1].name = "Egg yolk"
+        form.ingredientItems[form.ingredientItems.count - 1].quantity = "4"
         form.addStep()
         form.steps[form.steps.count - 1].value = "Serve"
         try form.saveRecipe()
