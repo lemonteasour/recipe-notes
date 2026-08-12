@@ -16,6 +16,7 @@ struct RecipeIndexedListView: UIViewRepresentable {
     let onSelect: (Recipe) -> Void
     let onToggleFavorite: (Recipe) -> Void
     let onDelete: (Recipe) -> Void
+    let onAddToPlanner: (Recipe) -> Void
 
     func makeUIView(context: Context) -> UITableView {
         let tableView = UITableView(frame: .zero, style: .plain)
@@ -192,6 +193,15 @@ struct RecipeIndexedListView: UIViewRepresentable {
             ) { [weak self] _ in
                 self?.parent.onToggleFavorite(recipe)
             }
+            // Lives here rather than in RecipeDetailView's toolbar, which
+            // already carries four actions and can't take a fifth on a small
+            // phone in Japanese.
+            let plan = UIAction(
+                title: String(localized: "Add to Planner"),
+                image: UIImage(systemName: "calendar.badge.plus")
+            ) { [weak self] _ in
+                self?.parent.onAddToPlanner(recipe)
+            }
             let delete = UIAction(
                 title: String(localized: "Delete"),
                 image: UIImage(systemName: "trash"),
@@ -199,7 +209,7 @@ struct RecipeIndexedListView: UIViewRepresentable {
             ) { [weak self] _ in
                 self?.parent.onDelete(recipe)
             }
-            return UIMenu(children: [favorite, delete])
+            return UIMenu(children: [favorite, plan, delete])
         }
     }
 

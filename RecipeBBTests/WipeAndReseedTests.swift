@@ -65,5 +65,31 @@ struct WipeAndReseedTests {
         PreviewData.wipeAndReseed(context: context)
 
         #expect(try context.fetch(FetchDescriptor<Recipe>()).count > 1)
+        #expect(try context.fetch(FetchDescriptor<MealPlanEntry>()).count > 1)
+    }
+
+    /// Planner entries have to be deleted explicitly, not left to the delete
+    /// rule: deleting a recipe only *nullifies* them, so they would otherwise
+    /// survive the wipe as orphans — and the non-zero count would then make
+    /// `seedIfEmpty` skip reseeding them entirely.
+    @Test func wipeAndReseedClearsPlannerEntriesIncludingUnlinkedOnes() throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+
+        let recipe = Recipe(name: "User Recipe", desc: "")
+        context.insert(recipe)
+        context.insert(MealPlanEntry(dayKey: 20260811, title: "", slot: .dinner, recipe: recipe))
+        // A free-text entry has no recipe to be deleted along with
+        context.insert(MealPlanEntry(dayKey: 20260811, title: "User Takeout", slot: .lunch))
+        try context.save()
+
+        PreviewData.wipeAndReseed(context: context)
+
+        let entries = try context.fetch(FetchDescriptor<MealPlanEntry>())
+        #expect(!entries.contains { $0.title == "User Takeout" })
+        #expect(!entries.contains { $0.recipe == nil && $0.title.isEmpty })
+        // Reseeding actually happened rather than being skipped
+        #expect(entries.count > 1)
+        #expect(entries.contains { $0.recipe != nil }, "sample entries should link to sample recipes")
     }
 }

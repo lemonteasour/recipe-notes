@@ -15,6 +15,7 @@ struct ContentView: View {
     enum AppTab {
         case recipes
         case pantry
+        case planner
         case more
     }
 
@@ -26,6 +27,10 @@ struct ContentView: View {
 
             Tab("Pantry", systemImage: "carrot.fill", value: AppTab.pantry) {
                 PantryView(context: context)
+            }
+
+            Tab("Planner", systemImage: "calendar", value: AppTab.planner) {
+                PlannerView(context: context)
             }
 
             Tab("More", systemImage: "ellipsis.circle.fill", value: AppTab.more) {

@@ -84,7 +84,8 @@ enum PreviewData {
     static func seedIfEmpty(context: ModelContext) {
         let recipeCount = (try? context.fetchCount(FetchDescriptor<Recipe>())) ?? 0
         let pantryCount = (try? context.fetchCount(FetchDescriptor<PantryItem>())) ?? 0
-        guard recipeCount == 0 || pantryCount == 0 else { return }
+        let plannerCount = (try? context.fetchCount(FetchDescriptor<MealPlanEntry>())) ?? 0
+        guard recipeCount == 0 || pantryCount == 0 || plannerCount == 0 else { return }
 
         let language = Bundle.main.preferredLocalizations.first ?? "en"
         let samples: SampleSet
@@ -133,6 +134,26 @@ enum PreviewData {
             }
         }
 
+        if plannerCount == 0 {
+            // Resolved from the store rather than from `samples.recipes`: the
+            // recipe block above may have been skipped by the count guard, and
+            // an entry pointing at an unsaved object would be dropped.
+            let recipesByName = Dictionary(
+                ((try? context.fetch(FetchDescriptor<Recipe>())) ?? []).map { ($0.name, $0) },
+                uniquingKeysWith: { first, _ in first }
+            )
+            let today = CalendarDay.today()
+            for plan in samples.mealPlan {
+                context.insert(MealPlanEntry(
+                    dayKey: today.adding(days: plan.dayOffset).key,
+                    title: plan.title,
+                    slot: plan.slot,
+                    note: plan.note,
+                    recipe: recipesByName[plan.title]
+                ))
+            }
+        }
+
         try? context.save()
     }
 
@@ -141,6 +162,12 @@ enum PreviewData {
     static func wipeAndReseed(context: ModelContext) {
         // Delete through the context (not a batch delete) so cascade rules
         // clean up ingredients, headings, and steps.
+        //
+        // Planner entries go first, and explicitly: deleting a recipe only
+        // *nullifies* its entries by design, so leaving them to the delete rule
+        // would let them survive the wipe as orphans — and a non-zero planner
+        // count then makes `seedIfEmpty` skip reseeding them.
+        for entry in (try? context.fetch(FetchDescriptor<MealPlanEntry>())) ?? [] { context.delete(entry) }
         for recipe in (try? context.fetch(FetchDescriptor<Recipe>())) ?? [] { context.delete(recipe) }
         for tag in (try? context.fetch(FetchDescriptor<RecipeTag>())) ?? [] { context.delete(tag) }
         for item in (try? context.fetch(FetchDescriptor<PantryItem>())) ?? [] { context.delete(item) }
@@ -171,6 +198,10 @@ enum PreviewData {
         var extraTitles: [String]
         var pantryCategories: [(name: String, items: [(name: String, quantity: String)])]
         var loosePantryItems: [(name: String, quantity: String)]
+        /// Planner entries relative to today. A `title` matching a sample
+        /// recipe's name gets linked to it; anything else stays free text, so
+        /// previews exercise both paths — and both past and future days.
+        var mealPlan: [(dayOffset: Int, title: String, slot: MealSlot, note: String)]
     }
 
     private static func date(_ year: Int, _ month: Int, _ day: Int) -> Date {
@@ -303,6 +334,14 @@ enum PreviewData {
             loosePantryItems: [
                 (name: "Eggs", quantity: "6"),
                 (name: "Plain flour", quantity: "1kg"),
+            ],
+            mealPlan: [
+                (dayOffset: -3, title: "Roasted Tomato Soup", slot: .lunch, note: ""),
+                (dayOffset: -1, title: "Takeout", slot: .dinner, note: "Thai place on the corner"),
+                (dayOffset: 0, title: "Fluffy Pancakes", slot: .breakfast, note: "Doubled the batch"),
+                (dayOffset: 0, title: "Beef Tacos", slot: .dinner, note: ""),
+                (dayOffset: 2, title: "Chicken Caesar Salad", slot: .lunch, note: ""),
+                (dayOffset: 4, title: "Leftovers", slot: .dinner, note: ""),
             ]
         )
     }
@@ -418,6 +457,14 @@ enum PreviewData {
             loosePantryItems: [
                 (name: "卵", quantity: "6個"),
                 (name: "米", quantity: "2kg"),
+            ],
+            mealPlan: [
+                (dayOffset: -3, title: "味噌汁", slot: .breakfast, note: ""),
+                (dayOffset: -1, title: "外食", slot: .dinner, note: "駅前のラーメン"),
+                (dayOffset: 0, title: "卵焼き", slot: .breakfast, note: ""),
+                (dayOffset: 0, title: "カレーライス", slot: .dinner, note: "ルーが半分残ってる"),
+                (dayOffset: 2, title: "鶏の唐揚げ", slot: .dinner, note: ""),
+                (dayOffset: 4, title: "残り物", slot: .lunch, note: ""),
             ]
         )
     }
@@ -555,6 +602,14 @@ enum PreviewData {
             loosePantryItems: [
                 (name: "雞蛋", quantity: "1打"),
                 (name: "白米", quantity: "5kg"),
+            ],
+            mealPlan: [
+                (dayOffset: -3, title: "西多士", slot: .breakfast, note: ""),
+                (dayOffset: -1, title: "外賣", slot: .lunch, note: "樓下茶餐廳"),
+                (dayOffset: 0, title: "蕃茄炒蛋", slot: .dinner, note: ""),
+                (dayOffset: 0, title: "豉油雞", slot: .dinner, note: "剩一半"),
+                (dayOffset: 2, title: "咕嚕肉", slot: .dinner, note: ""),
+                (dayOffset: 4, title: "剩菜", slot: .lunch, note: ""),
             ]
         )
     }

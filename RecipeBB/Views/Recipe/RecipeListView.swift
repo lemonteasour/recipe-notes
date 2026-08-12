@@ -19,6 +19,8 @@ struct RecipeListView: View {
     @State private var path: [Recipe] = []
     @State private var showImportError = false
     @State private var errorMessage: String?
+    /// The recipe the "Add to Planner" context-menu action was invoked on.
+    @State private var plannerRecipe: Recipe?
 
     var body: some View {
         @Bindable var viewModel = viewModel
@@ -45,6 +47,12 @@ struct RecipeListView: View {
                         } catch {
                             errorMessage = "Failed to delete recipe: \(error.localizedDescription)"
                         }
+                    },
+                    // Presents the form here rather than switching to the
+                    // Planner tab — the two tabs are independent navigation
+                    // stacks and being yanked across is disorienting.
+                    onAddToPlanner: { recipe in
+                        plannerRecipe = recipe
                     }
                 )
                 .ignoresSafeArea(edges: .bottom)
@@ -103,6 +111,13 @@ struct RecipeListView: View {
             .sheet(isPresented: $viewModel.showingFilterSheet) {
                 RecipeFilterView(ingredients: viewModel.allIngredients(from: allRecipes))
                     .environment(viewModel)
+            }
+            .sheet(item: $plannerRecipe) { recipe in
+                MealPlanEntryFormView(
+                    viewModel: PlannerViewModel(context: context),
+                    day: .today(),
+                    prefilledRecipe: recipe
+                )
             }
             .searchable(text: $viewModel.searchText, prompt: "Search recipes")
             .alert("Import Error", isPresented: $showImportError) {

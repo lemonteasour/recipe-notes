@@ -307,6 +307,48 @@ struct PlannerViewModelTests {
         withExtendedLifetime(container) {}
     }
 
+    /// The whole path the storage decision protects, in one test: build the
+    /// grid in a zone west of GMT, add an entry on the day the user tapped, and
+    /// confirm it comes back on *that* cell — not the one before it.
+    ///
+    /// Runs in Los Angeles and Tokyo. The Tokyo case is the control: it passes
+    /// under a naive implementation too, which is exactly why it can't be the
+    /// only zone this is ever checked in.
+    @Test(arguments: ["America/Los_Angeles", "Asia/Tokyo", "Pacific/Kiritimati"])
+    func tappingADayFilesTheEntryOnThatSameCell(zoneName: String) throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+        let viewModel = makeViewModel(container)
+
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = try #require(TimeZone(identifier: zoneName))
+        calendar.locale = Locale(identifier: "en_US")
+
+        let anchor = try date(2026, 8, 11, in: calendar)
+        let grid = viewModel.monthGrid(for: anchor, calendar: calendar)
+
+        // The cell the user taps: 11 August, as the grid itself labels it
+        let tapped = try #require(grid.days.first { $0.isInMonth && $0.number == 11 })
+        #expect(tapped.day.key == 20260811)
+
+        try viewModel.addEntry(on: tapped.day, title: "Curry", slot: .dinner)
+
+        let all = try context.fetch(FetchDescriptor<MealPlanEntry>())
+        let marks = viewModel.marks(from: all)
+
+        // The dot lands on the tapped cell and on no other
+        #expect(marks[tapped.day.key]?.count == 1)
+        for other in grid.days where other.id != tapped.id {
+            #expect(marks[other.day.key] == nil, "entry leaked onto \(other.number) in \(zoneName)")
+        }
+
+        // And the day's own section shows it
+        let sections = viewModel.slotSections(from: all, on: tapped.day)
+        #expect(sections.flatMap { $0.entries.map(\.displayTitle) } == ["Curry"])
+
+        withExtendedLifetime(container) {}
+    }
+
     // MARK: - Month navigation
 
     @Test func steppingMonthsKeepsTheSelectionVisible() throws {
