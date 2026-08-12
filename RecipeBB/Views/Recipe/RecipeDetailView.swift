@@ -70,15 +70,14 @@ struct RecipeDetailView: View {
             }
         }
         .navigationTitle(recipe.name)
-        // Long recipe names take two lines of large title, and the bar carries
-        // three items — inline keeps the title on one line and out of their way.
+        // Long recipe names otherwise take two lines of large title, which is a
+        // lot of chrome above a view you read while cooking.
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItemGroup(placement: .primaryAction) {
-                Button("Edit") {
-                    isShowingEdit = true
-                }
-
+                // Cook is the only action in the bar — it's what you open a
+                // recipe to do, and everything else can cost a tap. Favorite
+                // leads the menu to match the recipe list's context menu.
                 Button(isCookingMode ? "Normal" : "Cook") {
                     isCookingMode.toggle()
                 }
@@ -87,6 +86,9 @@ struct RecipeDetailView: View {
                     Button(recipe.isFavorite ? "Unfavorite" : "Favorite",
                            systemImage: recipe.isFavorite ? "heart.slash" : "heart") {
                         toggleFavorite()
+                    }
+                    Button("Edit", systemImage: "pencil") {
+                        isShowingEdit = true
                     }
                     ShareLink(item: RecipeClipboardService.exportRecipeToText(recipe)) {
                         Label("Share", systemImage: "square.and.arrow.up")
