@@ -121,6 +121,9 @@
         }
       }
     },
+    "Add a title or link a recipe." : {
+
+    },
     "Add Category" : {
       "localizations" : {
         "ja" : {
@@ -268,6 +271,9 @@
           }
         }
       }
+    },
+    "Breakfast" : {
+
     },
     "Cancel" : {
       "localizations" : {
@@ -514,6 +520,9 @@
           }
         }
       }
+    },
+    "Dinner" : {
+
     },
     "Done" : {
       "localizations" : {
@@ -829,6 +838,9 @@
         }
       }
     },
+    "Lunch" : {
+
+    },
     "Manage Categories" : {
       "localizations" : {
         "ja" : {
@@ -1104,6 +1116,9 @@
           }
         }
       }
+    },
+    "Other" : {
+
     },
     "Pantry" : {
       "comment" : "The label for the pantry tab in the tab view.",

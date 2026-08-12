@@ -463,7 +463,7 @@ struct StoreMigrationTests {
         let seeded = try seedV072Store(at: url)
 
         let container = try ModelContainer(
-            for: Recipe.self, RecipeTag.self, PantryItem.self, PantryCategory.self,
+            for: Recipe.self, RecipeTag.self, PantryItem.self, PantryCategory.self, MealPlanEntry.self,
             configurations: ModelConfiguration(url: url)
         )
         let context = container.mainContext
@@ -506,6 +506,73 @@ struct StoreMigrationTests {
         let categories = try context.fetch(FetchDescriptor<PantryCategory>())
         #expect(categories.first?.itemList.count == 2)
         #expect(items.first { $0.name == "Loose Item" }?.category == nil)
+
+        // The brand-new entity is usable straight after migration, and the
+        // relationship it added to Recipe arrives empty rather than nil-faulting
+        #expect(try context.fetch(FetchDescriptor<MealPlanEntry>()).isEmpty)
+        #expect(carbonara.mealPlanEntryList.isEmpty)
+    }
+
+    /// The 0.8.0 feature against a 0.7.2 store: someone updating from the
+    /// shipping release must be able to plan a recipe they already had.
+    @Test func migratedStoreAcceptsMealPlanEntries() throws {
+        let url = makeStoreURL()
+        try seedV072Store(at: url)
+
+        let container = try ModelContainer(
+            for: Recipe.self, RecipeTag.self, PantryItem.self, PantryCategory.self, MealPlanEntry.self,
+            configurations: ModelConfiguration(url: url)
+        )
+        let context = container.mainContext
+
+        let carbonara = try #require(try context.fetch(FetchDescriptor<Recipe>()).first { $0.name == "Carbonara" })
+
+        let viewModel = PlannerViewModel(context: context)
+        try viewModel.addEntry(on: CalendarDay(key: 20260811), title: "", slot: .dinner, note: "", recipe: carbonara)
+        // A free-text entry on the same day, to prove linking isn't required
+        try viewModel.addEntry(on: CalendarDay(key: 20260811), title: "Side salad", slot: .dinner)
+
+        let entries = try context.fetch(FetchDescriptor<MealPlanEntry>())
+        #expect(entries.count == 2)
+
+        let linked = try #require(entries.first { $0.recipe != nil })
+        #expect(linked.dayKey == 20260811)
+        #expect(linked.slot == .dinner)
+        #expect(linked.displayTitle == "Carbonara")
+        #expect(carbonara.mealPlanEntryList.count == 1)
+
+        let freeText = try #require(entries.first { $0.recipe == nil })
+        #expect(freeText.displayTitle == "Side salad")
+    }
+
+    /// The counterpart to the cascade test: deleting a recipe takes its
+    /// ingredients with it but must *not* take the record that it was cooked.
+    /// That history is the point of the Planner tab.
+    @Test func deletingRecipeOnMigratedStoreKeepsItsMealPlanEntries() throws {
+        let url = makeStoreURL()
+        try seedV072Store(at: url)
+
+        let container = try ModelContainer(
+            for: Recipe.self, RecipeTag.self, PantryItem.self, PantryCategory.self, MealPlanEntry.self,
+            configurations: ModelConfiguration(url: url)
+        )
+        let context = container.mainContext
+
+        let carbonara = try #require(try context.fetch(FetchDescriptor<Recipe>()).first { $0.name == "Carbonara" })
+
+        let planner = PlannerViewModel(context: context)
+        try planner.addEntry(on: CalendarDay(key: 20260811), title: "", slot: .dinner, note: "Too salty", recipe: carbonara)
+
+        try RecipeListViewModel(context: context).deleteRecipe(carbonara)
+
+        let entries = try context.fetch(FetchDescriptor<MealPlanEntry>())
+        #expect(entries.count == 1)
+        let survivor = try #require(entries.first)
+        #expect(survivor.recipe == nil)
+        #expect(!survivor.hasLiveRecipe)
+        // Falls back to the name snapshotted when the link was made
+        #expect(survivor.displayTitle == "Carbonara")
+        #expect(survivor.note == "Too salty")
     }
 
     /// Migrating must leave the store writable, not just readable — the new
@@ -515,7 +582,7 @@ struct StoreMigrationTests {
         try seedV072Store(at: url)
 
         let container = try ModelContainer(
-            for: Recipe.self, RecipeTag.self, PantryItem.self, PantryCategory.self,
+            for: Recipe.self, RecipeTag.self, PantryItem.self, PantryCategory.self, MealPlanEntry.self,
             configurations: ModelConfiguration(url: url)
         )
         let context = container.mainContext
@@ -557,7 +624,7 @@ struct StoreMigrationTests {
         try seedV072Store(at: url)
 
         let container = try ModelContainer(
-            for: Recipe.self, RecipeTag.self, PantryItem.self, PantryCategory.self,
+            for: Recipe.self, RecipeTag.self, PantryItem.self, PantryCategory.self, MealPlanEntry.self,
             configurations: ModelConfiguration(url: url)
         )
         let context = container.mainContext
@@ -585,7 +652,7 @@ struct StoreMigrationTests {
         try seedV072Store(at: url)
 
         let container = try ModelContainer(
-            for: Recipe.self, RecipeTag.self, PantryItem.self, PantryCategory.self,
+            for: Recipe.self, RecipeTag.self, PantryItem.self, PantryCategory.self, MealPlanEntry.self,
             configurations: ModelConfiguration(url: url)
         )
         let context = container.mainContext
@@ -648,7 +715,7 @@ struct StoreMigrationTests {
         // Reopen the same file with the shipping model list — exactly what
         // RecipeBBApp does at launch after the user updates.
         let container = try ModelContainer(
-            for: Recipe.self, RecipeTag.self, PantryItem.self, PantryCategory.self,
+            for: Recipe.self, RecipeTag.self, PantryItem.self, PantryCategory.self, MealPlanEntry.self,
             configurations: ModelConfiguration(url: url)
         )
         let context = container.mainContext
@@ -688,7 +755,7 @@ struct StoreMigrationTests {
         try seedV060Store(at: url)
 
         let container = try ModelContainer(
-            for: Recipe.self, RecipeTag.self, PantryItem.self, PantryCategory.self,
+            for: Recipe.self, RecipeTag.self, PantryItem.self, PantryCategory.self, MealPlanEntry.self,
             configurations: ModelConfiguration(url: url)
         )
         let context = container.mainContext
@@ -737,7 +804,7 @@ struct StoreMigrationTests {
         }
 
         let container = try ModelContainer(
-            for: Recipe.self, RecipeTag.self, PantryItem.self, PantryCategory.self,
+            for: Recipe.self, RecipeTag.self, PantryItem.self, PantryCategory.self, MealPlanEntry.self,
             configurations: ModelConfiguration(url: url)
         )
         let context = container.mainContext
@@ -764,7 +831,7 @@ struct StoreMigrationTests {
         try seedV060Store(at: url)
 
         let container = try ModelContainer(
-            for: Recipe.self, RecipeTag.self, PantryItem.self, PantryCategory.self,
+            for: Recipe.self, RecipeTag.self, PantryItem.self, PantryCategory.self, MealPlanEntry.self,
             configurations: ModelConfiguration(url: url)
         )
         let context = container.mainContext

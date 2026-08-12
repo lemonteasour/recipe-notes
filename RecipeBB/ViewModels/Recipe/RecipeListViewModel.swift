@@ -261,7 +261,17 @@ final class RecipeListViewModel {
     }
 
     /// Delete a recipe
+    ///
+    /// Planner entries are unlinked by hand rather than left to the `.nullify`
+    /// rule — same reason as `deleteTag` below. A `MealPlanEntry` is the only
+    /// thing in the app that reads a `Recipe`'s *name* from the far side of a
+    /// relationship, and the Planner's `@Query` array holds those entries
+    /// across this delete; a stale pointer there is a destroyed object, and
+    /// reading its name traps.
     func deleteRecipe(_ recipe: Recipe) throws {
+        for entry in recipe.mealPlanEntryList where entry.isLive {
+            entry.recipe = nil
+        }
         context.delete(recipe)
         try context.save()
     }

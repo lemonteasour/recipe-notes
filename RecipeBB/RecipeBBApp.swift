@@ -21,7 +21,9 @@ struct RecipeBBApp: App {
         var tempError: Error?
 
         do {
-            tempContainer = try ModelContainer(for: Recipe.self, RecipeTag.self, PantryItem.self, PantryCategory.self)
+            tempContainer = try ModelContainer(
+                for: Recipe.self, RecipeTag.self, PantryItem.self, PantryCategory.self, MealPlanEntry.self
+            )
         } catch {
             tempError = error
             // Log the whole error, not localizedDescription — Core Data puts
@@ -46,7 +48,7 @@ struct RecipeBBApp: App {
             )
         } else {
             let fallbackContainer = try? ModelContainer(
-                for: Recipe.self, RecipeTag.self, PantryItem.self, PantryCategory.self,
+                for: Recipe.self, RecipeTag.self, PantryItem.self, PantryCategory.self, MealPlanEntry.self,
                 configurations: ModelConfiguration(isStoredInMemoryOnly: true)
             )
             _recipeListViewModel = State(

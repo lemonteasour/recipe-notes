@@ -20,7 +20,7 @@ struct RecipeFormViewModelTests {
 
     private func makeContainer() throws -> ModelContainer {
         try ModelContainer(
-            for: Recipe.self, RecipeTag.self, PantryItem.self, PantryCategory.self,
+            for: Recipe.self, RecipeTag.self, PantryItem.self, PantryCategory.self, MealPlanEntry.self,
             configurations: ModelConfiguration(isStoredInMemoryOnly: true)
         )
     }

@@ -154,7 +154,7 @@ enum PreviewData {
     static func containerWithSamples() -> ModelContainer {
         do {
             let container = try ModelContainer(
-                for: Recipe.self, RecipeTag.self, PantryItem.self, PantryCategory.self,
+                for: Recipe.self, RecipeTag.self, PantryItem.self, PantryCategory.self, MealPlanEntry.self,
                 configurations: ModelConfiguration(isStoredInMemoryOnly: true)
             )
             seedIfEmpty(context: container.mainContext)

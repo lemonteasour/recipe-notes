@@ -37,6 +37,7 @@ class Recipe {
     @Relationship(deleteRule: .cascade, inverse: \IngredientHeading.recipe) var ingredientHeadings: [IngredientHeading]?
     @Relationship(deleteRule: .cascade, inverse: \Step.recipe) var steps: [Step]?
     @Relationship(deleteRule: .nullify, inverse: \RecipeTag.recipes) var tags: [RecipeTag]?
+    @Relationship(deleteRule: .nullify, inverse: \MealPlanEntry.recipe) var mealPlanEntries: [MealPlanEntry]?
     var isFavorite: Bool = false
     var createdAt: Date = Date()
 
@@ -66,6 +67,11 @@ class Recipe {
     var headingList: [IngredientHeading] { ingredientHeadings ?? [] }
     var stepList: [Step] { steps ?? [] }
     var tagList: [RecipeTag] { tags ?? [] }
+
+    /// Non-optional view onto `mealPlanEntries`. Deleting a recipe only unlinks
+    /// its planner entries — they survive as a historical record and fall back
+    /// to their own snapshotted title.
+    var mealPlanEntryList: [MealPlanEntry] { mealPlanEntries ?? [] }
 
     // MARK: - Computed properties
     /// Ingredients and headings merged into a single list ordered by `sortOrder`.

@@ -12,6 +12,7 @@ enum ValidationError: LocalizedError {
     case emptyRecipeName
     case emptyPantryItemName
     case emptyCategoryName
+    case emptyMealPlanTitle
 
     var errorDescription: String? {
         switch self {
@@ -21,6 +22,8 @@ enum ValidationError: LocalizedError {
             return String(localized: "Item name cannot be empty.")
         case .emptyCategoryName:
             return String(localized: "Category name cannot be empty.")
+        case .emptyMealPlanTitle:
+            return String(localized: "Add a title or link a recipe.")
         }
     }
 }
