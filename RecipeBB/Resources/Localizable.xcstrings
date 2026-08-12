@@ -88,7 +88,20 @@
       }
     },
     "^[%lld entries](inflect: true)" : {
-
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld件"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "%lld個項目"
+          }
+        }
+      }
     },
     "About RecipeBB" : {
       "localizations" : {
@@ -125,7 +138,20 @@
       }
     },
     "Add a title or link a recipe." : {
-
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "料理名を入力するか、レシピをリンクしてください。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "請輸入料理名稱或連結食譜。"
+          }
+        }
+      }
     },
     "Add Category" : {
       "localizations" : {
@@ -260,10 +286,36 @@
       }
     },
     "Add to Planner" : {
-
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "献立に追加"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "加入菜單"
+          }
+        }
+      }
     },
     "Add what you cooked, or plan ahead with the + button." : {
-
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "＋ボタンで作った料理を記録するか、これからの献立を立ててください。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "用＋按鈕記錄你煮過的料理，或規劃接下來的菜單。"
+          }
+        }
+      }
     },
     "Add what you have on hand above, or make a category with the folder button." : {
       "localizations" : {
@@ -282,7 +334,20 @@
       }
     },
     "Breakfast" : {
-
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "朝食"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "早餐"
+          }
+        }
+      }
     },
     "Cancel" : {
       "localizations" : {
@@ -483,7 +548,20 @@
       }
     },
     "Date" : {
-
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "日付"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "日期"
+          }
+        }
+      }
     },
     "Delete" : {
       "localizations" : {
@@ -534,7 +612,20 @@
       }
     },
     "Dinner" : {
-
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "夕食"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "晚餐"
+          }
+        }
+      }
     },
     "Done" : {
       "localizations" : {
@@ -569,7 +660,20 @@
       }
     },
     "Edit Entry" : {
-
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "編集"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "編輯項目"
+          }
+        }
+      }
     },
     "Edit Recipe" : {
       "localizations" : {
@@ -854,7 +958,20 @@
       }
     },
     "Lunch" : {
-
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "昼食"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "午餐"
+          }
+        }
+      }
     },
     "Manage Categories" : {
       "localizations" : {
@@ -873,7 +990,20 @@
       }
     },
     "Meal" : {
-
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "食事"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "餐別"
+          }
+        }
+      }
     },
     "More" : {
       "localizations" : {
@@ -924,7 +1054,20 @@
       }
     },
     "New Entry" : {
-
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "新規登録"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "新增項目"
+          }
+        }
+      }
     },
     "New Recipe" : {
       "localizations" : {
@@ -975,7 +1118,20 @@
       }
     },
     "Next month" : {
-
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "次の月"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "下個月"
+          }
+        }
+      }
     },
     "No categories yet." : {
       "localizations" : {
@@ -994,7 +1150,20 @@
       }
     },
     "No entries" : {
-
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "登録なし"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "沒有項目"
+          }
+        }
+      }
     },
     "No items in pantry yet." : {
       "comment" : "A message displayed when a user's pantry is empty.",
@@ -1095,10 +1264,36 @@
       }
     },
     "Note" : {
-
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "メモ"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "備註"
+          }
+        }
+      }
     },
     "Nothing Planned" : {
-
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "予定なし"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "尚未規劃"
+          }
+        }
+      }
     },
     "Nothing to Cook" : {
       "localizations" : {
@@ -1151,10 +1346,36 @@
       }
     },
     "Opens the linked recipe" : {
-
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "リンクされたレシピを開きます"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "開啟連結的食譜"
+          }
+        }
+      }
     },
     "Other" : {
-
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未指定"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "未指定"
+          }
+        }
+      }
     },
     "Pantry" : {
       "comment" : "The label for the pantry tab in the tab view.",
@@ -1209,10 +1430,36 @@
       }
     },
     "Planner" : {
-
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "献立"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "菜單"
+          }
+        }
+      }
     },
     "Previous month" : {
-
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "前の月"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "上個月"
+          }
+        }
+      }
     },
     "Privacy Policy" : {
       "localizations" : {
@@ -1247,7 +1494,20 @@
       }
     },
     "Recipe" : {
-
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "レシピ"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "食譜"
+          }
+        }
+      }
     },
     "Recipe name" : {
       "localizations" : {
@@ -1478,7 +1738,20 @@
       }
     },
     "This entry was deleted." : {
-
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "この項目は削除されました。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "這個項目已被刪除。"
+          }
+        }
+      }
     },
     "This recipe has no ingredients or steps yet." : {
       "localizations" : {
@@ -1497,10 +1770,36 @@
       }
     },
     "Today" : {
-
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今日"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今天"
+          }
+        }
+      }
     },
     "Today, %@" : {
-
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今日、%@"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "今天，%@"
+          }
+        }
+      }
     },
     "Try restarting your device. If the problem persists, you may need to reinstall the app." : {
       "comment" : "A message encouraging the user to restart their device if a database error occurs.",
@@ -1571,10 +1870,36 @@
       }
     },
     "What did you cook?" : {
-
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "何を作りましたか？"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "煮了什麼？"
+          }
+        }
+      }
     },
     "You can still add an entry without one." : {
-
+      "localizations" : {
+        "ja" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "レシピなしでも登録できます。"
+          }
+        },
+        "zh-Hant" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "沒有食譜也可以新增項目。"
+          }
+        }
+      }
     }
   },
   "version" : "1.1"
