@@ -14,6 +14,7 @@ struct RecipeFormView: View {
 
     @State private var viewModel: RecipeFormViewModel
     @State private var errorMessage: String?
+    @State private var feedback: FeedbackSignal?
 
     init(context: ModelContext, recipeToEdit: Recipe? = nil) {
         _viewModel = State(initialValue: RecipeFormViewModel(context: context, recipeToEdit: recipeToEdit))
@@ -31,6 +32,9 @@ struct RecipeFormView: View {
                         Button("Save") {
                             do {
                                 try viewModel.saveRecipe()
+                                // Set before dismissing: the sheet animates out,
+                                // so the update that plays this still happens.
+                                feedback = .saved
                                 dismiss()
                             } catch {
                                 errorMessage = error.localizedDescription
@@ -40,6 +44,7 @@ struct RecipeFormView: View {
                     }
                 }
                 .errorAlert($errorMessage)
+                .sensoryFeedback(signal: feedback)
         }
     }
 }

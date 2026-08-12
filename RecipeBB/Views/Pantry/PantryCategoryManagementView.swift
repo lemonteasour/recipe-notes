@@ -19,6 +19,7 @@ struct PantryCategoryManagementView: View {
     @FocusState private var isInputFocused: Bool
 
     @State private var errorMessage: String?
+    @State private var feedback: FeedbackSignal?
 
     var body: some View {
         NavigationStack {
@@ -103,6 +104,7 @@ struct PantryCategoryManagementView: View {
                         for category in doomed {
                             do {
                                 try viewModel.deleteCategory(category)
+                                feedback = .deleted
                             } catch {
                                 errorMessage = "Failed to delete category: \(error.localizedDescription)"
                             }
@@ -134,6 +136,7 @@ struct PantryCategoryManagementView: View {
                 }
             }
             .errorAlert($errorMessage)
+            .sensoryFeedback(signal: feedback)
             .navigationTitle("Manage Categories")
             .navigationBarTitleDisplayMode(.inline)
         }
@@ -149,6 +152,7 @@ struct PantryCategoryManagementView: View {
             try viewModel.addCategory(name: newCategoryName)
             newCategoryName = ""
             isInputFocused = false
+            feedback = .added
         } catch {
             errorMessage = error.localizedDescription
         }

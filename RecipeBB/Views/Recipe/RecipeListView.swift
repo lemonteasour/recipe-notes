@@ -19,6 +19,7 @@ struct RecipeListView: View {
     @State private var path: [Recipe] = []
     @State private var showImportError = false
     @State private var errorMessage: String?
+    @State private var feedback: FeedbackSignal?
     /// The recipe the "Add to Planner" context-menu action was invoked on.
     @State private var plannerRecipe: Recipe?
 
@@ -37,6 +38,7 @@ struct RecipeListView: View {
                     onToggleFavorite: { recipe in
                         do {
                             try viewModel.toggleFavorite(recipe)
+                            feedback = .toggled
                         } catch {
                             errorMessage = "Failed to update recipe: \(error.localizedDescription)"
                         }
@@ -44,6 +46,7 @@ struct RecipeListView: View {
                     onDelete: { recipe in
                         do {
                             try viewModel.deleteRecipe(recipe)
+                            feedback = .deleted
                         } catch {
                             errorMessage = "Failed to delete recipe: \(error.localizedDescription)"
                         }
@@ -125,7 +128,10 @@ struct RecipeListView: View {
             } message: {
                 Text("Could not import recipe. Please make sure you have copied valid recipe text.")
             }
+            // Its own alert rather than `errorAlert`, so it needs its own hook.
+            .sensoryFeedback(trigger: showImportError) { _, shown in shown ? .error : nil }
             .errorAlert($errorMessage)
+            .sensoryFeedback(signal: feedback)
         }
     }
 
@@ -165,6 +171,7 @@ struct RecipeListView: View {
         do {
             imported.recipe.tags = try viewModel.tags(named: imported.tagNames)
             try context.save()
+            feedback = .added
         } catch {
             errorMessage = "Failed to save recipe: \(error.localizedDescription)"
         }

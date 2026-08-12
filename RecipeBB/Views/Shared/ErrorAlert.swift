@@ -25,6 +25,9 @@ private struct ErrorAlertModifier: ViewModifier {
         } message: { message in
             Text(message)
         }
+        // Every error path in the app routes through here, so one hook covers
+        // them all. Keyed so it fires on presentation, not on dismissal.
+        .sensoryFeedback(trigger: message) { _, new in new == nil ? nil : .error }
     }
 }
 

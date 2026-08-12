@@ -27,6 +27,9 @@ struct PantryView: View {
 
     @State private var errorMessage: String?
     @State private var showingCategorySheet = false
+    @State private var feedback: FeedbackSignal?
+
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     init(context: ModelContext) {
         _viewModel = State(initialValue: PantryViewModel(context: context))
@@ -111,6 +114,10 @@ struct PantryView: View {
                         )
                     }
                 }
+                // Sections are driven by `@Query`, which lands its change on a
+                // later tick — `withAnimation` around the mutation wouldn't
+                // catch it, so animate on the value instead.
+                .animation(reduceMotion ? nil : .default, value: categories.map(\.id))
             }
             .scrollDismissesKeyboard(.interactively)
             .background(Color(.systemGroupedBackground))
@@ -124,6 +131,7 @@ struct PantryView: View {
                 }
             }
             .errorAlert($errorMessage)
+            .sensoryFeedback(signal: feedback)
             .sheet(isPresented: $showingCategorySheet) {
                 PantryCategoryManagementView(viewModel: viewModel, categories: categories)
             }
@@ -142,6 +150,7 @@ struct PantryView: View {
             newItemName = ""
             newItemQuantity = ""
             isInputFocused = false
+            feedback = .added
         } catch {
             errorMessage = error.localizedDescription
         }
@@ -150,6 +159,7 @@ struct PantryView: View {
     private func deleteItem(_ item: PantryItem) {
         do {
             try viewModel.deleteItem(item)
+            feedback = .deleted
         } catch {
             errorMessage = "Failed to delete item: \(error.localizedDescription)"
         }

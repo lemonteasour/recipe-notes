@@ -31,6 +31,7 @@ struct MealPlanEntryFormView: View {
     @State private var linkedRecipe: Recipe?
     @State private var selectedDay: CalendarDay
     @State private var errorMessage: String?
+    @State private var feedback: FeedbackSignal?
     @State private var didLoad = false
     @FocusState private var isTitleFocused: Bool
 
@@ -114,6 +115,7 @@ struct MealPlanEntryFormView: View {
                 }
             }
             .errorAlert($errorMessage)
+            .sensoryFeedback(signal: feedback)
             .onAppear {
                 // Guarded: `onAppear` fires again when the recipe picker pops,
                 // and reloading would discard whatever the user just typed.
@@ -163,6 +165,7 @@ struct MealPlanEntryFormView: View {
                     recipe: linkedRecipe?.isLive == true ? linkedRecipe : nil
                 )
             }
+            feedback = .saved
             dismiss()
         } catch {
             errorMessage = error.localizedDescription

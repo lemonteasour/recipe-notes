@@ -15,6 +15,7 @@ struct RecipeDetailView: View {
     @State private var isShowingEdit = false
     @State private var isCookingMode = false
     @State private var errorMessage: String?
+    @State private var feedback: FeedbackSignal?
 
     /// Nil when no live tags remain, so a recipe whose tags were just deleted
     /// doesn't show an empty label (or an empty Details section).
@@ -99,6 +100,7 @@ struct RecipeDetailView: View {
             RecipeFormView(context: context, recipeToEdit: recipe)
         }
         .errorAlert($errorMessage)
+        .sensoryFeedback(signal: feedback)
         .onChange(of: isCookingMode) {
             UIApplication.shared.isIdleTimerDisabled = isCookingMode
         }
@@ -111,6 +113,9 @@ struct RecipeDetailView: View {
         recipe.isFavorite.toggle()
         do {
             try context.save()
+            // Fired from the action, not from `recipe.isFavorite` — once sync
+            // lands, keying off the model would buzz on remote changes too.
+            feedback = .toggled
         } catch {
             errorMessage = "Failed to update recipe: \(error.localizedDescription)"
         }

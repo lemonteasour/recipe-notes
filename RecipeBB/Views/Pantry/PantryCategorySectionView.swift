@@ -23,6 +23,8 @@ struct PantryCategorySectionView: View {
     @State private var swipedItemId: UUID?
     @State private var dragOffset: CGFloat = 0
 
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     private let deleteButtonWidth: CGFloat = 90
 
     var categoryName: String {
@@ -162,6 +164,10 @@ struct PantryCategorySectionView: View {
                     }
                 }
             }
+            // Rows arrive from `@Query`; keying on the ids catches the insert
+            // the mutation's own `withAnimation` misses. Scoped to the id list
+            // so it never animates the swipe offset.
+            .animation(reduceMotion ? nil : .default, value: items.map(\.id))
             .cornerRadius(28)
             .padding(.horizontal, 16)
         }

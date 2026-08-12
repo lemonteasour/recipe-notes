@@ -22,6 +22,15 @@ struct PlannerView: View {
 
     @State private var path: [Recipe] = []
     @State private var errorMessage: String?
+    @State private var feedback: FeedbackSignal?
+
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    /// Month stepping slides the grid, which is exactly what Reduce Motion asks
+    /// us to drop; the month still changes, just without the travel.
+    private var stepAnimation: Animation? {
+        reduceMotion ? nil : .easeInOut(duration: 0.2)
+    }
 
     init(context: ModelContext) {
         _viewModel = State(initialValue: PlannerViewModel(context: context))
@@ -39,7 +48,7 @@ struct PlannerView: View {
                         selected: viewModel.selected,
                         onSelect: { viewModel.selected = $0 },
                         onStep: { direction in
-                            withAnimation(.easeInOut(duration: 0.2)) { viewModel.step(direction) }
+                            withAnimation(stepAnimation) { viewModel.step(direction) }
                         }
                     )
                     .padding(.top, 8)
@@ -59,12 +68,13 @@ struct PlannerView: View {
             .background(Color(.systemGroupedBackground))
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("Today") { withAnimation(.easeInOut(duration: 0.2)) { viewModel.goToToday() } }
+                    Button("Today") { withAnimation(stepAnimation) { viewModel.goToToday() } }
                         .disabled(viewModel.isShowingCurrentMonth && viewModel.selected == .today())
                 }
             }
             .navigationDestination(for: Recipe.self) { RecipeDetailView(recipe: $0) }
             .errorAlert($errorMessage)
+            .sensoryFeedback(signal: feedback)
             .sheet(isPresented: $viewModel.showingEntryForm) {
                 MealPlanEntryFormView(
                     viewModel: viewModel,
@@ -84,6 +94,7 @@ struct PlannerView: View {
     private func delete(_ entry: MealPlanEntry) {
         do {
             try viewModel.deleteEntry(entry)
+            feedback = .deleted
         } catch {
             errorMessage = "Failed to delete entry: \(error.localizedDescription)"
         }
