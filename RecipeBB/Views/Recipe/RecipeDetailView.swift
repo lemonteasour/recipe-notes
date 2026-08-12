@@ -53,7 +53,7 @@ struct RecipeDetailView: View {
                             }
                         }
                     }
-                    
+
                     Section("Ingredients") {
                         ForEach(recipe.sortedIngredientItems, id: \.id) { item in
                             IngredientItemRowView(item: item)
@@ -69,28 +69,29 @@ struct RecipeDetailView: View {
             }
         }
         .navigationTitle(recipe.name)
+        // Long recipe names take two lines of large title, and the bar carries
+        // three items — inline keeps the title on one line and out of their way.
+        .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItemGroup(placement: .primaryAction) {
-                Button {
-                    recipe.isFavorite.toggle()
-                    do {
-                        try context.save()
-                    } catch {
-                        errorMessage = "Failed to update recipe: \(error.localizedDescription)"
-                    }
-                } label: {
-                    Label(recipe.isFavorite ? "Unfavorite" : "Favorite",
-                          systemImage: recipe.isFavorite ? "heart.fill" : "heart")
+                Button("Edit") {
+                    isShowingEdit = true
                 }
-                .tint(.pink)
-                ShareLink(item: RecipeClipboardService.exportRecipeToText(recipe)) {
-                    Label("Share", systemImage: "square.and.arrow.up")
-                }
+
                 Button(isCookingMode ? "Normal" : "Cook") {
                     isCookingMode.toggle()
                 }
-                Button("Edit") {
-                    isShowingEdit = true
+
+                Menu {
+                    Button(recipe.isFavorite ? "Unfavorite" : "Favorite",
+                           systemImage: recipe.isFavorite ? "heart.slash" : "heart") {
+                        toggleFavorite()
+                    }
+                    ShareLink(item: RecipeClipboardService.exportRecipeToText(recipe)) {
+                        Label("Share", systemImage: "square.and.arrow.up")
+                    }
+                } label: {
+                    Label("More", systemImage: "ellipsis")
                 }
             }
         }
@@ -103,6 +104,15 @@ struct RecipeDetailView: View {
         }
         .onDisappear {
             UIApplication.shared.isIdleTimerDisabled = false
+        }
+    }
+
+    private func toggleFavorite() {
+        recipe.isFavorite.toggle()
+        do {
+            try context.save()
+        } catch {
+            errorMessage = "Failed to update recipe: \(error.localizedDescription)"
         }
     }
 }
