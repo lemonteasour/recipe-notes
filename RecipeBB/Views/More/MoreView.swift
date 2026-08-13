@@ -7,9 +7,11 @@
 
 import SwiftUI
 import SwiftData
+import UIKit
 
 struct MoreView: View {
     @Environment(\.modelContext) private var modelContext
+    @AppStorage(AppearanceMode.storageKey) private var appearanceMode: AppearanceMode = .system
     private let adMobService = AdMobService.shared
     @State private var showingAdAlert = false
     @State private var adAlertMessage = ""
@@ -20,10 +22,49 @@ struct MoreView: View {
     private let reviewURL = URL(string: "https://apps.apple.com/app/id6752032405?action=write-review")
     private let aboutURL = URL(string: "https://lemonteasour.com/projects/recipebb")
     private let privacyURL = URL(string: "https://lemonteasour.com/projects/recipebb/privacy")
+    // iOS lists the app's language under its own Settings page, which is the
+    // only place the choice can actually be made
+    private let settingsURL = URL(string: UIApplication.openSettingsURLString)
 
     var body: some View {
         NavigationStack {
             List {
+                Section {
+                    Picker(selection: $appearanceMode) {
+                        ForEach(AppearanceMode.allCases) { mode in
+                            Text(mode.label).tag(mode)
+                        }
+                    } label: {
+                        HStack {
+                            Image(systemName: "circle.lefthalf.filled")
+                                .frame(width: 30)
+                            Text("Theme")
+                        }
+                    }
+
+                    if let settingsURL {
+                        Button {
+                            UIApplication.shared.open(settingsURL)
+                        } label: {
+                            HStack {
+                                Image(systemName: "globe")
+                                    .frame(width: 30)
+                                Text("Language")
+                                Spacer()
+                                Image(systemName: "arrow.up.forward")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                    }
+                } header: {
+                    Text("Preferences")
+                } footer: {
+                    if settingsURL != nil {
+                        Text("Language is set in the Settings app.")
+                    }
+                }
+
                 Section {
                     if let reviewURL {
                         Link(destination: reviewURL) {

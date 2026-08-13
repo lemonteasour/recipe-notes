@@ -11,6 +11,7 @@ import os
 
 @main
 struct RecipeBBApp: App {
+    @AppStorage(AppearanceMode.storageKey) private var appearanceMode: AppearanceMode = .system
     @State private var recipeListViewModel: RecipeListViewModel?
     private let container: ModelContainer?
     private let containerError: Error?
@@ -59,21 +60,25 @@ struct RecipeBBApp: App {
 
     var body: some Scene {
         WindowGroup {
-            if containerError == nil, let container, let recipeListViewModel {
-                ContentView()
-                    .tint(.accent)
-                    .environment(recipeListViewModel)
-                    .modelContainer(container)
-                    .task {
-                        // Gather ad consent (showing the form if required),
-                        // then start the Mobile Ads SDK
-                        await AdMobService.shared.requestConsentAndStart()
-                    }
-            } else {
-                // Anything that leaves us without a usable container or
-                // ViewModel lands here rather than on a blank window
-                DatabaseErrorView(error: containerError)
+            // Grouped so the appearance override covers the error screen too
+            Group {
+                if containerError == nil, let container, let recipeListViewModel {
+                    ContentView()
+                        .tint(.accent)
+                        .environment(recipeListViewModel)
+                        .modelContainer(container)
+                        .task {
+                            // Gather ad consent (showing the form if required),
+                            // then start the Mobile Ads SDK
+                            await AdMobService.shared.requestConsentAndStart()
+                        }
+                } else {
+                    // Anything that leaves us without a usable container or
+                    // ViewModel lands here rather than on a blank window
+                    DatabaseErrorView(error: containerError)
+                }
             }
+            .preferredColorScheme(appearanceMode.colorScheme)
         }
     }
 }
