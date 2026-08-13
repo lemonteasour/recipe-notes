@@ -35,7 +35,7 @@ struct PantryAddItemSectionView: View {
                 if !newItemName.isEmpty {
                     Button(action: onAdd) {
                         Image(systemName: "plus.circle.fill")
-                            .foregroundStyle(.green)
+                            .foregroundStyle(Color.accentColor)
                     }
                     .buttonStyle(.plain)
                 }

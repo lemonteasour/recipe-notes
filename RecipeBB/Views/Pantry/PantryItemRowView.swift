@@ -33,13 +33,13 @@ struct PantryItemRowView: View {
 
                 Button(action: onSaveEdit) {
                     Image(systemName: "checkmark.circle.fill")
-                        .foregroundStyle(.green)
+                        .foregroundStyle(Color.accentColor)
                 }
                 .buttonStyle(.plain)
 
                 Button(action: onCancelEdit) {
                     Image(systemName: "xmark.circle.fill")
-                        .foregroundStyle(.red)
+                        .foregroundStyle(.secondary)
                 }
                 .buttonStyle(.plain)
             }
@@ -58,7 +58,7 @@ struct PantryItemRowView: View {
                 Spacer()
                 Button(action: onStartEdit) {
                     Image(systemName: "pencil")
-                        .foregroundStyle(.blue)
+                        .foregroundStyle(Color.accentColor)
                 }
                 .buttonStyle(.plain)
             }

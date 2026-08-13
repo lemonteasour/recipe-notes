@@ -73,7 +73,6 @@ struct RecipeFilterView: View {
                             viewModel.selectedIngredients.removeAll()
                             viewModel.selectedTagIDs.removeAll()
                         }
-                        .foregroundStyle(.red)
                     }
                 }
             }

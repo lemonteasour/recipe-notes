@@ -39,7 +39,7 @@ struct PantryCategoryManagementView: View {
                                 addNewCategory()
                             } label: {
                                 Image(systemName: "plus.circle.fill")
-                                    .foregroundStyle(.green)
+                                    .foregroundStyle(Color.accentColor)
                             }
                             .buttonStyle(.plain)
                         }
@@ -66,7 +66,7 @@ struct PantryCategoryManagementView: View {
                                     saveEdit(category)
                                 } label: {
                                     Image(systemName: "checkmark.circle.fill")
-                                        .foregroundStyle(.green)
+                                        .foregroundStyle(Color.accentColor)
                                 }
                                 .buttonStyle(.plain)
 
@@ -74,7 +74,7 @@ struct PantryCategoryManagementView: View {
                                     editingCategory = nil
                                 } label: {
                                     Image(systemName: "xmark.circle.fill")
-                                        .foregroundStyle(.red)
+                                        .foregroundStyle(.secondary)
                                 }
                                 .buttonStyle(.plain)
                             }
@@ -88,7 +88,7 @@ struct PantryCategoryManagementView: View {
                                     startEditing(category)
                                 } label: {
                                     Image(systemName: "pencil")
-                                        .foregroundStyle(.blue)
+                                        .foregroundStyle(Color.accentColor)
                                 }
                                 .buttonStyle(.plain)
                             }
