@@ -284,6 +284,9 @@ struct RecipeRowView: View {
                 Image(systemName: "heart.fill")
                     .foregroundStyle(.pink)
                     .imageScale(.small)
+                    // The existing "Favorite" key is the action in the context
+                    // menu (ja お気に入りに追加); a badge is state, not an offer.
+                    .accessibilityLabel("Favorited")
             }
         }
     }

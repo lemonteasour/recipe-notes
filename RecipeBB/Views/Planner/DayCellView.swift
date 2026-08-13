@@ -22,6 +22,10 @@ struct DayCellView: View {
 
     private var dotCount: Int { min(marks.count, 3) }
 
+    /// Capped at the 44pt tap target: seven of these share the screen width, so
+    /// past that the grid stops fitting rather than getting more legible.
+    @ScaledMetric(relativeTo: .callout) private var circleDiameter: CGFloat = 34
+
     var body: some View {
         Button(action: onSelect) {
             VStack(spacing: 3) {
@@ -32,7 +36,7 @@ struct DayCellView: View {
                     .font(.callout)
                     .monospacedDigit()
                     .foregroundStyle(numberColor)
-                    .frame(width: 34, height: 34)
+                    .frame(width: min(circleDiameter, 44), height: min(circleDiameter, 44))
                     .background {
                         if isSelected {
                             Circle().fill(Color.accentColor)
@@ -51,7 +55,7 @@ struct DayCellView: View {
                 .frame(height: 4)
                 .foregroundStyle(isSelected ? Color.accentColor : Color.secondary)
             }
-            // The circle is 34pt; the tap target has to clear 44.
+            // The circle starts at 34pt; the tap target has to clear 44.
             .frame(maxWidth: .infinity, minHeight: 44)
             .contentShape(Rectangle())
         }

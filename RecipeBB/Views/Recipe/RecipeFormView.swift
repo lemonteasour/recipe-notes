@@ -63,6 +63,11 @@ struct RecipeFormContentView: View {
     @State private var selectedPhotoItem: PhotosPickerItem?
     @FocusState private var focusedField: RecipeFormField?
 
+    /// Capped: at the largest accessibility sizes an uncapped 100pt would scale
+    /// past the width of the row and leave the name field nothing.
+    @ScaledMetric private var quantityWidth: CGFloat = 100
+    @ScaledMetric private var stepNumberColumn: CGFloat = 24
+
     var body: some View {
         let hasPhoto = viewModel.photo != nil
         Form {
@@ -105,19 +110,22 @@ struct RecipeFormContentView: View {
 
             Section("Tags") {
                 ForEach(viewModel.allTags) { tag in
+                    let isSelected = viewModel.isTagSelected(tag)
                     Button {
                         viewModel.toggleTag(tag)
                     } label: {
                         HStack {
                             Text(tag.name)
                             Spacer()
-                            if viewModel.isTagSelected(tag) {
+                            if isSelected {
                                 Image(systemName: "checkmark")
                                     .foregroundStyle(.secondary)
                             }
                         }
+                        .contentShape(Rectangle())
                     }
                     .buttonStyle(.plain)
+                    .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
                 }
 
                 HStack {
@@ -144,7 +152,7 @@ struct RecipeFormContentView: View {
                             )
 
                             TextField("Quantity", text: $item.quantity)
-                                .frame(width: 100)
+                                .frame(width: min(quantityWidth, 160))
                                 .multilineTextAlignment(.trailing)
                         }
                     }
@@ -165,10 +173,15 @@ struct RecipeFormContentView: View {
                     HStack(alignment: .top) {
                         Text("\(step.sortOrder + 1).")
                             .foregroundStyle(.secondary)
-                            .frame(width: 24)
+                            .frame(width: stepNumberColumn)
+                            // The number can't be combined into the field
+                            // without making it uneditable, so it moves into
+                            // the field's label instead of being read alone.
+                            .accessibilityHidden(true)
 
                         TextField("Step", text: $step.value, axis: .vertical)
                             .focused($focusedField, equals: .step(step.id))
+                            .accessibilityLabel(Text("Step \(step.sortOrder + 1)"))
                     }
                 }
                 .onDelete(perform: viewModel.deleteSteps)

@@ -36,12 +36,14 @@ struct PantryItemRowView: View {
                         .foregroundStyle(Color.accentColor)
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel("Save")
 
                 Button(action: onCancelEdit) {
                     Image(systemName: "xmark.circle.fill")
                         .foregroundStyle(.secondary)
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel("Cancel")
             }
         } else {
             // Display mode
@@ -55,12 +57,15 @@ struct PantryItemRowView: View {
                             .foregroundStyle(.secondary)
                     }
                 }
+                .accessibilityElement(children: .combine)
+
                 Spacer()
                 Button(action: onStartEdit) {
                     Image(systemName: "pencil")
                         .foregroundStyle(Color.accentColor)
                 }
                 .buttonStyle(.plain)
+                .accessibilityLabel("Edit")
             }
         }
     }

@@ -11,13 +11,16 @@ struct StepRowView: View {
     /// a duplicate order after a sync merge still read 1, 2, 3.
     let number: Int
 
+    @ScaledMetric private var numberColumn: CGFloat = 24
+
     var body: some View {
         HStack(alignment: .top) {
             Text("\(number).")
                 .foregroundStyle(.secondary)
-                .frame(width: 24)
+                .frame(width: numberColumn)
             Text(step.value)
             Spacer()
         }
+        .accessibilityElement(children: .combine)
     }
 }

@@ -16,12 +16,14 @@ struct IngredientItemRowView: View {
                 Text(ingredient.quantity)
                     .foregroundStyle(.secondary)
             }
+            .accessibilityElement(children: .combine)
         } else if let heading = item as? IngredientHeading {
             HStack {
                 Text(heading.name)
                     .font(.headline)
                 Spacer()
             }
+            .accessibilityAddTraits(.isHeader)
         }
     }
 }

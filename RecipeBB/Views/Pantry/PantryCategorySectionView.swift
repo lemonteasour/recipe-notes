@@ -39,6 +39,7 @@ struct PantryCategorySectionView: View {
                     .font(.footnote)
                     .textCase(.uppercase)
                     .foregroundStyle(.secondary)
+                    .accessibilityAddTraits(.isHeader)
                 Spacer()
             }
             .padding(.horizontal, 20)
@@ -89,6 +90,11 @@ struct PantryCategorySectionView: View {
                             }
                             .frame(width: deleteButtonWidth)
                             .buttonStyle(.plain)
+                            // VoiceOver has no z-order and reaches the button
+                            // whether or not the row is swiped open — which is
+                            // the only way to delete without the gesture. It
+                            // just has to be read after the row it deletes.
+                            .accessibilitySortPriority(-1)
 
                             PantryItemRowView(
                                 item: item,

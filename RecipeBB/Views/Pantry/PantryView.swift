@@ -50,6 +50,7 @@ struct PantryView: View {
                             .font(.footnote)
                             .textCase(.uppercase)
                             .foregroundStyle(.secondary)
+                            .accessibilityAddTraits(.isHeader)
                             .padding(.horizontal, 20)
                             .padding(.top, 20)
                             .padding(.bottom, 6)
@@ -126,7 +127,7 @@ struct PantryView: View {
                     Button {
                         showingCategorySheet = true
                     } label: {
-                        Image(systemName: "folder.badge.plus")
+                        Label("Manage Categories", systemImage: "folder.badge.plus")
                     }
                 }
             }

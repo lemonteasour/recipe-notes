@@ -42,6 +42,7 @@ struct PantryCategoryManagementView: View {
                                     .foregroundStyle(Color.accentColor)
                             }
                             .buttonStyle(.plain)
+                            .accessibilityLabel("Add Category")
                         }
                     }
                 } header: {
@@ -69,6 +70,7 @@ struct PantryCategoryManagementView: View {
                                         .foregroundStyle(Color.accentColor)
                                 }
                                 .buttonStyle(.plain)
+                                .accessibilityLabel("Save")
 
                                 Button {
                                     editingCategory = nil
@@ -77,6 +79,7 @@ struct PantryCategoryManagementView: View {
                                         .foregroundStyle(.secondary)
                                 }
                                 .buttonStyle(.plain)
+                                .accessibilityLabel("Cancel")
                             }
                         } else {
                             // Display mode
@@ -91,6 +94,7 @@ struct PantryCategoryManagementView: View {
                                         .foregroundStyle(Color.accentColor)
                                 }
                                 .buttonStyle(.plain)
+                                .accessibilityLabel("Edit")
                             }
                         }
                     }

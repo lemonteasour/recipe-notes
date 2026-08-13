@@ -12,6 +12,8 @@ import SwiftUI
 struct RecipeDetailCookingView: View {
     var recipe: Recipe
 
+    @ScaledMetric(relativeTo: .title3) private var stepNumberColumn: CGFloat = 20
+
     var body: some View {
         let ingredientItems = recipe.sortedIngredientItems
         let steps = recipe.sortedSteps
@@ -34,12 +36,14 @@ struct RecipeDetailCookingView: View {
                     VStack(alignment: .leading, spacing: 16) {
                         Text("Ingredients")
                             .font(.title2).bold()
+                            .accessibilityAddTraits(.isHeader)
 
                         VStack(alignment: .leading, spacing: 0) {
                             ForEach(Array(ingredientItems.enumerated()), id: \.element.id) { index, item in
                                 if let heading = item as? IngredientHeading {
                                     Text(heading.name)
                                         .font(.title3).bold()
+                                        .accessibilityAddTraits(.isHeader)
                                         .padding(.top, index == 0 ? 0 : 16)
                                         .padding(.bottom, 8)
                                 } else if let ingredient = item as? Ingredient {
@@ -57,6 +61,7 @@ struct RecipeDetailCookingView: View {
                                             .multilineTextAlignment(.trailing)
                                     }
                                     .font(.title3)
+                                    .accessibilityElement(children: .combine)
                                     .padding(.horizontal, 16)
                                     .padding(.vertical, 8)
                                 }
@@ -69,6 +74,7 @@ struct RecipeDetailCookingView: View {
                     VStack(alignment: .leading, spacing: 20) {
                         Text("Steps")
                             .font(.title2).bold()
+                            .accessibilityAddTraits(.isHeader)
 
                         // Numbered by position rather than `sortOrder`, so steps
                         // that land on a duplicate order after a sync merge still
@@ -79,12 +85,13 @@ struct RecipeDetailCookingView: View {
                                     .font(.title3).bold()
                                     .monospacedDigit()
                                     .foregroundStyle(.secondary)
-                                    .frame(width: 20, alignment: .trailing)
+                                    .frame(width: stepNumberColumn, alignment: .trailing)
 
                                 Text(step.value)
                                     .font(.title3)
                                     .lineSpacing(4)
                             }
+                            .accessibilityElement(children: .combine)
                         }
                     }
                 }

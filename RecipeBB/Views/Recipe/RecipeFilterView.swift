@@ -103,8 +103,10 @@ private struct FilterRow: View {
                         .foregroundStyle(.secondary)
                 }
             }
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
+        .accessibilityAddTraits(isSelected ? [.isButton, .isSelected] : .isButton)
     }
 }
 

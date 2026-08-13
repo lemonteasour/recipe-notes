@@ -73,7 +73,7 @@ struct RecipeListView: View {
                     Button {
                         viewModel.showingAddForm = true
                     } label: {
-                        Image(systemName: "plus")
+                        Label("New Recipe", systemImage: "plus")
                     }
                 }
                 ToolbarItem(placement: .navigationBarLeading) {

@@ -12,6 +12,7 @@ import UIKit
 struct MoreView: View {
     @Environment(\.modelContext) private var modelContext
     @AppStorage(AppearanceMode.storageKey) private var appearanceMode: AppearanceMode = .system
+    @ScaledMetric private var iconColumn: CGFloat = 30
     private let adMobService = AdMobService.shared
     @State private var showingAdAlert = false
     @State private var adAlertMessage = ""
@@ -36,8 +37,7 @@ struct MoreView: View {
                         }
                     } label: {
                         HStack {
-                            Image(systemName: "circle.lefthalf.filled")
-                                .frame(width: 30)
+                            rowIcon("circle.lefthalf.filled")
                             Text("Theme")
                         }
                     }
@@ -47,13 +47,10 @@ struct MoreView: View {
                             UIApplication.shared.open(settingsURL)
                         } label: {
                             HStack {
-                                Image(systemName: "globe")
-                                    .frame(width: 30)
+                                rowIcon("globe")
                                 Text("Language")
                                 Spacer()
-                                Image(systemName: "arrow.up.forward")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
+                                externalLinkIndicator
                             }
                         }
                     }
@@ -69,13 +66,10 @@ struct MoreView: View {
                     if let reviewURL {
                         Link(destination: reviewURL) {
                             HStack {
-                                Image(systemName: "star.fill")
-                                    .frame(width: 30)
+                                rowIcon("star.fill")
                                 Text("Leave a review")
                                 Spacer()
-                                Image(systemName: "arrow.up.forward")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
+                                externalLinkIndicator
                             }
                         }
                     }
@@ -83,13 +77,10 @@ struct MoreView: View {
                     if let aboutURL {
                         Link(destination: aboutURL) {
                             HStack {
-                                Image(systemName: "info.circle.fill")
-                                    .frame(width: 30)
+                                rowIcon("info.circle.fill")
                                 Text("About RecipeBB")
                                 Spacer()
-                                Image(systemName: "arrow.up.forward")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
+                                externalLinkIndicator
                             }
                         }
                     }
@@ -97,13 +88,10 @@ struct MoreView: View {
                     if let privacyURL {
                         Link(destination: privacyURL) {
                             HStack {
-                                Image(systemName: "lock.fill")
-                                    .frame(width: 30)
+                                rowIcon("lock.fill")
                                 Text("Privacy Policy")
                                 Spacer()
-                                Image(systemName: "arrow.up.forward")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
+                                externalLinkIndicator
                             }
                         }
                     }
@@ -121,8 +109,7 @@ struct MoreView: View {
                         }
                     } label: {
                         HStack {
-                            Image(systemName: "play.rectangle.fill")
-                                .frame(width: 30)
+                            rowIcon("play.rectangle.fill")
                             Text("Watch an ad")
                             Spacer()
                             if adMobService.isAdLoading {
@@ -141,8 +128,7 @@ struct MoreView: View {
                         showingResetConfirmation = true
                     } label: {
                         HStack {
-                            Image(systemName: "arrow.counterclockwise")
-                                .frame(width: 30)
+                            rowIcon("arrow.counterclockwise")
                             Text(verbatim: "Reset to sample data")
                         }
                     }
@@ -178,6 +164,21 @@ struct MoreView: View {
             }
             #endif
         }
+    }
+
+    private func rowIcon(_ systemName: String) -> some View {
+        Image(systemName: systemName)
+            .frame(width: iconColumn)
+            .accessibilityHidden(true)
+    }
+
+    /// Hidden from VoiceOver: `Link` already carries the trait that says the
+    /// row leaves the app.
+    private var externalLinkIndicator: some View {
+        Image(systemName: "arrow.up.forward")
+            .font(.caption)
+            .foregroundStyle(.secondary)
+            .accessibilityHidden(true)
     }
 
     private func watchAd() async {

@@ -38,6 +38,7 @@ struct PantryAddItemSectionView: View {
                             .foregroundStyle(Color.accentColor)
                     }
                     .buttonStyle(.plain)
+                    .accessibilityLabel("Add to Pantry")
                 }
             }
             .padding(.vertical, 16)
