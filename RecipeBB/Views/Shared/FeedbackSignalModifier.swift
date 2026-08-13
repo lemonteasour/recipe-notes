@@ -1,5 +1,5 @@
 //
-//  FeedbackSignal.swift
+//  FeedbackSignalModifier.swift
 //  RecipeBB
 //
 //  Created by Jay Hui on 13/08/2026.

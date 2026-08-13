@@ -1,5 +1,5 @@
 //
-//  ErrorAlert.swift
+//  ErrorAlertModifier.swift
 //  RecipeBB
 //
 //  Created by Jay Hui on 27/09/2025.

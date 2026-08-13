@@ -174,7 +174,7 @@ struct MealPlanEntryFormView: View {
 }
 
 #Preview {
-    let container = PreviewData.containerWithSamples()
+    let container = SeedDataService.containerWithSamples()
     return MealPlanEntryFormView(
         viewModel: PlannerViewModel(context: container.mainContext),
         day: .today()

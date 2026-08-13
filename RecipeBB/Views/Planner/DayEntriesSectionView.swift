@@ -133,7 +133,7 @@ struct DayEntriesSectionView: View {
 }
 
 #Preview {
-    let container = PreviewData.containerWithSamples()
+    let container = SeedDataService.containerWithSamples()
     let viewModel = PlannerViewModel(context: container.mainContext)
     let entries = (try? container.mainContext.fetch(FetchDescriptor<MealPlanEntry>())) ?? []
     let day = entries.first?.day ?? .today()

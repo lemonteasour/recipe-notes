@@ -48,7 +48,7 @@ struct WipeAndReseedTests {
         context.insert(PantryItem(name: "Item", quantity: "1", sortOrder: 0, category: category))
         try context.save()
 
-        PreviewData.wipeAndReseed(context: context)
+        SeedDataService.wipeAndReseed(context: context)
 
         // Old data gone, sample data in
         let recipes = try context.fetch(FetchDescriptor<Recipe>())
@@ -61,8 +61,8 @@ struct WipeAndReseedTests {
         let container = try makeContainer()
         let context = container.mainContext
 
-        PreviewData.wipeAndReseed(context: context)
-        PreviewData.wipeAndReseed(context: context)
+        SeedDataService.wipeAndReseed(context: context)
+        SeedDataService.wipeAndReseed(context: context)
 
         #expect(try context.fetch(FetchDescriptor<Recipe>()).count > 1)
         #expect(try context.fetch(FetchDescriptor<MealPlanEntry>()).count > 1)
@@ -83,7 +83,7 @@ struct WipeAndReseedTests {
         context.insert(MealPlanEntry(dayKey: 20260811, title: "User Takeout", slot: .lunch))
         try context.save()
 
-        PreviewData.wipeAndReseed(context: context)
+        SeedDataService.wipeAndReseed(context: context)
 
         let entries = try context.fetch(FetchDescriptor<MealPlanEntry>())
         #expect(!entries.contains { $0.title == "User Takeout" })

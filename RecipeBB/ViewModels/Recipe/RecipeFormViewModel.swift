@@ -65,7 +65,7 @@ class RecipeFormViewModel {
         self.context = context
         self.recipeToEdit = recipeToEdit
         loadRecipe()
-        self.allIngredientNames = IngredientCatalog.uniqueNames(in: context)
+        self.allIngredientNames = IngredientCatalogService.uniqueNames(in: context)
         let descriptor = FetchDescriptor<RecipeTag>(sortBy: [SortDescriptor(\.name)])
         self.allTags = (try? context.fetch(descriptor)) ?? []
     }

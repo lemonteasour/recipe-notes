@@ -162,7 +162,7 @@ struct RecipeListView: View {
             return
         }
 
-        guard let imported = RecipeClipboardService.importRecipeFromText(clipboardText) else {
+        guard let imported = RecipeTextFormat.importRecipeFromText(clipboardText) else {
             showImportError = true
             return
         }
@@ -179,7 +179,7 @@ struct RecipeListView: View {
 }
 
 #Preview {
-    let container = PreviewData.containerWithSamples()
+    let container = SeedDataService.containerWithSamples()
     let viewModel = RecipeListViewModel(context: container.mainContext)
 
     return RecipeListView()

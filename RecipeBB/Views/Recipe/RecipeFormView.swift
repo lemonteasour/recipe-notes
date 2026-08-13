@@ -191,7 +191,7 @@ struct RecipeFormContentView: View {
 }
 
 #Preview {
-    let container = PreviewData.containerWithSamples()
+    let container = SeedDataService.containerWithSamples()
 
     return RecipeFormView(context: container.mainContext)
         .modelContainer(container)

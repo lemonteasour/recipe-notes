@@ -251,7 +251,7 @@ final class RecipeListViewModel {
 
     /// Return all unique ingredients (used for filtering)
     func allIngredients(from allRecipes: [Recipe]) -> [String] {
-        IngredientCatalog.normalized(allRecipes.flatMap { $0.ingredientList.map(\.name) })
+        IngredientCatalogService.normalized(allRecipes.flatMap { $0.ingredientList.map(\.name) })
     }
 
     /// Return ingredient names filtered by `ingredientSearch`

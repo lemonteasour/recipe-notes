@@ -1,5 +1,5 @@
 //
-//  RecipeClipboardService.swift
+//  RecipeTextFormat.swift
 //  RecipeBB
 //
 //  Created by Jay Hui on 31/10/2025.
@@ -7,7 +7,7 @@
 
 import Foundation
 
-class RecipeClipboardService {
+class RecipeTextFormat {
 
     /// Exports a recipe to formatted text
     /// - Parameter recipe: The recipe to export

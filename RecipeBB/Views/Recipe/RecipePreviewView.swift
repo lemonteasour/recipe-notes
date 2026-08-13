@@ -109,5 +109,5 @@ private struct RecipePreviewContent: View {
 }
 
 #Preview {
-    RecipePreviewView(recipe: PreviewData.sampleRecipeEnglish)
+    RecipePreviewView(recipe: SeedDataService.sampleRecipeEnglish)
 }

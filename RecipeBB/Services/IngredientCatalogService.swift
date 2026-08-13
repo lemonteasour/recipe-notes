@@ -1,5 +1,5 @@
 //
-//  IngredientCatalog.swift
+//  IngredientCatalogService.swift
 //  RecipeBB
 //
 //  Created by Jay Hui on 27/09/2025.
@@ -9,7 +9,7 @@ import Foundation
 import SwiftData
 
 /// Helpers for deriving the set of ingredient names known to the app.
-enum IngredientCatalog {
+enum IngredientCatalogService {
     /// Normalizes raw ingredient names into a unique, trimmed, alphabetically sorted list.
     static func normalized<S: Sequence>(_ names: S) -> [String] where S.Element == String {
         let cleaned = names

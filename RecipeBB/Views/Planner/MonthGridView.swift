@@ -82,7 +82,7 @@ struct MonthGridView: View {
 }
 
 #Preview {
-    let container = PreviewData.containerWithSamples()
+    let container = SeedDataService.containerWithSamples()
     let viewModel = PlannerViewModel(context: container.mainContext)
     return MonthGridView(
         grid: viewModel.monthGrid(for: Date()),

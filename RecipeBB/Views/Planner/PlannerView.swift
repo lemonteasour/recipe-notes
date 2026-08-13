@@ -102,7 +102,7 @@ struct PlannerView: View {
 }
 
 #Preview {
-    let container = PreviewData.containerWithSamples()
+    let container = SeedDataService.containerWithSamples()
     return PlannerView(context: container.mainContext)
         .modelContainer(container)
 }

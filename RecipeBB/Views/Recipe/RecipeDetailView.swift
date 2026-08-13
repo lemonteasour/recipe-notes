@@ -90,7 +90,7 @@ struct RecipeDetailView: View {
                     Button("Edit", systemImage: "pencil") {
                         isShowingEdit = true
                     }
-                    ShareLink(item: RecipeClipboardService.exportRecipeToText(recipe)) {
+                    ShareLink(item: RecipeTextFormat.exportRecipeToText(recipe)) {
                         Label("Share", systemImage: "square.and.arrow.up")
                     }
                 } label: {
@@ -125,5 +125,5 @@ struct RecipeDetailView: View {
 }
 
 #Preview {
-    RecipeDetailView(recipe: PreviewData.sampleRecipeEnglish)
+    RecipeDetailView(recipe: SeedDataService.sampleRecipeEnglish)
 }

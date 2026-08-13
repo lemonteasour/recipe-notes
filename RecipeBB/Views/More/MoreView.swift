@@ -166,7 +166,7 @@ struct MoreView: View {
             #if DEBUG
             .alert(Text(verbatim: "Reset to sample data?"), isPresented: $showingResetConfirmation) {
                 Button(role: .destructive) {
-                    PreviewData.wipeAndReseed(context: modelContext)
+                    SeedDataService.wipeAndReseed(context: modelContext)
                 } label: {
                     Text(verbatim: "Reset")
                 }

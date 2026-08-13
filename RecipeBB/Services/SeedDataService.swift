@@ -1,5 +1,5 @@
 //
-//  PreviewData.swift
+//  SeedDataService.swift
 //  RecipeBB
 //
 //  Created by Jay Hui on 28/09/2025.
@@ -10,7 +10,7 @@ import Foundation
 import SwiftData
 
 @MainActor
-enum PreviewData {
+enum SeedDataService {
 
     // Computed so every access returns a fresh instance — seeding must never
     // re-insert an object that a previous wipe deleted.

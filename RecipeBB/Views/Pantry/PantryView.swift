@@ -211,7 +211,7 @@ struct PantryView: View {
 }
 
 #Preview {
-    let container = PreviewData.containerWithSamples()
+    let container = SeedDataService.containerWithSamples()
     return PantryView(context: container.mainContext)
         .modelContainer(container)
 }

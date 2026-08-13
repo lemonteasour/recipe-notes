@@ -41,7 +41,7 @@ struct ContentView: View {
 }
 
 #Preview {
-    let container = PreviewData.containerWithSamples()
+    let container = SeedDataService.containerWithSamples()
     let viewModel = RecipeListViewModel(context: container.mainContext)
 
     return ContentView()

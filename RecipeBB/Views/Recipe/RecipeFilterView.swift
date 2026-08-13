@@ -110,7 +110,7 @@ private struct FilterRow: View {
 }
 
 #Preview {
-    let container = PreviewData.containerWithSamples()
+    let container = SeedDataService.containerWithSamples()
     let viewModel = RecipeListViewModel(context: container.mainContext)
 
     return RecipeFilterView(ingredients: ["Flour", "Sugar", "Eggs", "Butter"])

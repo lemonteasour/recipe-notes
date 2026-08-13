@@ -81,7 +81,7 @@ struct RecipeLinkPickerView: View {
 
 #Preview {
     @Previewable @State var selection: Recipe?
-    let container = PreviewData.containerWithSamples()
+    let container = SeedDataService.containerWithSamples()
     return NavigationStack {
         RecipeLinkPickerView(selection: $selection)
     }
