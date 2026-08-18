@@ -46,7 +46,7 @@ struct CalendarDayTests {
     private func makeContainer() throws -> ModelContainer {
         try ModelContainer(
             for: Recipe.self, RecipeTag.self, PantryItem.self, PantryCategory.self, MealPlanEntry.self,
-            configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+            configurations: ModelConfiguration(isStoredInMemoryOnly: true, cloudKitDatabase: .none)
         )
     }
 

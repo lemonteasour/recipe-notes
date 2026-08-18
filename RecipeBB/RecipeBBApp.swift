@@ -11,6 +11,15 @@ import os
 
 @main
 struct RecipeBBApp: App {
+    /// The private CloudKit database every device writes into. Named after the
+    /// (legacy) bundle id rather than the app: it is effectively permanent once
+    /// users have data in it, so cosmetic consistency isn't worth a migration.
+    private static let cloudKitContainerID = "iCloud.com.lemonteasour.RecipeNotes"
+
+    private static let schema = Schema([
+        Recipe.self, RecipeTag.self, PantryItem.self, PantryCategory.self, MealPlanEntry.self
+    ])
+
     @AppStorage(AppearanceMode.storageKey) private var appearanceMode: AppearanceMode = .system
     @State private var recipeListViewModel: RecipeListViewModel?
     private let container: ModelContainer?
@@ -22,8 +31,16 @@ struct RecipeBBApp: App {
         var tempError: Error?
 
         do {
+            // Sync turns on here (0.9.0). The store URL is the default one, the
+            // same as before, so an existing library is adopted in place and
+            // then mirrored up — nobody starts from empty. A device signed out
+            // of iCloud still opens the store; mirroring simply doesn't run.
             tempContainer = try ModelContainer(
-                for: Recipe.self, RecipeTag.self, PantryItem.self, PantryCategory.self, MealPlanEntry.self
+                for: Self.schema,
+                configurations: ModelConfiguration(
+                    schema: Self.schema,
+                    cloudKitDatabase: .private(Self.cloudKitContainerID)
+                )
             )
         } catch {
             tempError = error
@@ -48,9 +65,16 @@ struct RecipeBBApp: App {
                 initialValue: RecipeListViewModel(context: tempContainer.mainContext)
             )
         } else {
+            // Explicitly `.none`: this container exists because the real one
+            // failed, and reaching for CloudKit again is the last thing it
+            // should do.
             let fallbackContainer = try? ModelContainer(
-                for: Recipe.self, RecipeTag.self, PantryItem.self, PantryCategory.self, MealPlanEntry.self,
-                configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+                for: Self.schema,
+                configurations: ModelConfiguration(
+                    schema: Self.schema,
+                    isStoredInMemoryOnly: true,
+                    cloudKitDatabase: .none
+                )
             )
             _recipeListViewModel = State(
                 initialValue: fallbackContainer.map { RecipeListViewModel(context: $0.mainContext) }
@@ -71,6 +95,12 @@ struct RecipeBBApp: App {
                             // Gather ad consent (showing the form if required),
                             // then start the Mobile Ads SDK
                             await AdMobService.shared.requestConsentAndStart()
+                        }
+                        .task {
+                            // Runs for as long as the app is up: sync can merge
+                            // in tags that duplicate ones we already have, and
+                            // no database constraint catches that.
+                            await TagMergeService.mergeDuplicatesOnRemoteChanges(in: container)
                         }
                 } else {
                     // Anything that leaves us without a usable container or

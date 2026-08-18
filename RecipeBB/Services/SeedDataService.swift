@@ -177,12 +177,16 @@ enum SeedDataService {
         seedIfEmpty(context: context)
     }
 
-    /// Returns a ModelContainer with seeded sample data
+    /// Returns a ModelContainer with seeded sample data.
+    ///
+    /// `cloudKitDatabase: .none` because previews run inside the app's
+    /// entitlement: without it, every preview would reach for the real iCloud
+    /// container and mirror its sample recipes up to the developer's account.
     static func containerWithSamples() -> ModelContainer {
         do {
             let container = try ModelContainer(
                 for: Recipe.self, RecipeTag.self, PantryItem.self, PantryCategory.self, MealPlanEntry.self,
-                configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+                configurations: ModelConfiguration(isStoredInMemoryOnly: true, cloudKitDatabase: .none)
             )
             seedIfEmpty(context: container.mainContext)
             return container

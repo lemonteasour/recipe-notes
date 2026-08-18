@@ -20,7 +20,7 @@ struct WipeAndReseedTests {
             .appendingPathComponent("WipeAndReseedTests-\(UUID().uuidString).store")
         return try ModelContainer(
             for: Recipe.self, RecipeTag.self, PantryItem.self, PantryCategory.self, MealPlanEntry.self,
-            configurations: ModelConfiguration(url: url)
+            configurations: ModelConfiguration(url: url, cloudKitDatabase: .none)
         )
     }
 

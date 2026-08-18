@@ -21,7 +21,7 @@ struct RecipeFormViewModelTests {
     private func makeContainer() throws -> ModelContainer {
         try ModelContainer(
             for: Recipe.self, RecipeTag.self, PantryItem.self, PantryCategory.self, MealPlanEntry.self,
-            configurations: ModelConfiguration(isStoredInMemoryOnly: true)
+            configurations: ModelConfiguration(isStoredInMemoryOnly: true, cloudKitDatabase: .none)
         )
     }
 
@@ -163,5 +163,53 @@ struct RecipeFormViewModelTests {
 
         #expect(recipe.sortedSteps.map(\.value) == ["One", "Two", "Three"])
         #expect(recipe.sortedSteps.map(\.sortOrder) == [0, 1, 2])
+    }
+
+    /// The form holds its recipe for the sheet's whole lifetime, and a delete
+    /// can land in the middle of that — from another screen, or now from
+    /// another device. Writing into the destroyed object traps, so the save has
+    /// to fail loudly instead.
+    @Test func savingARecipeDeletedMidEditThrows() throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+
+        let recipe = Recipe(name: "Doomed", desc: "")
+        context.insert(recipe)
+        try context.save()
+
+        let form = RecipeFormViewModel(context: context, recipeToEdit: recipe)
+        form.name = "Edited while it was being deleted"
+
+        context.delete(recipe)
+        try context.save()
+
+        #expect(throws: ValidationError.self) {
+            try form.saveRecipe()
+        }
+    }
+
+    /// Tags go the same way: `allTags` is a snapshot, and one of them can be
+    /// deleted — or folded into a duplicate by `TagMergeService` — before save.
+    @Test func savingSkipsTagsDeletedWhileTheFormWasOpen() throws {
+        let container = try makeContainer()
+        let context = container.mainContext
+
+        let keep = RecipeTag(name: "Dinner")
+        let doomed = RecipeTag(name: "Pasta")
+        context.insert(keep)
+        context.insert(doomed)
+        let recipe = Recipe(name: "Carbonara", desc: "")
+        context.insert(recipe)
+        try context.save()
+
+        let form = RecipeFormViewModel(context: context, recipeToEdit: recipe)
+        form.selectedTagIDs = [keep.id, doomed.id]
+
+        context.delete(doomed)
+        try context.save()
+
+        try form.saveRecipe()
+
+        #expect(recipe.tagList.map(\.name) == ["Dinner"])
     }
 }

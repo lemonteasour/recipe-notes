@@ -25,6 +25,23 @@ struct RecipeDetailView: View {
     }
 
     var body: some View {
+        // Every line below reads the recipe, and reading a destroyed object
+        // traps. The screen can outlive its recipe: a bulk delete behind it
+        // today, a delete arriving from another device now that sync is on.
+        // Same guard as `RecipeRowView`, one screen up.
+        if recipe.isLive {
+            content
+        } else {
+            ContentUnavailableView(
+                "Recipe Deleted",
+                systemImage: "trash",
+                description: Text("This recipe was deleted.")
+            )
+            .navigationBarTitleDisplayMode(.inline)
+        }
+    }
+
+    private var content: some View {
         VStack(alignment: .leading, spacing: 16) {
             if isCookingMode {
                 RecipeDetailCookingView(recipe: recipe)

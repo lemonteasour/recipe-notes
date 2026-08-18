@@ -23,6 +23,9 @@ A simple and modern iOS app for organizing cooking recipes.
   - An entry can link to a saved recipe — renames follow — or stand on its own with a note.
 - **Import & export**
   - Share a recipe as plain text from the share sheet, and paste one back in from the clipboard.
+- **iCloud sync**
+  - Recipes, pantry and planner follow your iCloud account to every device you own, with no
+    account to make and nothing to switch on in the app.
 - **Preferences**
   - Theme: same as device, light, or dark.
   - Localized in English, Japanese, and Traditional Chinese.
@@ -30,7 +33,7 @@ A simple and modern iOS app for organizing cooking recipes.
 ## 🛠️ Technologies Used
 
 - **SwiftUI:** For building a modern, declarative, and responsive user interface across Apple platforms.
-- **SwiftData:** Apple's new framework for robust and efficient local data persistence, integrated seamlessly with SwiftUI. The schema is shaped for CloudKit — no unique constraints, defaults on every attribute, optional relationships with explicit inverses — ahead of sync being turned on.
+- **SwiftData + CloudKit:** Apple's framework for local persistence, integrated seamlessly with SwiftUI, mirrored to the user's private CloudKit database (`iCloud.com.lemonteasour.RecipeNotes`) since 0.9.0. The schema is shaped for CloudKit — no unique constraints, defaults on every attribute, optional relationships with explicit inverses — and every one of those rules is load-bearing: break one and the store is rejected at launch.
 - **Google Mobile Ads:** A single rewarded ad, offered from the More tab.
 
 ## 🚀 Getting Started
@@ -77,6 +80,15 @@ values, and never point a development build at the production unit. Both are sub
 > plutil -extract GADApplicationIdentifier raw \
 >   ~/Library/Developer/Xcode/DerivedData/RecipeBB-*/Build/Products/Debug-iphonesimulator/RecipeBB.app/Info.plist
 > ```
+
+### iCloud
+
+The app target signs with `RecipeBB/RecipeBB.entitlements`, which claims the CloudKit container
+`iCloud.com.lemonteasour.RecipeNotes`. A fresh clone building under a different team won't have
+that container: either point the entitlement and
+`RecipeBBApp.cloudKitContainerID` at your own, or drop `cloudKitDatabase:` from the
+`ModelConfiguration` to build without sync. Previews and tests already pass
+`cloudKitDatabase: .none` and need no account either way.
 
 Run on Simulator or a physical device.
 

@@ -104,12 +104,16 @@ class RecipeFormViewModel {
     }
 
     // MARK: - Photo
+
+    /// Photos are downscaled before they are stored — see
+    /// `Data.downscaledPhotoJPEG`. The work happens off the main actor: a
+    /// full-size photo takes long enough to re-encode to stutter the form.
     func updatePhoto(from item: PhotosPickerItem) async {
-        guard
-            let data = try? await item.loadTransferable(type: Data.self),
-            let image = UIImage(data: data),
-            let jpeg = image.jpegData(compressionQuality: 0.8)
-        else { return }
+        guard let data = try? await item.loadTransferable(type: Data.self) else { return }
+        let jpeg = await Task.detached(priority: .userInitiated) {
+            data.downscaledPhotoJPEG()
+        }.value
+        guard let jpeg else { return }
         photo = jpeg
     }
 
@@ -170,7 +174,9 @@ class RecipeFormViewModel {
 
     // MARK: - Persistence
     func loadRecipe() {
-        guard let recipe = recipeToEdit else { return }
+        // A recipe deleted before the sheet finished opening leaves nothing
+        // safe to read: faulting a destroyed object's attributes traps.
+        guard let recipe = recipeToEdit, recipe.isLive else { return }
         name = recipe.name
         desc = recipe.desc
         photo = recipe.photo
@@ -240,9 +246,18 @@ class RecipeFormViewModel {
         for tag in pendingNewTags where selectedTagIDs.contains(tag.id) {
             context.insert(tag)
         }
-        let selectedTags = allTags.filter { selectedTagIDs.contains($0.id) }
+        // `allTags` is held for the sheet's whole lifetime, so a tag in it can
+        // have been deleted since — by another screen, by a remote delete, or
+        // by `TagMergeService` folding it into a duplicate.
+        let selectedTags = allTags.filter { selectedTagIDs.contains($0.id) && $0.isLive }
 
         if let recipe = recipeToEdit {
+            // Same for the recipe itself. It can be deleted out from under an
+            // open form — by a swipe on another screen, and now by a delete
+            // arriving from another device — and writing into a destroyed
+            // object traps rather than failing.
+            guard recipe.isLive else { throw ValidationError.recipeDeletedDuringEdit }
+
             recipe.name = trimmedName
             recipe.desc = desc
             recipe.photo = photo

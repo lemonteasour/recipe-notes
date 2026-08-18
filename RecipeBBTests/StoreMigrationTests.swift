@@ -9,6 +9,12 @@
 //  0.7.2 is the one on real devices today, so it is the migration that has to
 //  hold when the CloudKit-shaped schema ships.
 //
+//  Every container here passes `cloudKitDatabase: .none`: the test bundle holds
+//  no iCloud entitlement, so anything else would try to reach a container it
+//  can't open. That also means the 0.7.2 → 0.9.0 path — migration and the first
+//  CloudKit init in one launch — is unreachable from this suite and has to be
+//  verified by installing 0.9.0 over 0.7.2 on a real device.
+//
 
 import Testing
 import Foundation
@@ -409,7 +415,7 @@ struct StoreMigrationTests {
     private func seedV072Store(at url: URL) throws -> (recipe: UUID, ingredients: [UUID], tag: UUID) {
         let container = try ModelContainer(
             for: Schema(SchemaV072.models),
-            configurations: ModelConfiguration(url: url)
+            configurations: ModelConfiguration(url: url, cloudKitDatabase: .none)
         )
         let context = container.mainContext
 
@@ -464,7 +470,7 @@ struct StoreMigrationTests {
 
         let container = try ModelContainer(
             for: Recipe.self, RecipeTag.self, PantryItem.self, PantryCategory.self, MealPlanEntry.self,
-            configurations: ModelConfiguration(url: url)
+            configurations: ModelConfiguration(url: url, cloudKitDatabase: .none)
         )
         let context = container.mainContext
 
@@ -521,7 +527,7 @@ struct StoreMigrationTests {
 
         let container = try ModelContainer(
             for: Recipe.self, RecipeTag.self, PantryItem.self, PantryCategory.self, MealPlanEntry.self,
-            configurations: ModelConfiguration(url: url)
+            configurations: ModelConfiguration(url: url, cloudKitDatabase: .none)
         )
         let context = container.mainContext
 
@@ -554,7 +560,7 @@ struct StoreMigrationTests {
 
         let container = try ModelContainer(
             for: Recipe.self, RecipeTag.self, PantryItem.self, PantryCategory.self, MealPlanEntry.self,
-            configurations: ModelConfiguration(url: url)
+            configurations: ModelConfiguration(url: url, cloudKitDatabase: .none)
         )
         let context = container.mainContext
 
@@ -583,7 +589,7 @@ struct StoreMigrationTests {
 
         let container = try ModelContainer(
             for: Recipe.self, RecipeTag.self, PantryItem.self, PantryCategory.self, MealPlanEntry.self,
-            configurations: ModelConfiguration(url: url)
+            configurations: ModelConfiguration(url: url, cloudKitDatabase: .none)
         )
         let context = container.mainContext
 
@@ -625,7 +631,7 @@ struct StoreMigrationTests {
 
         let container = try ModelContainer(
             for: Recipe.self, RecipeTag.self, PantryItem.self, PantryCategory.self, MealPlanEntry.self,
-            configurations: ModelConfiguration(url: url)
+            configurations: ModelConfiguration(url: url, cloudKitDatabase: .none)
         )
         let context = container.mainContext
 
@@ -653,7 +659,7 @@ struct StoreMigrationTests {
 
         let container = try ModelContainer(
             for: Recipe.self, RecipeTag.self, PantryItem.self, PantryCategory.self, MealPlanEntry.self,
-            configurations: ModelConfiguration(url: url)
+            configurations: ModelConfiguration(url: url, cloudKitDatabase: .none)
         )
         let context = container.mainContext
 
@@ -674,7 +680,7 @@ struct StoreMigrationTests {
     private func seedV060Store(at url: URL) throws {
         let container = try ModelContainer(
             for: Schema(SchemaV060.models),
-            configurations: ModelConfiguration(url: url)
+            configurations: ModelConfiguration(url: url, cloudKitDatabase: .none)
         )
         let context = container.mainContext
 
@@ -716,7 +722,7 @@ struct StoreMigrationTests {
         // RecipeBBApp does at launch after the user updates.
         let container = try ModelContainer(
             for: Recipe.self, RecipeTag.self, PantryItem.self, PantryCategory.self, MealPlanEntry.self,
-            configurations: ModelConfiguration(url: url)
+            configurations: ModelConfiguration(url: url, cloudKitDatabase: .none)
         )
         let context = container.mainContext
 
@@ -756,7 +762,7 @@ struct StoreMigrationTests {
 
         let container = try ModelContainer(
             for: Recipe.self, RecipeTag.self, PantryItem.self, PantryCategory.self, MealPlanEntry.self,
-            configurations: ModelConfiguration(url: url)
+            configurations: ModelConfiguration(url: url, cloudKitDatabase: .none)
         )
         let context = container.mainContext
 
@@ -787,7 +793,7 @@ struct StoreMigrationTests {
         do {
             let container = try ModelContainer(
                 for: Schema(SchemaV052.models),
-                configurations: ModelConfiguration(url: url)
+                configurations: ModelConfiguration(url: url, cloudKitDatabase: .none)
             )
             let context = container.mainContext
 
@@ -805,7 +811,7 @@ struct StoreMigrationTests {
 
         let container = try ModelContainer(
             for: Recipe.self, RecipeTag.self, PantryItem.self, PantryCategory.self, MealPlanEntry.self,
-            configurations: ModelConfiguration(url: url)
+            configurations: ModelConfiguration(url: url, cloudKitDatabase: .none)
         )
         let context = container.mainContext
 
@@ -832,7 +838,7 @@ struct StoreMigrationTests {
 
         let container = try ModelContainer(
             for: Recipe.self, RecipeTag.self, PantryItem.self, PantryCategory.self, MealPlanEntry.self,
-            configurations: ModelConfiguration(url: url)
+            configurations: ModelConfiguration(url: url, cloudKitDatabase: .none)
         )
         let context = container.mainContext
 
