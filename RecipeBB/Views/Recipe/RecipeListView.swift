@@ -64,6 +64,7 @@ struct RecipeListView: View {
                     emptyState
                 }
             }
+            .background(Color(.appBackground).ignoresSafeArea())
             .navigationDestination(for: Recipe.self) { recipe in
                 RecipeDetailView(recipe: recipe)
             }
@@ -137,22 +138,49 @@ struct RecipeListView: View {
 
     /// Why the list is blank: an unmatched search, filters that exclude
     /// everything, or no recipes at all.
+    ///
+    /// The last two offer the way out as a button rather than describing where
+    /// the toolbar button is — the old copy ("with the + button") was the app
+    /// narrating its own chrome, and it needed re-translating every time the
+    /// toolbar moved.
     @ViewBuilder
     private var emptyState: some View {
         if !viewModel.searchText.isEmpty {
             ContentUnavailableView.search(text: viewModel.searchText)
         } else if viewModel.hasActiveFilters {
-            ContentUnavailableView(
-                "No Matches",
-                systemImage: "line.3.horizontal.decrease",
-                description: Text("No recipes match the filters you've chosen.")
-            )
+            ContentUnavailableView {
+                // Icon tinted, title left alone: amber is legible as a glyph but
+                // not as body-weight text on the warm background.
+                Label {
+                    Text("Nothing Matches")
+                } icon: {
+                    Image(systemName: "line.3.horizontal.decrease")
+                        .foregroundStyle(Color.accentColor)
+                }
+            } description: {
+                Text("No recipes match the filters you've chosen.")
+            } actions: {
+                Button("Clear filters") {
+                    viewModel.selectedIngredients.removeAll()
+                    viewModel.selectedTagIDs.removeAll()
+                }
+                .buttonStyle(.borderedProminent)
+            }
         } else {
-            ContentUnavailableView(
-                "No Recipes",
-                systemImage: "book.closed",
-                description: Text("Add one with the + button, or copy a recipe and tap Import.")
-            )
+            ContentUnavailableView {
+                Label {
+                    Text("Nothing Cooking Yet")
+                } icon: {
+                    Image(systemName: "book.closed")
+                        .foregroundStyle(Color.accentColor)
+                }
+            } description: {
+                Text("Write down a recipe you make often, or paste one you've copied from somewhere else.")
+            } actions: {
+                Button("New Recipe") { viewModel.showingAddForm = true }
+                    .buttonStyle(.borderedProminent)
+                Button("Paste a recipe") { importRecipeFromClipboard() }
+            }
         }
     }
 

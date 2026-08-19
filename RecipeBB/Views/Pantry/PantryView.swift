@@ -47,10 +47,7 @@ struct PantryView: View {
                     // Add new item section
                     VStack(alignment: .leading, spacing: 0) {
                         Text("Add to Pantry")
-                            .font(.footnote)
-                            .textCase(.uppercase)
-                            .foregroundStyle(.secondary)
-                            .accessibilityAddTraits(.isHeader)
+                            .sectionHeaderStyle()
                             .padding(.horizontal, 20)
                             .padding(.top, 20)
                             .padding(.bottom, 6)
@@ -63,8 +60,7 @@ struct PantryView: View {
                             categories: categories,
                             onAdd: addNewItem
                         )
-                        .background(Color(.secondarySystemGroupedBackground))
-                        .cornerRadius(28)
+                        .cardStyle()
                         .padding(.horizontal, 16)
                     }
                     .padding(.bottom, 16)
@@ -72,11 +68,22 @@ struct PantryView: View {
                     // Nothing at all yet — the per-category "No items" line
                     // can't speak for a pantry with no categories either.
                     if categories.isEmpty, uncategorizedItems.isEmpty {
-                        ContentUnavailableView(
-                            "Pantry Is Empty",
-                            systemImage: "cabinet",
-                            description: Text("Add what you have on hand above, or make a category with the folder button.")
-                        )
+                        ContentUnavailableView {
+                            Label {
+                                Text("Pantry Is Empty")
+                            } icon: {
+                                Image(systemName: "cabinet")
+                                    .foregroundStyle(Color.accentColor)
+                            }
+                        } description: {
+                            Text("Keep track of what you have on hand, so you know what you can cook.")
+                        } actions: {
+                            // The add card is already on screen just above this,
+                            // so the only action worth offering is the one
+                            // that's hidden behind a toolbar button.
+                            Button("Manage Categories") { showingCategorySheet = true }
+                                .buttonStyle(.borderedProminent)
+                        }
                         .padding(.top, 40)
                     }
 
@@ -121,7 +128,7 @@ struct PantryView: View {
                 .animation(reduceMotion ? nil : .default, value: categories.map(\.id))
             }
             .scrollDismissesKeyboard(.interactively)
-            .background(Color(.systemGroupedBackground))
+            .appBackground()
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {

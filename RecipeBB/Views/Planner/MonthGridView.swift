@@ -20,6 +20,10 @@ struct MonthGridView: View {
     /// `TabView`. "Today" in the toolbar covers the long jump.
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 0), count: 7)
 
+    /// Lives here rather than in a cell: the selected fill travels *between*
+    /// cells, so the namespace has to outlive any one of them.
+    @Namespace private var selection
+
     private var today: CalendarDay { .today() }
 
     var body: some View {
@@ -33,15 +37,15 @@ struct MonthGridView: View {
                         marks: marks[day.day.key] ?? DayMarks(),
                         isSelected: day.day == selected,
                         isToday: day.day == today,
-                        onSelect: { onSelect(day.day) }
+                        onSelect: { onSelect(day.day) },
+                        selectionNamespace: selection
                     )
                 }
             }
         }
         .padding(.vertical, 16)
         .padding(.horizontal, 8)
-        .background(Color(.secondarySystemGroupedBackground))
-        .cornerRadius(28)
+        .cardStyle()
         .padding(.horizontal, 16)
     }
 
@@ -92,6 +96,6 @@ struct MonthGridView: View {
         onStep: { _ in }
     )
     .padding(.vertical)
-    .background(Color(.systemGroupedBackground))
+    .background(Color(.appBackground))
     .modelContainer(container)
 }

@@ -36,16 +36,13 @@ struct PantryCategorySectionView: View {
             // Header
             HStack {
                 Text(categoryName)
-                    .font(.footnote)
-                    .textCase(.uppercase)
-                    .foregroundStyle(.secondary)
-                    .accessibilityAddTraits(.isHeader)
+                    .sectionHeaderStyle()
                 Spacer()
             }
             .padding(.horizontal, 20)
             .padding(.top, 20)
             .padding(.bottom, 8)
-            .background(Color(.systemGroupedBackground))
+            .appBackground()
             .dropDestination(for: String.self) { droppedIds, _ in
                 let uuids = droppedIds.compactMap { UUID(uuidString: $0) }
                 onDrop(uuids, category)
@@ -55,13 +52,17 @@ struct PantryCategorySectionView: View {
             // Items
             VStack(spacing: 0) {
                 if items.isEmpty {
-                    Text("No items in pantry yet.")
+                    // A per-category line, not a `ContentUnavailableView`: this
+                    // sits inside a card that may be one of several on screen,
+                    // and a full centred empty state in each would drown the
+                    // categories that do have items.
+                    Text("Nothing here yet.")
                         .foregroundStyle(.secondary)
                         .font(.subheadline)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(.vertical, 16)
                         .padding(.horizontal, 20)
-                        .background(Color(.secondarySystemGroupedBackground))
+                        .background(Color(.appBackgroundElevated))
                         .dropDestination(for: String.self) { droppedIds, _ in
                             let uuids = droppedIds.compactMap { UUID(uuidString: $0) }
                             onDrop(uuids, category)
@@ -108,7 +109,7 @@ struct PantryCategorySectionView: View {
                             )
                             .padding(.vertical, 16)
                             .padding(.horizontal, 20)
-                            .background(Color(.secondarySystemGroupedBackground))
+                            .background(Color(.appBackgroundElevated))
                             .offset(x: swipedItemId == item.id ? dragOffset : 0)
                             .gesture(
                                 editingItem?.id != item.id ?
@@ -165,7 +166,7 @@ struct PantryCategorySectionView: View {
                         if item != items.last {
                             Divider()
                                 .padding(.leading, 16)
-                                .background(Color(.secondarySystemGroupedBackground))
+                                .background(Color(.appBackgroundElevated))
                         }
                     }
                 }
@@ -174,10 +175,10 @@ struct PantryCategorySectionView: View {
             // the mutation's own `withAnimation` misses. Scoped to the id list
             // so it never animates the swipe offset.
             .animation(reduceMotion ? nil : .default, value: items.map(\.id))
-            .cornerRadius(28)
+            .clipShape(RoundedRectangle(cornerRadius: AppRadius.card, style: .continuous))
             .padding(.horizontal, 16)
         }
         .padding(.bottom, 16)
-        .background(Color(.systemGroupedBackground))
+        .appBackground()
     }
 }

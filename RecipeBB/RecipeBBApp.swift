@@ -26,6 +26,8 @@ struct RecipeBBApp: App {
     private let containerError: Error?
 
     init() {
+        RoundedChromeAppearance.apply()
+
         // Safely initialize ModelContainer with error handling
         var tempContainer: ModelContainer?
         var tempError: Error?
@@ -108,6 +110,9 @@ struct RecipeBBApp: App {
                     DatabaseErrorView(error: containerError)
                 }
             }
+            // On the Group so the error screen is rounded too. The two
+            // UIKit-hosted islands re-apply it themselves.
+            .fontDesign(.rounded)
             .preferredColorScheme(appearanceMode.colorScheme)
         }
     }

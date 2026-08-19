@@ -193,6 +193,7 @@ struct RecipeFormContentView: View {
             }
         }
         .scrollDismissesKeyboard(.interactively)
+        .listAppBackground()
     }
 
     /// Focus lands a runloop late: the row is only added to the hierarchy on the

@@ -21,10 +21,7 @@ struct DayEntriesSectionView: View {
         VStack(alignment: .leading, spacing: 0) {
             HStack {
                 Text(PlannerViewModel.fullDateFormatter.string(from: day.date()))
-                    .font(.footnote)
-                    .textCase(.uppercase)
-                    .foregroundStyle(.secondary)
-                    .accessibilityAddTraits(.isHeader)
+                    .sectionHeaderStyle()
 
                 Spacer()
 
@@ -38,12 +35,20 @@ struct DayEntriesSectionView: View {
             .padding(.bottom, 6)
 
             if sections.isEmpty {
-                ContentUnavailableView(
-                    "Nothing Planned",
-                    systemImage: "calendar.badge.plus",
-                    description: Text("Add what you cooked, or plan ahead with the + button.")
-                )
-                .padding(.top, 24)
+                // No action button, for the same reason the empty pantry has
+                // none: the "+" that would fill this day is already on screen,
+                // one row up. Repeating it only pushed the empty state down
+                // into the tab bar.
+                ContentUnavailableView {
+                    Label {
+                        Text("Nothing Planned")
+                    } icon: {
+                        Image(systemName: "calendar.badge.plus")
+                            .foregroundStyle(Color.accentColor)
+                    }
+                } description: {
+                    Text("Note down what you cooked, or plan a meal ahead.")
+                }
             } else {
                 ForEach(sections) { section in
                     slotSection(section)
@@ -77,8 +82,7 @@ struct DayEntriesSectionView: View {
                     entryRow(entry)
                 }
             }
-            .background(Color(.secondarySystemGroupedBackground))
-            .cornerRadius(28)
+            .cardStyle()
             .padding(.horizontal, 16)
         }
     }
@@ -145,6 +149,6 @@ struct DayEntriesSectionView: View {
             onAdd: {}, onEdit: { _ in }, onOpenRecipe: { _ in }, onDelete: { _ in }
         )
     }
-    .background(Color(.systemGroupedBackground))
+    .background(Color(.appBackground))
     .modelContainer(container)
 }

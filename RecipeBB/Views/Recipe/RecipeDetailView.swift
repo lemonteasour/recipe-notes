@@ -17,6 +17,13 @@ struct RecipeDetailView: View {
     @State private var errorMessage: String?
     @State private var feedback: FeedbackSignal?
 
+    /// Owned here rather than inside `RecipeDetailCookingView` so that flipping
+    /// back to the normal layout and returning doesn't lose your place. Leaving
+    /// the screen forgets it — see that view for why it's never persisted.
+    @State private var doneWhileCooking: Set<UUID> = []
+
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     /// Nil when no live tags remain, so a recipe whose tags were just deleted
     /// doesn't show an empty label (or an empty Details section).
     private var tagLine: String? {
@@ -44,7 +51,8 @@ struct RecipeDetailView: View {
     private var content: some View {
         VStack(alignment: .leading, spacing: 16) {
             if isCookingMode {
-                RecipeDetailCookingView(recipe: recipe)
+                RecipeDetailCookingView(recipe: recipe, done: $doneWhileCooking)
+                    .transition(.opacity)
             } else {
                 List {
                     if let data = recipe.photo, let uiImage = UIImage(data: data) {
@@ -84,6 +92,8 @@ struct RecipeDetailView: View {
                         }
                     }
                 }
+                .listAppBackground()
+                .transition(.opacity)
             }
         }
         .navigationTitle(recipe.name)
@@ -96,10 +106,19 @@ struct RecipeDetailView: View {
                 // recipe to do, and everything else can cost a tap. Favorite
                 // leads the menu to match the recipe list's context menu.
                 Button(isCookingMode ? "Normal" : "Cook") {
-                    isCookingMode.toggle()
+                    // The two layouts share nothing structurally, so they hard-
+                    // cut without this, and a crossfade doesn't pretend the
+                    // elements move.
+                    withAnimation(reduceMotion ? nil : .smooth(duration: 0.3)) {
+                        isCookingMode.toggle()
+                    }
                 }
+                .contentTransition(.opacity)
 
                 Menu {
+                    // No symbol effect: menu contents are handed to UIKit as a
+                    // `UIMenu`, so SwiftUI animations never run on them. The
+                    // `.toggled` haptic confirms the tap instead.
                     Button(recipe.isFavorite ? "Unfavorite" : "Favorite",
                            systemImage: recipe.isFavorite ? "heart.slash" : "heart") {
                         toggleFavorite()
