@@ -22,6 +22,10 @@ struct RecipeIndexedListView: UIViewRepresentable {
         let tableView = UITableView(frame: .zero, style: .plain)
         tableView.delegate = context.coordinator
         tableView.keyboardDismissMode = .interactive
+        // The warm ground, matching every other tab. Cells get it too (below),
+        // so the list reads as one surface rather than white rows floating on
+        // cream.
+        tableView.backgroundColor = UIColor(resource: .appBackground)
         tableView.register(UITableViewCell.self, forCellReuseIdentifier: Coordinator.cellIdentifier)
         context.coordinator.configureDataSource(for: tableView)
         return tableView
@@ -59,8 +63,18 @@ struct RecipeIndexedListView: UIViewRepresentable {
                 let cell = tableView.dequeueReusableCell(withIdentifier: Self.cellIdentifier, for: indexPath)
                 guard let recipe = self?.recipesByID[recipeID] else { return cell }
                 cell.contentConfiguration = UIHostingConfiguration {
+                    // `UIHostingConfiguration` starts a fresh SwiftUI
+                    // environment, so the app-wide `.fontDesign(.rounded)` in
+                    // `RecipeBBApp` does not reach in here.
                     RecipeRowView(recipe: recipe)
+                        .fontDesign(.rounded)
                 }
+                // Built from `listPlainCell()` rather than assigned flat, so the
+                // configuration still tints itself on highlight when a row is
+                // tapped.
+                var background = UIBackgroundConfiguration.listPlainCell()
+                background.backgroundColor = UIColor(resource: .appBackground)
+                cell.backgroundConfiguration = background
                 cell.accessoryType = .disclosureIndicator
                 return cell
             }
@@ -122,7 +136,9 @@ struct RecipeIndexedListView: UIViewRepresentable {
                 completion(true)
             }
             action.image = UIImage(systemName: recipe.isFavorite ? "heart.slash" : "heart")
-            action.backgroundColor = .systemPink
+            // The app's own favourite colour rather than `.systemPink`, which
+            // clashed with the amber accent everywhere it appeared.
+            action.backgroundColor = UIColor(resource: .favorite)
             return UISwipeActionsConfiguration(actions: [action])
         }
 
@@ -268,7 +284,7 @@ struct RecipeRowView: View {
                     .resizable()
                     .scaledToFill()
                     .frame(width: 48, height: 48)
-                    .clipShape(RoundedRectangle(cornerRadius: 8))
+                    .clipShape(RoundedRectangle(cornerRadius: AppRadius.thumbnail, style: .continuous))
             }
             VStack(alignment: .leading, spacing: 2) {
                 Text(recipe.name)
@@ -282,8 +298,14 @@ struct RecipeRowView: View {
             Spacer()
             if recipe.isFavorite {
                 Image(systemName: "heart.fill")
-                    .foregroundStyle(.pink)
+                    .foregroundStyle(Color(.favorite))
                     .imageScale(.small)
+                    // No symbol effect: the badge is inserted and removed rather
+                    // than changed, and the table calls `reconfigureItems`,
+                    // which rebuilds this view instead of updating it — so
+                    // neither `.bounce` nor a content transition has a
+                    // before-state to animate from. The swipe action's own
+                    // animation is the feedback here.
                     // The existing "Favorite" key is the action in the context
                     // menu (ja お気に入りに追加); a badge is state, not an offer.
                     .accessibilityLabel("Favorited")
