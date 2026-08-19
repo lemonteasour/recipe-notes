@@ -92,6 +92,12 @@ private struct RecipePreviewContent: View {
         .padding(.top, recipe.photo == nil ? 16 : 0)
         .padding(.bottom, 16)
         .frame(maxWidth: .infinity, alignment: .leading)
+        // Both the hosted preview and `idealHeight`'s sizer are built outside
+        // the app's view hierarchy, so neither inherits `RecipeBBApp`'s
+        // `.fontDesign(.rounded)`. It belongs here, on the shared content,
+        // rather than on the two call sites — measuring in one font and
+        // rendering in another would size the menu wrong.
+        .fontDesign(.rounded)
     }
 
     private func section<Content: View>(
@@ -100,9 +106,7 @@ private struct RecipePreviewContent: View {
     ) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(title)
-                .font(.footnote.weight(.semibold))
-                .foregroundStyle(.secondary)
-                .textCase(.uppercase)
+                .sectionHeaderStyle()
             content()
         }
     }

@@ -52,7 +52,10 @@ struct PantryCategoryManagementView: View {
                 // Existing categories
                 Section {
                     if categories.isEmpty {
-                        Text("No categories yet.")
+                        // Same reasoning as the per-category line in
+                        // `PantryCategorySectionView`: a row inside a section,
+                        // not a screen-filling empty state.
+                        Text("Nothing here yet.")
                             .foregroundStyle(.secondary)
                             .font(.subheadline)
                     }
@@ -126,6 +129,7 @@ struct PantryCategoryManagementView: View {
                 }
             }
             .scrollDismissesKeyboard(.interactively)
+            .listAppBackground()
             .onTapGesture {
                 isInputFocused = false
             }

@@ -43,6 +43,7 @@ struct RecipeLinkPickerView: View {
                 }
             }
         }
+        .listAppBackground()
         .searchable(text: $searchText, prompt: "Search recipes")
         .overlay {
             if filtered.isEmpty {

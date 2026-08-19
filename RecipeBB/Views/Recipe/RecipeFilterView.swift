@@ -77,6 +77,7 @@ struct RecipeFilterView: View {
                 }
             }
             .scrollDismissesKeyboard(.interactively)
+            .listAppBackground()
             .navigationTitle("Filter")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {

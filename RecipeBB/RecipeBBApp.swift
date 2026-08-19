@@ -26,6 +26,10 @@ struct RecipeBBApp: App {
     private let containerError: Error?
 
     init() {
+        // Before any view exists: appearance proxies are read when a bar is
+        // first built, so setting them later would miss the first screen.
+        RoundedChromeAppearance.apply()
+
         // Safely initialize ModelContainer with error handling
         var tempContainer: ModelContainer?
         var tempError: Error?
@@ -108,6 +112,11 @@ struct RecipeBBApp: App {
                     DatabaseErrorView(error: containerError)
                 }
             }
+            // On the Group so the error screen is rounded too. Reaches every
+            // SwiftUI text in the app; the two UIKit-hosted islands
+            // (`RecipeIndexedListView`'s cells and its context-menu preview)
+            // start their own environment and re-apply it themselves.
+            .fontDesign(.rounded)
             .preferredColorScheme(appearanceMode.colorScheme)
         }
     }

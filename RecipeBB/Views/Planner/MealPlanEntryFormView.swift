@@ -104,6 +104,7 @@ struct MealPlanEntryFormView: View {
                         .lineLimit(2...5)
                 }
             }
+            .listAppBackground()
             .navigationTitle(entryToEdit == nil ? "New Entry" : "Edit Entry")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

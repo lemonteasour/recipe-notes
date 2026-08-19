@@ -138,6 +138,7 @@ struct MoreView: View {
                 }
                 #endif
             }
+            .listAppBackground()
             .navigationTitle("More")
             .onAppear {
                 Task {
