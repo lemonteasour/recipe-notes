@@ -157,9 +157,9 @@ enum SeedDataService {
         try? context.save()
     }
 
-    /// Deletes all user data and reseeds the sample set for the current app
-    /// language. Backs the developer-only reset button in MoreView.
-    static func wipeAndReseed(context: ModelContext) {
+    /// Deletes all user data, leaving an empty store. Backs the developer-only
+    /// wipe button in MoreView.
+    static func wipeAll(context: ModelContext) {
         // Delete through the context (not a batch delete) so cascade rules
         // clean up ingredients, headings, and steps.
         //
@@ -173,7 +173,12 @@ enum SeedDataService {
         for item in (try? context.fetch(FetchDescriptor<PantryItem>())) ?? [] { context.delete(item) }
         for category in (try? context.fetch(FetchDescriptor<PantryCategory>())) ?? [] { context.delete(category) }
         try? context.save()
+    }
 
+    /// Deletes all user data and reseeds the sample set for the current app
+    /// language. Backs the developer-only reset button in MoreView.
+    static func wipeAndReseed(context: ModelContext) {
+        wipeAll(context: context)
         seedIfEmpty(context: context)
     }
 

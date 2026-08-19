@@ -18,6 +18,7 @@ struct MoreView: View {
     @State private var adAlertMessage = ""
     #if DEBUG
     @State private var showingResetConfirmation = false
+    @State private var showingWipeConfirmation = false
     #endif
 
     private let reviewURL = URL(string: "https://apps.apple.com/app/id6752032405?action=write-review")
@@ -132,12 +133,22 @@ struct MoreView: View {
                             Text(verbatim: "Reset to sample data")
                         }
                     }
+
+                    Button(role: .destructive) {
+                        showingWipeConfirmation = true
+                    } label: {
+                        HStack {
+                            rowIcon("trash")
+                            Text(verbatim: "Wipe all data")
+                        }
+                    }
                 } header: {
                     // verbatim: debug-only strings stay out of the string catalog
                     Text(verbatim: "Developer")
                 }
                 #endif
             }
+            .listAppBackground()
             .navigationTitle("More")
             .onAppear {
                 Task {
@@ -161,6 +172,18 @@ struct MoreView: View {
                 }
             } message: {
                 Text(verbatim: "All recipes, tags, and pantry items will be deleted and replaced with sample data.")
+            }
+            .alert(Text(verbatim: "Wipe all data?"), isPresented: $showingWipeConfirmation) {
+                Button(role: .destructive) {
+                    SeedDataService.wipeAll(context: modelContext)
+                } label: {
+                    Text(verbatim: "Wipe")
+                }
+                Button(role: .cancel) { } label: {
+                    Text(verbatim: "Cancel")
+                }
+            } message: {
+                Text(verbatim: "All recipes, tags, and pantry items will be deleted. Nothing will be restored.")
             }
             #endif
         }
