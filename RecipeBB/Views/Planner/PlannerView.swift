@@ -32,6 +32,14 @@ struct PlannerView: View {
         reduceMotion ? nil : .easeInOut(duration: 0.2)
     }
 
+    /// Drives the selected day's fill sliding to the tapped cell (the
+    /// `matchedGeometryEffect` in `DayCellView`). Snappier than `stepAnimation`
+    /// because it travels a much shorter distance, and nil under Reduce Motion,
+    /// which leaves the fill jumping straight to the new day.
+    private var selectAnimation: Animation? {
+        reduceMotion ? nil : .snappy(duration: 0.25)
+    }
+
     init(context: ModelContext) {
         _viewModel = State(initialValue: PlannerViewModel(context: context))
     }
@@ -46,7 +54,9 @@ struct PlannerView: View {
                         grid: viewModel.monthGrid(for: viewModel.monthAnchor),
                         marks: viewModel.marks(from: allEntries),
                         selected: viewModel.selected,
-                        onSelect: { viewModel.selected = $0 },
+                        onSelect: { day in
+                            withAnimation(selectAnimation) { viewModel.selected = day }
+                        },
                         onStep: { direction in
                             withAnimation(stepAnimation) { viewModel.step(direction) }
                         }
@@ -65,7 +75,7 @@ struct PlannerView: View {
                     Spacer(minLength: 24)
                 }
             }
-            .background(Color(.systemGroupedBackground))
+            .appBackground()
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Today") { withAnimation(stepAnimation) { viewModel.goToToday() } }

@@ -15,6 +15,14 @@ struct PantryAddItemSectionView: View {
     let categories: [PantryCategory]
     let onAdd: () -> Void
 
+    /// Bumped on every tap purely to drive the bounce. The item itself lands in
+    /// a list further down the screen, so the button is the only thing the user
+    /// is still looking at when the add succeeds — same reasoning as the
+    /// `.added` haptic it fires alongside.
+    @State private var addPulse = 0
+
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
     var body: some View {
         VStack(spacing: 0) {
             HStack {
@@ -33,9 +41,16 @@ struct PantryAddItemSectionView: View {
                 }
 
                 if !newItemName.isEmpty {
-                    Button(action: onAdd) {
+                    Button {
+                        addPulse += 1
+                        onAdd()
+                    } label: {
                         Image(systemName: "plus.circle.fill")
                             .foregroundStyle(Color.accentColor)
+                            // Freezing the value rather than branching the
+                            // modifier: Reduce Motion then has nothing to
+                            // animate, and the view stays one expression.
+                            .symbolEffect(.bounce, value: reduceMotion ? 0 : addPulse)
                     }
                     .buttonStyle(.plain)
                     .accessibilityLabel("Add to Pantry")
